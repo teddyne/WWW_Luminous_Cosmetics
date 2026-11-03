@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="vi" th:with="pageCss='home.css'">
+<head th:replace="~{layout/header :: head('Trang chủ')}"></head>
+<body>
+<div th:replace="~{layout/header :: header}"></div>
+
+<!-- 1. BANNER CHINH (HERO): CHI 1 ANH, KHONG anh dong nua.
+     Khong con carousel 3 anh hero-01/02/03 nhu ban cu. Anh duy nhat:
+     static/images/banner/hero-01-ke-my-pham.jpg (anh that cua ban gui,
+     da chuyen sang JPEG that). Muon doi anh banner: ghi de dung file nay.
+     Khong con anh dong Ken Burns nhu ban truoc: anh dung yen
+     (da bo animation trong home.css theo yeu cau moi).
+     Bo cuc theo anh mau ban gui: tieu de lon trang o giua, dong phu
+     cach chu, thanh tim kiem trong suot + nut Tim xanh la, duoi la goi y.
+     LUU Y CHU: anh mau goc la cua shop cay ("Khong gian xanh / Cho cuoc
+     song hien dai", goi y Sen Da / Cay De Ban / Xuong Rong) nen KHONG
+     copy nguyen chu do sang shop my pham. Chu o day da doi sang my pham:
+     tieu de "Ve dep tu thien nhien", phu "CHO LAN DA RANG RO", goi y la
+     4 danh muc that trong DB. Muon doi chu khac: sua 2 dong h1/p va 4 link
+     goi y ngay duoi day, khong can sua CSS hay Java.
+     Tim kiem THAT, khong phai gia: form GET ve "/" voi tham so q, dung
+     luong tim kiem san co cua HomeController (loc theo ten/thuong hieu).
+     Cac link goi y dan ve /?categoryId=... (danh muc that trong DB). -->
+<section class="hero-single mb-5" aria-label="Banner chính">
+  <img th:src="@{/images/banner/hero-01-ke-my-pham.jpg}" class="hero-single-img" alt="Bộ mỹ phẩm trên kệ gỗ"/>
+  <div class="hero-single-overlay"></div>
+  <div class="hero-single-content">
+    <h1 class="hero-single-title">Vẻ đẹp từ thiên nhiên</h1>
+    <p class="hero-single-subtitle">CHO LÀN DA RẠNG RỠ</p>
+    <form th:action="@{/}" method="get" class="hero-search" role="search">
+      <i class="bi bi-search hero-search-icon" aria-hidden="true"></i>
+      <input class="hero-search-input" type="search" name="q" th:value="${searchQuery}" placeholder="Bạn muốn tìm sản phẩm nào?..." aria-label="Tìm sản phẩm"/>
+      <button class="hero-search-btn" type="submit">Tìm</button>
+    </form>
+    <p class="hero-suggestions">Gợi ý:
+      <a th:href="@{/(categoryId=1)}">#TẩyTrang</a>
+      <a th:href="@{/(categoryId=2)}">#SữaRửaMặt</a>
+      <a th:href="@{/(categoryId=3)}">#Serum</a>
+      <a th:href="@{/(categoryId=4)}">#KemChốngNắng</a>
+    </p>
+  </div>
+</section>
+
+<main>
+  <div th:if="${notice}" class="container alert alert-info" th:text="${notice}">Thông báo</div>
+
+  <!-- 2. THUONG HIEU NOI BAT: tieu de can giua, mau #456A41, khong con dong phu ben duoi. -->
+  <section id="brands" class="container mb-5">
+    <h2 class="section-title center brand-title">Thương hiệu nổi bật</h2>
+    <div class="d-flex flex-wrap justify-content-center gap-2 mt-3">
+      <a class="brand-pill" href="https://www.lorealparis.com" target="_blank" rel="noopener">L'ORÉAL</a>
+      <a class="brand-pill" href="https://cocoonvietnam.com" target="_blank" rel="noopener">Cocoon</a>
+      <a class="brand-pill" href="https://www.colorkey.com" target="_blank" rel="noopener">COLORKEY</a>
+      <a class="brand-pill" href="https://www.ponds.com" target="_blank" rel="noopener">POND'S</a>
+      <a class="brand-pill" href="https://www.laroche-posay.com" target="_blank" rel="noopener">La Roche-Posay</a>
+      <a class="brand-pill" href="https://www.bioderma.com" target="_blank" rel="noopener">BIODERMA</a>
+      <a class="brand-pill" href="https://www.eucerin.com" target="_blank" rel="noopener">Eucerin</a>
+    </div>
+  </section>
+
+  <!-- 2b. DAI TIEC UU DAI: nen be #FFFCF4. -->
+  <section id="deals" class="beige-section mb-5">
+    <div class="container py-5">
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2 class="section-title mb-0">Đại tiệc ưu đãi</h2>
+        <a href="#deals" class="btn-see-more">Xem thêm</a>
+      </div>
+      <!-- Dai tiec uu dai: KHONG phai banner slider — 3 hinh chung 1 dong.
+           Anh local trong static/images/promo/, thay anh that chi can ghi de dung ten file. -->
+      <div class="row g-3 mb-4 promo-row">
+        <div class="col-12 col-md-4"><img th:src="@{/images/promo/promo-summer-2026.jpg}" class="w-100 rounded-4 promo-row-img" alt="Ưu đãi mùa hè 2026, mã SUMMER2026"/></div>
+        <div class="col-12 col-md-4"><img th:src="@{/images/promo/promo-freeship-30.jpg}" class="w-100 rounded-4 promo-row-img" alt="Miễn phí vận chuyển 30.000đ, mã FREESHIP30"/></div>
+        <div class="col-12 col-md-4"><img th:src="@{/images/promo/promo-welcome-10.jpg}" class="w-100 rounded-4 promo-row-img" alt="Chào bạn mới giảm 10%, mã WELCOME10"/></div>
+      </div>
+
+      <!-- Slider the san pham uu dai: du lieu that tu dealProducts (variant co salePrice).
+           Nut chuyen nam o 2 ria cua slider, can giua theo chieu doc (khong nam tren san pham). -->
+      <div class="slider-edge">
+        <div class="slider slider-4" id="dealsSlider">
+          <th:block th:each="card : ${dealProducts}"><div th:replace="~{layout/header :: productCard(${card}, true)}"></div></th:block>
+          <p th:if="${#lists.isEmpty(dealProducts)}" class="text-muted">Hiện chưa có sản phẩm giảm giá trong dữ liệu.</p>
+        </div>
+        <button class="slider-edge-btn prev" type="button" onclick="scrollSlider('dealsSlider', -1)" aria-label="Trước">‹</button>
+        <button class="slider-edge-btn next" type="button" onclick="scrollSlider('dealsSlider', 1)" aria-label="Sau">›</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- 3. DANH MUC HOT: luoi 8 muc + banner nguoi mau ben phai.
+       Chi 3 muc co that trong DB mau (id 1, 2, 4); 5 muc con lai van giu link theo ten
+       va HomeController se hien thong bao ro rang "chua co san pham", khong gia vo co hang. -->
+  <section id="categories" class="container mb-5">
+    <h2 class="section-title mb-3">Danh mục hot</h2>
+    <div class="row g-3">
+      <div class="col-lg-8">
+        <div class="row row-cols-2 row-cols-sm-4 g-3">
+          <div class="col"><a class="cat-item" th:href="@{/(categoryId=2)}"><img th:src="@{/images/categories/category-sua-rua-mat.jpg}" alt="Sữa rửa mặt"/><div>Sữa rửa mặt</div></a></div>
+          <div class="col"><a class="cat-item" th:href="@{/(categoryName='Son môi')}"><img th:src="@{/images/categories/category-son-moi.jpg}" alt="Son môi"/><div>Son môi</div></a></div>
+          <div class="col"><a class="cat-item" th:href="@{/(categoryId=1)}"><img th:src="@{/images/categories/category-tay-trang.jpg}" alt="Tẩy trang"/><div>Tẩy trang</div></a></div>
+          <div class="col"><a class="cat-item" th:href="@{/(categoryId=4)}"><img th:src="@{/images/categories/category-kem-chong-nang.jpg}" alt="Kem chống nắng"/><div>Kem chống nắng</div></a></div>
+          <div class="col"><a class="cat-item" th:href="@{/(categoryName='Phấn mắt')}"><img th:src="@{/images/categories/category-phan-mat.jpg}" alt="Phấn mắt"/><div>Phấn mắt</div></a></div>
+          <div class="col"><a class="cat-item" th:href="@{/(categoryName='Cushion')}"><img th:src="@{/images/categories/category-cushion.jpg}" alt="Cushion"/><div>Cushion</div></a></div>
+          <div class="col"><a class="cat-item" th:href="@{/(categoryName='Nước hoa hồng')}"><img th:src="@{/images/categories/category-nuoc-hoa-hong.jpg}" alt="Nước hoa hồng"/><div>Nước hoa hồng</div></a></div>
+          <div class="col"><a class="cat-item" th:href="@{/(categoryName='Mặt nạ')}"><img th:src="@{/images/categories/category-mat-na.jpg}" alt="Mặt nạ"/><div>Mặt nạ</div></a></div>
+        </div>
+      </div>
+      <div class="col-lg-4">
+        <img th:src="@{/images/model/model-dai-dien.jpg}" class="model-banner" alt="Người mẫu đại diện"/>
+      </div>
+    </div>
+  </section>
+
+  <!-- 4. SAN PHAM MOI: nen be, banner dung trai + slider phai.
+       Hang flex 5 phan bang nhau (xem home.css .new-best-row): banner
+       bang DUNG 1 the san pham, khong con col-lg-3 to hon the nhu ban cu. -->
+  <section id="new" class="beige-section mb-5">
+    <div class="container py-5">
+      <div class="new-best-row">
+        <div class="side-col">
+          <div class="side-banner">
+            <img th:src="@{/images/side/side-san-pham-moi.jpg}" alt="Sản phẩm mới"/>
+            <div class="side-banner-overlay">
+              <h3>Sản phẩm mới</h3>
+              <a href="#new" class="btn-side-white">Xem thêm</a>
+            </div>
+          </div>
+        </div>
+        <div class="slider-col">
+          <div class="slider-edge">
+            <div class="slider slider-4" id="newSlider">
+              <th:block th:each="card : ${newProducts}"><div th:replace="~{layout/header :: productCard(${card}, false)}"></div></th:block>
+              <p th:if="${#lists.isEmpty(newProducts)}" class="text-muted">Chưa có sản phẩm trong dữ liệu.</p>
+            </div>
+            <button class="slider-edge-btn prev" type="button" onclick="scrollSlider('newSlider', -1)" aria-label="Trước">‹</button>
+            <button class="slider-edge-btn next" type="button" onclick="scrollSlider('newSlider', 1)" aria-label="Sau">›</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 5. CAM KET THUONG HIEU: 3 the nen xanh la diu #E0F4E3, chu/icon #1D5420. -->
+  <section id="why-choose" class="container mb-5">
+    <p class="text-center small text-uppercase mb-1 commit-eyebrow">Cam kết của chúng tôi</p>
+    <h2 class="section-title center">Lý do nên chọn Comestic</h2>
+    <div class="row g-3 mt-2">
+      <div class="col-md-4"><div class="value-card"><div class="value-icon value-icon-quality"><i class="bi bi-patch-check-fill"></i></div><h5>Cam kết chất lượng</h5><p class="mb-0">Sản phẩm có nguồn gốc rõ ràng, uy tín.</p></div></div>
+      <div class="col-md-4"><div class="value-card"><div class="value-icon value-icon-delivery"><i class="bi bi-truck"></i></div><h5>Giao hàng nhanh</h5><p class="mb-0">Giao hàng nhanh chóng trong vòng 24–48h.</p></div></div>
+      <div class="col-md-4"><div class="value-card"><div class="value-icon value-icon-support"><i class="bi bi-telephone"></i></div><h5>Hỗ trợ tư vấn</h5><p class="mb-0">Tư vấn mọi thắc mắc của khách hàng.</p></div></div>
+    </div>
+  </section>
+
+  <!-- 5b. SAN PHAM BAN CHAY: cung cau truc san pham moi, nen be. -->
+  <section id="best" class="beige-section mb-5">
+    <div class="container py-5">
+      <div class="new-best-row">
+        <div class="side-col">
+          <div class="side-banner">
+            <img th:src="@{/images/side/side-san-pham-ban-chay.jpg}" alt="Sản phẩm bán chạy"/>
+            <div class="side-banner-overlay">
+              <h3>Sản phẩm bán chạy</h3>
+              <a href="#best" class="btn-side-white">Xem thêm</a>
+            </div>
+          </div>
+        </div>
+        <div class="slider-col">
+          <div class="slider-edge">
+            <div class="slider slider-4" id="bestSlider">
+              <th:block th:each="card : ${bestProducts}"><div th:replace="~{layout/header :: productCard(${card}, false)}"></div></th:block>
+              <p th:if="${#lists.isEmpty(bestProducts)}" class="text-muted">Chưa có sản phẩm trong dữ liệu.</p>
+            </div>
+            <button class="slider-edge-btn prev" type="button" onclick="scrollSlider('bestSlider', -1)" aria-label="Trước">‹</button>
+            <button class="slider-edge-btn next" type="button" onclick="scrollSlider('bestSlider', 1)" aria-label="Sau">›</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 6. BAI VIET MOI: tieu de can giua, mau #466D41, 4 the. -->
+  <section class="container mb-3">
+    <h2 class="section-title center blog-title">Bài viết mới</h2>
+    <div class="row g-3 mt-2">
+      <div class="col-md-3">
+        <div class="card blog-card h-100">
+          <img th:src="@{/images/blog/blog-doi-vo-chai.jpg}" class="card-img-top" alt="Đổi vỏ chai cũ nhận quà xanh"/>
+          <div class="card-body d-flex flex-column">
+            <p class="text-muted small mb-1">COCOON • 05-05-2026</p>
+            <h6 class="card-title">Chương trình Đổi vỏ chai cũ nhận quà xanh năm 2024</h6>
+            <a th:href="@{/blog}" class="btn-blog-detail btn-sm mt-auto align-self-end">Xem chi tiết</a>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="card blog-card h-100">
+          <img th:src="@{/images/blog/blog-routine-da-dau.jpg}" class="card-img-top" alt="Routine da dầu"/>
+          <div class="card-body d-flex flex-column">
+            <h6 class="card-title">Routine chăm sóc da dầu mùa hè, ít bí da</h6>
+            <a th:href="@{/blog}" class="btn-blog-detail btn-sm mt-auto align-self-end">Xem chi tiết</a>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="card blog-card h-100">
+          <img th:src="@{/images/blog/blog-kem-chong-nang.jpg}" class="card-img-top" alt="Chọn kem chống nắng"/>
+          <div class="card-body d-flex flex-column">
+            <h6 class="card-title">Cách chọn kem chống nắng đúng SPF cho da nhạy cảm</h6>
+            <a th:href="@{/blog}" class="btn-blog-detail btn-sm mt-auto align-self-end">Xem chi tiết</a>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="card blog-card h-100">
+          <img th:src="@{/images/blog/blog-tay-trang-bi-dao.jpg}" class="card-img-top" alt="Nước tẩy trang bí đao"/>
+          <div class="card-body d-flex flex-column">
+            <h6 class="card-title">Vì sao nước tẩy trang bí đao được yêu thích?</h6>
+            <a th:href="@{/blog}" class="btn-blog-detail btn-sm mt-auto align-self-end">Xem chi tiết</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<!-- Modal dang xuat: hien khi logout thanh cong (SecurityConfig chuyen ve /?logout).
+     Modal duoc mo tu dong bang main.js (showLogoutModal) khi URL co ?logout,
+     khong phai alert tinh o dau trang nhu ban cu. -->
+<div th:if="${param.logout}" class="modal fade" id="logoutSuccessModal" tabindex="-1" aria-labelledby="logoutSuccessModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content text-center">
+      <div class="modal-body py-4">
+        <div class="mb-3" style="font-size:48px;color:var(--lum-green)"><i class="bi bi-check-circle-fill"></i></div>
+        <h5 class="modal-title fw-bold mb-2" id="logoutSuccessModalLabel">Đăng xuất thành công</h5>
+        <p class="mb-0 text-muted">Bạn đã đăng xuất thành công.</p>
+      </div>
+      <div class="modal-footer justify-content-center border-0 pt-0 pb-4">
+        <button type="button" class="btn btn-lum px-4" data-bs-dismiss="modal">Đóng</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div th:replace="~{layout/footer :: footer}"></div>
+</body>
+</html>

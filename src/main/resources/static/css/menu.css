@@ -1,0 +1,102 @@
+.menu-list { padding: 24px 16px 8px; }
+.menu-item { display: flex; align-items: center; gap: 16px; padding: 14px 16px; font-size: 19px; font-weight: 500; text-decoration: none; color: #333; }
+.menu-item i { font-size: 22px; width: 28px; text-align: center; }
+.menu-item:hover { color: var(--lum-green-dark); background: var(--lum-green-soft); border-radius: 10px; }
+.menu-item.active { color: var(--lum-green-dark); }
+.menu-item.active span { border-bottom: 2px solid var(--lum-green); padding-bottom: 2px; }
+.menu-social { width: 38px; height: 38px; border-radius: 50%; background: #111; color: #fff; display: inline-flex; align-items: center; justify-content: center; text-decoration: none; }
+
+/* ---------- Trang menu rieng (/menu): trai menu, giua bo loc, phai anh mo ---------- */
+/* ---------- Trang menu rieng (/menu): KHONG header, KHONG footer, full man hinh ---------- */
+.menu-page { display: flex; min-height: 100vh; background: #fff; }
+.menu-page-left { flex: 1 1 50%; background: var(--lum-beige); border-right: 1px solid rgba(0,0,0,.08); padding: 24px 0 24px 24px; }
+.menu-page-close { position: absolute; top: 16px; right: 20px; z-index: 3; font-size: 24px; text-decoration: none; color: #333; }
+.menu-page-filter { width: 0; overflow: hidden; opacity: 0; flex-shrink: 0; background: #fff; border-left: 1px solid rgba(0,0,0,.08); border-right: 1px solid rgba(0,0,0,.08); transition: width .30s cubic-bezier(0.22, 1, 0.36, 1), opacity .25s ease; }
+.menu-page--show-filter .menu-page-filter { width: 480px; opacity: 1; transition-delay: .12s; }
+.menu-page-filter-inner { width: 480px; padding: 24px; }
+.menu-page-filter a { display: block; padding: 10px 0; text-decoration: none; color: #333; font-size: 17px; }
+.menu-page-filter a:hover { color: var(--lum-green-dark); }
+.menu-page-visual { position: relative; flex: 1 1 50%; overflow: hidden; min-height: 520px; }
+.menu-page-visual > img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.menu-page-visual-overlay { position: absolute; inset: 0; background: rgba(255,255,255,.55); display: flex; flex-direction: column; align-items: center; justify-content: center; }
+.menu-page .menu-item { border: none; background: none; width: 100%; text-align: left; cursor: pointer; }
+
+/* ---------- Bo cuc moi: anh phai CO DINH 50%, bo loc chi no trong 50% trai ---------- */
+.menu-page-left-wrap { flex: 1 1 auto; display: flex; background: var(--lum-beige); border-right: 1px solid rgba(0,0,0,.08); min-width: 0; }
+.menu-page-left { flex: 1 1 auto; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 24px; min-width: 0; background: var(--lum-beige); border-right: none; }
+.menu-list { padding: 0; display: flex; flex-direction: column; align-items: center; gap: 4px; }
+.menu-page .menu-item { width: auto; text-align: center; font-size: 26px; padding: 16px 22px; }
+.menu-page .menu-item i { font-size: 28px; }
+/* Gach chan CHI o muc vua duoc nhan (class active do JS them, khong co san
+   trong HTML). Cac muc khac khong co gach chan. */
+.menu-page .menu-item.active { color: var(--lum-green-dark); }
+.menu-page .menu-item.active span { border-bottom: 2px solid var(--lum-green); padding-bottom: 2px; }
+.menu-page-filter { background: var(--lum-beige); display: flex; flex-direction: column; justify-content: center; transition: width .30s cubic-bezier(0.22, 1, 0.36, 1), opacity .25s ease; }
+.menu-page-filter-inner { display: flex; flex-direction: column; align-items: center; text-align: center; }
+.menu-page-filter a { font-size: 22px; padding: 14px 0; text-align: center; width: 100%; }
+.menu-page-filter a.active { color: var(--lum-green-dark); text-decoration: underline; text-underline-offset: 4px; text-decoration-thickness: 2px; }
+/* Khi bo loc mo (rong 480px), giam padding cua nav va muc menu de nav
+   khong bi bop qua hep trong nua trai con lai. */
+.menu-page--show-filter .menu-page-left { padding: 24px 8px; }
+.menu-page--show-filter .menu-page-left .menu-item { padding: 16px 12px; }
+/* Anh phai co dinh 50%, khong thu lai khi bo loc hien. */
+.menu-page-visual { flex: 0 0 50%; }
+/* Logo o trang menu to hon logo header (64px -> 120px). */
+.menu-page-visual-overlay .logo-img { height: 120px; }
+@media (max-width: 768px) {
+  .menu-page { flex-direction: column; }
+  .menu-page-left-wrap { flex: none; width: 100%; flex-direction: column; }
+  .menu-page-left { flex: none; width: 100%; padding: 16px; }
+  .menu-page--show-filter .menu-page-filter { width: 100%; opacity: 1; }
+  .menu-page-filter-inner { width: 100%; }
+  .menu-page-visual { flex: none; width: 100%; min-height: 300px; }
+  .menu-page-visual-overlay .logo-img { height: 80px; }
+  .menu-item { font-size: 22px; }
+}
+
+.menu-page-left-wrap:has(.menu-item-product:hover, .menu-page-filter:hover) .menu-page-filter { width: 480px; opacity: 1; transition-delay: .12s; }
+.menu-page-left-wrap:has(.menu-item-product:hover, .menu-page-filter:hover) .menu-page-left { padding: 24px 8px; }
+
+/* ---------- Hien SO LE khi vao trang menu, NHANH (giu nguyen ban truoc) ---------- */
+@keyframes menuItemIn { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes menuVisualIn { from { opacity: 0; transform: scale(1.03); } to { opacity: 1; transform: scale(1); } }
+
+/* Anh phai: hien ngay nhung zoom nhe tu 1.03 ve 1, khong snap dot ngot. */
+.menu-page-visual > img { animation: menuVisualIn .4s cubic-bezier(0.22, 1, 0.36, 1) both; }
+/* Lop phu tren anh: mo dan cham hon anh mot chut. */
+.menu-page-visual-overlay { animation: menuItemIn .25s cubic-bezier(0.22, 1, 0.36, 1) .06s both; }
+/* Logo hien sau lop phu mot chut. */
+.menu-page-visual-overlay .logo-img { animation: menuItemIn .25s cubic-bezier(0.22, 1, 0.36, 1) .08s both; }
+/* Icon social hien so le sau logo. */
+.menu-page-visual-overlay .menu-social { opacity: 0; animation: menuItemIn .25s cubic-bezier(0.22, 1, 0.36, 1) forwards; }
+.menu-page-visual-overlay .menu-social:nth-child(1) { animation-delay: .12s; }
+.menu-page-visual-overlay .menu-social:nth-child(2) { animation-delay: .15s; }
+.menu-page-visual-overlay .menu-social:nth-child(3) { animation-delay: .18s; }
+.menu-page-visual-overlay .menu-social:nth-child(4) { animation-delay: .21s; }
+/* Nut X hien cuoi cung. */
+.menu-page-close { opacity: 0; animation: menuItemIn .25s cubic-bezier(0.22, 1, 0.36, 1) .18s forwards; }
+
+/* 6 muc menu hien so le, muc dau tien hien ngay sau khi trang tai xong. */
+.menu-page .menu-item { opacity: 0; animation: menuItemIn .25s cubic-bezier(0.22, 1, 0.36, 1) forwards; }
+.menu-page .menu-list .menu-item:nth-child(1) { animation-delay: .02s; }
+.menu-page .menu-list .menu-item:nth-child(2) { animation-delay: .05s; }
+.menu-page .menu-list .menu-item:nth-child(3) { animation-delay: .08s; }
+.menu-page .menu-list .menu-item:nth-child(4) { animation-delay: .11s; }
+.menu-page .menu-list .menu-item:nth-child(5) { animation-delay: .14s; }
+.menu-page .menu-list .menu-item:nth-child(6) { animation-delay: .17s; }
+
+/* Bo loc khi mo: cac link hien so le nhanh hon ban truoc, theo kip do no
+   0.30s cua bo loc. */
+.menu-page--show-filter .menu-page-filter a { opacity: 0; animation: menuItemIn .30s cubic-bezier(0.22, 1, 0.36, 1) forwards; }
+.menu-page--show-filter .menu-page-filter a:nth-child(1) { animation-delay: .15s; }
+.menu-page--show-filter .menu-page-filter a:nth-child(2) { animation-delay: .19s; }
+.menu-page--show-filter .menu-page-filter a:nth-child(3) { animation-delay: .23s; }
+.menu-page--show-filter .menu-page-filter a:nth-child(4) { animation-delay: .27s; }
+.menu-page--show-filter .menu-page-filter a:nth-child(5) { animation-delay: .31s; }
+.menu-page--show-filter .menu-page-filter a:nth-child(6) { animation-delay: .35s; }
+
+@media (prefers-reduced-motion: reduce) {
+  .menu-page-visual > img, .menu-page-visual-overlay, .menu-page-visual-overlay .logo-img,
+  .menu-page-visual-overlay .menu-social, .menu-page-close, .menu-page .menu-item,
+  .menu-page--show-filter .menu-page-filter a { animation: none; opacity: 1; }
+}

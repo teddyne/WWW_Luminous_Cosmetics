@@ -1,0 +1,10 @@
+target/
+*.class
+*.log
+.idea/
+*.iml
+.vscode/
+.DS_Store
+Thumbs.db
+# File cau hinh rieng tren may cua tung nguoi (neu tach application-local.properties ra sau nay)
+application-local.properties

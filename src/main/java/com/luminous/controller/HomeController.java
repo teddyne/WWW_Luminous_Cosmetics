@@ -1,0 +1,68 @@
+package com.luminous.controller;
+
+import com.luminous.dto.ProductCard;
+import com.luminous.repository.CategoryRepository;
+import com.luminous.service.ProductService;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+
+import java.util.List;
+
+@Controller
+public class HomeController {
+    private final ProductService productService;
+    private final CategoryRepository categories;
+
+    public HomeController(ProductService productService, CategoryRepository categories) {
+        this.productService = productService;
+        this.categories = categories;
+    }
+
+    @GetMapping("/")
+    public String home(
+            @RequestParam(required = false) String q,
+            @RequestParam(required = false) Integer categoryId,
+            @RequestParam(required = false) String categoryName,
+            Model model) {
+
+        List<ProductCard> deals = productService.deals(12);
+        List<ProductCard> newest = productService.newest(12);
+        List<ProductCard> best = productService.bestSellers(12);
+
+        String notice = null;
+        if (q != null && !q.isBlank()) {
+            deals = productService.filter(deals, q, categoryId);
+            newest = productService.filter(newest, q, categoryId);
+            best = productService.filter(best, q, categoryId);
+            notice = "Kết quả tìm kiếm cho \"" + q.trim() + "\"";
+        } else if (categoryId != null) {
+            deals = productService.filter(deals, null, categoryId);
+            newest = productService.filter(newest, null, categoryId);
+            best = productService.filter(best, null, categoryId);
+            notice = categories.findById(categoryId)
+                    .map(c -> "Danh mục: " + c.getName())
+                    .orElse("Danh mục không tồn tại");
+        } else if (categoryName != null && !categoryName.isBlank()) {
+            // Danh muc hot theo Figma nhung chua co trong DB mau (Son moi, Cushion, ...)
+            // -> khong gia vo co san pham, hien thong bao ro rang.
+            boolean exists = categories.findByStatusOrderByIdAsc("ACTIVE").stream()
+                    .anyMatch(c -> c.getName().equalsIgnoreCase(categoryName.trim()));
+            if (!exists) {
+                notice = "Danh mục \"" + categoryName.trim()
+                        + "\" chưa có sản phẩm trong dữ liệu mẫu. Bạn đang xem toàn bộ sản phẩm.";
+            }
+        }
+
+        model.addAttribute("dealProducts", deals);
+        model.addAttribute("newProducts", newest);
+        model.addAttribute("bestProducts", best);
+        model.addAttribute("categories", categories.findByStatusOrderByIdAsc("ACTIVE"));
+        model.addAttribute("brands", productService.allActiveCards().stream()
+                .map(ProductCard::brand).filter(b -> !b.isBlank()).distinct().sorted().toList());
+        model.addAttribute("searchQuery", q);
+        model.addAttribute("notice", notice);
+        return "homepage/home";
+    }
+}

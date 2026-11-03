@@ -1,0 +1,133 @@
+.hero-single { position: relative; height: 520px; overflow: hidden; }
+.hero-single-img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.hero-single-overlay { position: absolute; inset: 0; background: linear-gradient(rgba(0,0,0,.35), rgba(0,0,0,.45)); }
+.hero-single-content { position: relative; z-index: 1; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 24px; color: #fff; }
+.hero-single-title { font-size: 64px; font-weight: 800; color: #fff; margin: 0 0 8px; text-shadow: 0 2px 12px rgba(0,0,0,.35); }
+.hero-single-subtitle { font-size: 20px; letter-spacing: 6px; text-transform: uppercase; color: #fff; margin: 0 0 28px; text-shadow: 0 1px 8px rgba(0,0,0,.35); }
+/* Thanh tim kiem theo anh mau: nen trong suot co mo, vien trang mo. */
+.hero-search { display: flex; align-items: center; gap: 8px; width: min(640px, 100%); background: rgba(255,255,255,.22); backdrop-filter: blur(6px); border: 1px solid rgba(255,255,255,.45); border-radius: 14px; padding: 6px 6px 6px 16px; transition: background .2s ease, border-color .2s ease, box-shadow .2s ease; }
+.hero-search-icon { color: #fff; font-size: 18px; flex-shrink: 0; transition: color .2s ease; }
+.hero-search-input { flex: 1 1 auto; min-width: 0; background: transparent; border: none; outline: none; color: #fff; font-size: 16px; transition: color .2s ease; }
+.hero-search-input::placeholder { color: rgba(255,255,255,.85); transition: color .2s ease; }
+
+.hero-search:focus-within { background: #fff; border-color: var(--lum-green); box-shadow: 0 0 0 3px rgba(69,106,65,.18); }
+.hero-search:focus-within .hero-search-icon { color: var(--lum-green-dark); }
+.hero-search:focus-within .hero-search-input { color: #333; }
+.hero-search:focus-within .hero-search-input::placeholder { color: #6c757d; }
+.hero-search-btn { background: var(--lum-green); border: none; color: #fff; border-radius: 10px; padding: 12px 28px; font-weight: 700; flex-shrink: 0; }
+.hero-search-btn:hover { background: var(--lum-green-dark); color: #fff; }
+.hero-suggestions { margin: 16px 0 0; font-size: 14px; color: rgba(255,255,255,.9); }
+.hero-suggestions a { color: #fff; text-decoration: none; margin-left: 4px; }
+.hero-suggestions a:hover { color: #fff; text-decoration: underline; }
+
+/* ---------- Tieu de khoi ---------- */
+.section-title { font-weight: 700; color: var(--lum-green-dark); }
+.section-title.center { text-align: center; }
+.brand-title { color: var(--lum-green); }
+.blog-title { color: #466D41; }
+.beige-section { background: var(--lum-beige); }
+
+/* ---------- Thuong hieu ---------- */
+.brand-pill { display: inline-flex; align-items: center; justify-content: center; min-width: 130px; padding: 12px 18px; border: 1px solid #e9ecef; border-radius: 999px; background: #fff; font-weight: 700; letter-spacing: .5px; text-decoration: none; }
+.brand-pill:hover { border-color: var(--lum-green); background: var(--lum-green-soft); }
+
+/* ---------- Dai tiec uu dai: 3 hinh chung 1 dong, khong phai slider ---------- */
+.promo-img { height: 260px; object-fit: cover; }
+.promo-row-img { height: 240px; object-fit: cover; }
+.promo-caption { background: rgba(0,0,0,.55); border-radius: 10px; padding: 8px 14px; font-weight: 600; }
+
+/* ---------- Slider san pham: cuon ngang + nut 2 ben, khong can thu vien ---------- */
+.slider-wrap { position: relative; }
+/* Nut slider o 2 ria, can giua theo chieu doc, de len tren mep slider (nhu anh chup) */
+.slider-edge { position: relative; }
+.slider-edge-btn { position: absolute; top: 50%; transform: translateY(-50%); z-index: 2; width: 44px; height: 44px; border-radius: 50%; border: 1px solid #dee2e6; background: #fff; box-shadow: 0 2px 10px rgba(0,0,0,.18); font-size: 22px; line-height: 1; }
+.slider-edge-btn:hover { background: var(--lum-green-soft); }
+.slider-edge-btn.prev { left: -14px; }
+.slider-edge-btn.next { right: -14px; }
+.slider { display: flex; gap: 16px; overflow-x: auto; scroll-behavior: smooth; padding: 4px 2px 12px; scrollbar-width: none; align-items: stretch; }
+.slider::-webkit-scrollbar { display: none; }
+.slider-4 .product-card { flex: 0 0 calc((100% - 48px) / 4); }
+.slider-btn { width: 40px; height: 40px; border-radius: 50%; border: 1px solid #dee2e6; background: #fff; box-shadow: 0 2px 8px rgba(0,0,0,.08); }
+.slider-btn:hover { background: var(--lum-green-soft); }
+
+/* ---------- The san pham: hover nen xanh la nhat ---------- */
+.product-card { border: 1px solid #eef0ee; border-radius: var(--lum-radius); overflow: hidden; background: #fff; height: 100%; display: flex; flex-direction: column; transition: transform .2s ease, box-shadow .2s ease, background-color .2s ease, border-color .2s ease; }
+.product-card:hover { transform: translateY(-3px); box-shadow: 0 10px 24px rgba(0,0,0,.08); background: var(--lum-green-soft); border-color: var(--lum-green); }
+.product-card img { width: 100%; height: 240px; object-fit: cover; background: var(--lum-green-soft); }
+.product-size { min-height: 20px; }
+.price-block { min-height: 46px; display: flex; flex-direction: column; justify-content: flex-end; }
+.price-normal { color: var(--lum-green-dark); font-weight: 800; font-size: 17px; }
+.product-brand { font-size: 12px; letter-spacing: 1px; color: var(--lum-muted); text-transform: uppercase; font-weight: 700; }
+.product-name { font-weight: 600; font-size: 15px; line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; min-height: 42px; }
+.price-old { color: var(--lum-muted); text-decoration: line-through; font-size: 14px; }
+.price-sale { color: var(--lum-red); font-weight: 800; font-size: 17px; }
+.rating-number { color: var(--lum-text); font-weight: 700; }
+.stars { color: #f5a623; letter-spacing: 1px; }
+.btn-add-cart { background: var(--lum-green); color: #fff; border: none; border-radius: 50%; width: 40px; height: 40px; display: inline-flex; align-items: center; justify-content: center; font-size: 18px; text-decoration: none; flex-shrink: 0; }
+.btn-add-cart:hover { background: var(--lum-green-dark); color: #fff; }
+
+/* ---------- Danh muc hot ---------- */
+.cat-item { text-align: center; text-decoration: none; display: block; padding: 0 0 12px; border-radius: var(--lum-radius); border: 1px solid #eef0ee; background: #fff; overflow: hidden; font-weight: 600; transition: background-color .2s ease, border-color .2s ease; }
+.cat-item:hover { border-color: var(--lum-green); background: var(--lum-green-soft); }
+.cat-item img { width: 100%; aspect-ratio: 1 / 1; object-fit: cover; display: block; margin-bottom: 10px; background: var(--lum-green-soft); }
+
+.model-banner { width: 100%; height: 100%; min-height: 0; object-fit: cover; border-radius: 16px; display: block; }
+#categories .col-lg-4 { display: flex; }
+#categories .row { align-items: stretch; }
+
+.side-banner { border-radius: 16px; overflow: hidden; position: relative; height: calc(100% - 16px); margin-top: 4px; }
+.side-banner > img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block; }
+.side-banner-overlay { position: absolute; inset: 0; z-index: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; gap: 12px; padding: 16px; }
+.side-banner-overlay h3 { color: #1D5420; font-weight: 800; font-size: 28px; text-shadow: 0 1px 6px rgba(255,255,255,.9), 0 0 2px rgba(255,255,255,.9); margin: 0; }
+.btn-side-white { background: #fff; color: #1D5420; border-radius: 999px; padding: 10px 22px; font-weight: 700; text-decoration: none; box-shadow: 0 2px 10px rgba(0,0,0,.15); }
+.btn-side-white:hover { background: var(--lum-green-soft); color: #1D5420; }
+
+/* ---------- Cam ket: icon to o giua, mau noi bat rieng tung the ---------- */
+.commit-eyebrow { color: #756134; font-weight: 700; letter-spacing: 1px; }
+.value-card { background: var(--lum-green-soft); border-radius: var(--lum-radius); padding: 28px 24px; height: 100%; color: var(--lum-green-dark); text-align: center; }
+.value-card h5 { color: var(--lum-green-dark); }
+.value-card .mb-0 { color: gray; }
+.value-card .value-icon { width: 76px; height: 76px; border-radius: 50%; background: #fff; display: flex; align-items: center; justify-content: center; font-size: 38px; margin: 0 auto 16px; }
+.value-icon-quality { color: #4B8244; background: #E0F4E3 !important; }
+.value-icon-delivery { color: #E67E22; background: #FDEBD0 !important; }
+.value-icon-support { color: #2E86C1; background: #D6EAF8 !important; }
+
+/* ---------- Blog: nut Xem chi tiet nen xam nhat, chu xanh, sat phai ---------- */
+.btn-blog-detail { background: #F1F1F1; color: #4B8244; border: none; border-radius: 999px; padding: 8px 18px; font-weight: 600; text-decoration: none; }
+.btn-blog-detail:hover { background: var(--lum-green-soft); color: #1D5420; }
+
+/* ---------- Blog ---------- */
+.blog-card img { height: 180px; object-fit: cover; }
+.blog-card:hover { border-color: var(--lum-green); box-shadow: 0 10px 24px rgba(0,0,0,.08); }
+
+
+@media (max-width: 991px) {
+  .slider-4 .product-card { flex-basis: calc((100% - 16px) / 2); }
+  .model-banner { min-height: 0; }
+}
+@media (max-width: 768px) {
+  .hero-single { height: 360px; }
+  .hero-single-title { font-size: 38px; }
+  .hero-single-subtitle { font-size: 14px; letter-spacing: 3px; }
+  .hero-search-btn { padding: 10px 18px; }
+  .promo-img { height: 180px; }
+  .slider-4 .product-card { flex-basis: 220px; }
+  .slider-edge-btn.prev { left: 4px; }
+  .slider-edge-btn.next { right: 4px; }
+  /* Side-banner tren mobile: khong tinh theo the san pham nua, cao co dinh. */
+  .side-banner { height: 300px; margin-top: 0; }
+  .new-best-row { flex-direction: column; }
+  .side-col { flex: none; width: 100%; }
+}
+
+/* ---------- Khoi moi + ban chay: banner bang DUNG the san pham ---------- */
+/* Banner + slider la 1 hang flex 5 phan bang nhau: banner chiem
+   calc((100% - 64px) / 5), slider chiem phan con lai. Trong slider, the
+   chiem calc((slider - 48px) / 4). Giai phuong trinh nay ra banner = the,
+   nen banner khong con to hon the (ban cu dung col-lg-3 ~33% rong hon the
+   ~235px trong khi the chi ~17% container). The san pham cung co dinh
+   chieu cao bang nhau nho slider align-items: stretch + product-card
+   height: 100% (da co o tren). */
+.new-best-row { display: flex; gap: 16px; align-items: stretch; }
+.side-col { flex: 0 0 calc((100% - 64px) / 5); min-width: 0; }
+.slider-col { flex: 1 1 auto; min-width: 0; }
