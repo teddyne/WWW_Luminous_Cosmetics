@@ -63,7 +63,7 @@
     <div class="container py-5">
       <div class="d-flex justify-content-between align-items-center mb-3">
         <h2 class="section-title mb-0">Đại tiệc ưu đãi</h2>
-        <a href="#deals" class="btn-see-more">Xem thêm</a>
+        <a th:href="@{/products(onSale='true')}" class="btn-see-more">Xem thêm</a>
       </div>
       <!-- Dai tiec uu dai: KHONG phai banner slider — 3 hinh chung 1 dong.
            Anh local trong static/images/promo/, thay anh that chi can ghi de dung ten file. -->
@@ -121,7 +121,7 @@
             <img th:src="@{/images/side/side-san-pham-moi.jpg}" alt="Sản phẩm mới"/>
             <div class="side-banner-overlay">
               <h3>Sản phẩm mới</h3>
-              <a href="#new" class="btn-side-white">Xem thêm</a>
+              <a th:href="@{/products(sort='newest')}" class="btn-side-white">Xem thêm</a>
             </div>
           </div>
         </div>
@@ -159,7 +159,7 @@
             <img th:src="@{/images/side/side-san-pham-ban-chay.jpg}" alt="Sản phẩm bán chạy"/>
             <div class="side-banner-overlay">
               <h3>Sản phẩm bán chạy</h3>
-              <a href="#best" class="btn-side-white">Xem thêm</a>
+              <a th:href="@{/products(sort='best')}" class="btn-side-white">Xem thêm</a>
             </div>
           </div>
         </div>

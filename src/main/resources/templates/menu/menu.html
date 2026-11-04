@@ -16,9 +16,11 @@
      Khong con khoi "Danh muc tu co so du lieu" va nut Dang nhap/Dang ky
      (da bo theo yeu cau). Gach chan chi hien o muc vua duoc nhan: khong
      muc nao co san class active, JS trong main.js them active khi nhan.
-     Cac muc loc "Cham soc da / Makeup / Duong moi" chua co trong DB mau nen
-     tam dan ve trang chu voi tham so categoryName — HomeController se hien
-     thong bao "chua co san pham" chu khong gia vo co hang. -->
+     Cac muc loc dan ve trang San pham (/products): "Xem tat ca" -> /products;
+     "Moi" -> sort=newest; "Ban chay" -> sort=best; "Cham soc da / Makeup /
+     Duong moi" dan theo categoryName — ProductController doi ten thanh id
+     neu khop danh muc that, neu chua co trong DB mau thi hien thong bao
+     chu khong gia vo co hang. -->
 <main class="menu-page" id="menuPage">
   <div class="menu-page-left-wrap">
     <nav class="menu-page-left" aria-label="Menu chính">
@@ -36,12 +38,12 @@
 
     <div class="menu-page-filter" id="menuFilter" aria-label="Bộ lọc sản phẩm">
       <div class="menu-page-filter-inner">
-        <a th:href="@{/#deals}">Xem tất cả sản phẩm</a>
-        <a th:href="@{/#new}">Mới</a>
-        <a th:href="@{/#best}">Bán chạy</a>
-        <a th:href="@{/(categoryName='Chăm sóc da')}">Chăm sóc da</a>
-        <a th:href="@{/(categoryName='Makeup')}">Makeup</a>
-        <a th:href="@{/(categoryName='Dưỡng môi')}">Dưỡng môi</a>
+        <a th:href="@{/products}">Xem tất cả sản phẩm</a>
+        <a th:href="@{/products(sort='newest')}">Mới</a>
+        <a th:href="@{/products(sort='best')}">Bán chạy</a>
+        <a th:href="@{/products(categoryName='Chăm sóc da')}">Chăm sóc da</a>
+        <a th:href="@{/products(categoryName='Makeup')}">Makeup</a>
+        <a th:href="@{/products(categoryName='Dưỡng môi')}">Dưỡng môi</a>
       </div>
     </div>
   </div>

@@ -10,6 +10,7 @@ import com.luminous.repository.ReviewRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -20,16 +21,8 @@ public class ProductService {
     private final OrderDetailRepository orderDetails;
     private final ReviewRepository reviews;
 
-    private static final Map<Integer, String> LOCAL_IMAGES = Map.of(
-            1, "/images/products/nuoc-tay-trang-cocoon-bi-dao-1.jpg",        // Cocoon tay trang
-            2, "/images/products/sua-rua-mat-cerave-sach-sau-2.jpg",         // CeraVe sua rua mat
-            3, "/images/products/sua-rua-mat-cetaphil-diu-nhe-3.jpg",        // Cetaphil sua rua mat
-            4, "/images/products/serum-the-ordinary-niacinamide-4.jpg",      // Ordinary Niacinamide
-            5, "/images/products/serum-klairs-vitamin-c-5.jpg",              // Klairs Vitamin C
-            6, "/images/products/kem-chong-nang-la-roche-posay-anthelios-6.jpg", // La Roche-Posay Anthelios
-            7, "/images/products/gel-chong-nang-skin-aqua-uv-7.jpg",         // Skin Aqua gel
-            8, "/images/products/kem-duong-am-cerave-moisturising-8.jpg"     // CeraVe duong am
-    );
+    /** Anh cho san chung khi san pham chua co anh nao (khong do ve anh san pham khac). */
+    private static final String NO_IMAGE = "/images/products/no-image.svg";
 
     public ProductService(ProductRepository products,
                           OrderDetailRepository orderDetails,
@@ -49,8 +42,6 @@ public class ProductService {
 
     public List<ProductCard> bestSellers(int limit) {
         List<Product> best = orderDetails.findBestSellers();
-        // Neu DB chua co don hang nao, best sellers se rong -> fallback ve san pham moi nhat
-        // de trang chu khong bi khoi trong (van la du lieu that tu DB, khong phai so gia).
         if (best.isEmpty()) {
             return newest(limit);
         }
@@ -59,6 +50,48 @@ public class ProductService {
 
     public List<ProductCard> allActiveCards() {
         return toCards(products.findByIsActiveTrueOrderByCreatedAtDesc(), Integer.MAX_VALUE);
+    }
+
+    public List<ProductCard> search(String q, String brand, List<Integer> categoryIds,
+                                    BigDecimal minPrice, BigDecimal maxPrice,
+                                    Double minRating, String sort, boolean onSaleOnly) {
+        List<ProductCard> result = allActiveCards().stream()
+                .filter(c -> q == null || q.isBlank()
+                        || c.name().toLowerCase().contains(q.toLowerCase())
+                        || c.brand().toLowerCase().contains(q.toLowerCase()))
+                .filter(c -> brand == null || brand.isBlank() || c.brand().equalsIgnoreCase(brand))
+                .filter(c -> categoryIds == null || categoryIds.isEmpty()
+                        || (c.getProduct().getCategory() != null
+                        && categoryIds.contains(c.getProduct().getCategory().getId())))
+                .filter(c -> (minPrice == null && maxPrice == null)
+                        || hasVariantInPriceRange(c, minPrice, maxPrice))
+                .filter(c -> minRating == null || c.getRating() >= minRating)
+                .filter(c -> !onSaleOnly || c.onSale())
+                .collect(Collectors.toList());
+
+        if ("price_asc".equals(sort)) {
+            result.sort(Comparator.comparing(ProductCard::displayPrice,
+                    Comparator.nullsLast(Comparator.naturalOrder())));
+        } else if ("price_desc".equals(sort)) {
+            result.sort(Comparator.comparing(ProductCard::displayPrice,
+                    Comparator.nullsLast(Comparator.naturalOrder())).reversed());
+        } else if ("best".equals(sort)) {
+            result.sort(Comparator.comparingLong(ProductCard::getSoldCount).reversed());
+        } else if ("newest".equals(sort)) {
+            result.sort(Comparator.comparing((ProductCard c) -> c.getProduct().getCreatedAt(),
+                    Comparator.nullsLast(Comparator.naturalOrder())).reversed());
+        }
+        // sort rong/khong hop le: giu nguyen thu tu mac dinh (moi nhat truoc).
+        return result;
+    }
+
+    private boolean hasVariantInPriceRange(ProductCard card, BigDecimal min, BigDecimal max) {
+        return card.getProduct().getVariants().stream()
+                .filter(v -> Boolean.TRUE.equals(v.getIsActive()))
+                .map(ProductVariant::displayPrice)
+                .filter(Objects::nonNull)
+                .anyMatch(p -> (min == null || p.compareTo(min) >= 0)
+                        && (max == null || p.compareTo(max) <= 0));
     }
 
     private List<ProductCard> toCards(List<Product> list, int limit) {
@@ -87,6 +120,12 @@ public class ProductService {
                 .orElse(null);
     }
 
+    /**
+     * Anh dai dien cua the san pham, lay tu DB theo thu tu:
+     * anh cua variant -> anh displayOrder = 1 cua san pham -> anh cho san.
+     * Khong con bang tra id -> file trong code: them san pham moi chi can
+     * them dong ProductMedia / imgUrl trong DB, khong sua code.
+     */
     private String imageFor(Product p, ProductVariant v) {
         String url = null;
         if (v != null && v.getImgUrl() != null && !v.getImgUrl().isBlank()) {
@@ -97,9 +136,8 @@ public class ProductService {
                     .findFirst().orElse(p.getMedia().get(0));
             url = m.getThumbnailUrl() != null ? m.getThumbnailUrl() : m.getMediaUrl();
         }
-        // URL mau example.com khong tai duoc -> doi sang anh local; URL that giu nguyen.
         if (url == null || url.contains("example.com")) {
-            return LOCAL_IMAGES.getOrDefault(p.getId(), "/images/products/nuoc-tay-trang-cocoon-bi-dao-1.jpg");
+            return NO_IMAGE;
         }
         return url;
     }
