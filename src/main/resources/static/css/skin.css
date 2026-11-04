@@ -1,0 +1,103 @@
+/* Luminous - CSS RIENG cho trac nghiem da + chu trinh (/skin-quiz, /my-routine).
+   Nap qua pageCss='skin.css' (xem layout/header.html). Dung bien mau chung
+   --lum-green / --lum-green-dark / --lum-green-soft / --lum-beige o style.css.
+   Hieu ung: vao trang bay len so le 0.25s, chuyen buoc quiz truot ngang
+   0.25s, tab lich mo dan 0.2s. Co prefers-reduced-motion thi tat het. */
+
+.skin-page { padding: 32px 0 48px; }
+.skin-narrow { max-width: 760px; }
+.skin-eyebrow { color: var(--lum-green-dark); font-weight: 700; font-size: 13px; letter-spacing: .06em; text-transform: uppercase; margin-bottom: 8px; }
+.skin-hero h1 { font-size: 30px; font-weight: 800; color: var(--lum-green-dark); margin-bottom: 10px; }
+.skin-lead { color: var(--lum-muted); font-size: 16px; line-height: 1.6; }
+.skin-card { background: #fff; border: 1px solid #e9e2d3; border-radius: 20px; padding: 28px; box-shadow: 0 8px 28px rgba(29, 84, 32, .08); margin-bottom: 20px; }
+.skin-checklist { list-style: none; padding: 0; margin: 0; display: grid; gap: 10px; }
+.skin-checklist li { display: flex; gap: 10px; line-height: 1.55; }
+.skin-checklist li span { color: var(--lum-green); font-weight: 800; flex-shrink: 0; }
+.skin-type-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; }
+.skin-type { background: var(--lum-beige); border-radius: 14px; padding: 16px; }
+.skin-type h3 { font-size: 15px; font-weight: 700; margin-bottom: 6px; }
+.skin-type p { font-size: 13px; color: var(--lum-muted); margin: 0; line-height: 1.55; }
+
+/* Vao trang: bay len so le, nhe, khong chop. */
+@keyframes skinFadeUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+.skin-fade-up { animation: skinFadeUp .25s ease both; }
+.skin-delay-1 { animation-delay: .08s; }
+.skin-delay-2 { animation-delay: .16s; }
+
+/* Tien do quiz. */
+.skin-progress { height: 10px; background: #eef2e9; border-radius: 999px; overflow: hidden; margin: 20px 0 8px; }
+.skin-progress-bar { height: 100%; width: 14%; background: linear-gradient(90deg, var(--lum-green), var(--lum-green-dark)); border-radius: 999px; transition: width .3s ease; }
+.skin-progress-text { color: var(--lum-muted); font-size: 13px; margin-bottom: 16px; }
+
+/* Buoc quiz: chi buoc dang hoat dong moi hien, truot ngang nhe khi doi buoc. */
+.quiz-step { display: none; }
+.quiz-step-active { display: block; animation: skinStepIn .25s ease both; }
+@keyframes skinStepIn { from { opacity: 0; transform: translateX(14px); } to { opacity: 1; transform: translateX(0); } }
+.quiz-options { display: grid; gap: 10px; }
+.quiz-options-multi { grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); }
+.quiz-option { display: flex; gap: 12px; align-items: flex-start; padding: 14px 16px; border: 1.5px solid #e5e0d2; border-radius: 14px; cursor: pointer; transition: border-color .2s ease, background .2s ease, transform .2s ease; }
+.quiz-option:hover { border-color: var(--lum-green); background: var(--lum-green-soft); transform: translateY(-1px); }
+.quiz-option:has(input:checked) { border-color: var(--lum-green-dark); background: var(--lum-green-soft); box-shadow: 0 4px 14px rgba(29, 84, 32, .12); }
+.quiz-option input { margin-top: 4px; accent-color: var(--lum-green-dark); }
+.quiz-option span { line-height: 1.5; }
+.quiz-step.quiz-shake { animation: skinShake .3s ease; }
+@keyframes skinShake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-5px); } 75% { transform: translateX(5px); } }
+
+/* Man hinh "dang thiet lap". */
+.building-card { padding: 48px 28px; background: linear-gradient(180deg, #f4f9f0 0%, #fff 55%); }
+.building-visual { position: relative; width: 110px; height: 110px; margin: 0 auto 24px; }
+.building-spinner { width: 84px; height: 84px; position: absolute; inset: 13px; border-radius: 50%; background: var(--lum-green); display: flex; align-items: center; justify-content: center; font-size: 34px; color: #fff; box-shadow: 0 12px 28px rgba(29, 84, 32, .28); animation: skinSpin 1.6s ease-in-out infinite; }
+.building-ring { position: absolute; inset: 0; border-radius: 50%; border: 3px solid var(--lum-green-soft); border-top-color: var(--lum-green); animation: skinRing 1.2s linear infinite; }
+@keyframes skinRing { to { transform: rotate(360deg); } }
+.building-title { font-size: 24px; font-weight: 800; color: var(--lum-green-dark); margin-bottom: 18px; }
+.building-chips { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin-bottom: 8px; }
+.building-chip { background: #fff; border: 1px solid #e9e2d3; border-radius: 999px; padding: 7px 14px; font-size: 13px; box-shadow: 0 2px 8px rgba(0,0,0,.05); }
+@keyframes skinSpin { 0% { transform: scale(1) rotate(0deg); } 50% { transform: scale(1.08) rotate(180deg); } 100% { transform: scale(1) rotate(360deg); } }
+.building-steps { list-style: none; padding: 0; margin: 28px auto 0; max-width: 520px; display: grid; gap: 14px; }
+.building-steps li { display: flex; gap: 12px; align-items: center; background: #fff; border: 1px solid #eef2e9; border-radius: 14px; padding: 12px 16px; opacity: .45; transition: opacity .3s ease, border-color .3s ease; }
+.building-steps li.building-done { border-color: var(--lum-green); }
+.building-steps li.building-done { opacity: 1; }
+.building-steps li.building-done .building-dot { background: var(--lum-green); color: #fff; }
+.building-dot { width: 26px; height: 26px; flex-shrink: 0; border-radius: 50%; background: #eef2e9; color: var(--lum-muted); display: inline-flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; }
+.building-steps li.building-done .building-dot::after { content: "✓"; }
+
+/* Tom tat chu trinh. */
+.routine-total { font-size: 30px; font-weight: 800; color: var(--lum-red); margin-bottom: 12px; }
+.routine-tabs { display: flex; gap: 8px; margin-bottom: 20px; flex-wrap: wrap; }
+.routine-tab { border: 1.5px solid #e5e0d2; background: #fff; border-radius: 999px; padding: 10px 20px; font-weight: 600; cursor: pointer; transition: all .2s ease; }
+.routine-tab-active { background: var(--lum-green); border-color: var(--lum-green); color: #fff; }
+.routine-panel { display: none; }
+.routine-panel-active { display: block; animation: skinFadeUp .2s ease both; }
+.routine-timeline { list-style: none; padding: 0; margin: 0; display: grid; gap: 20px; }
+.routine-step { display: flex; gap: 18px; padding-bottom: 20px; border-bottom: 1px solid #f0ead9; }
+.routine-step:last-child { border-bottom: 0; padding-bottom: 0; }
+.routine-img { width: 120px; height: 120px; object-fit: cover; border-radius: 16px; flex-shrink: 0; background: var(--lum-beige); }
+.routine-body { min-width: 0; }
+.routine-step-label { color: var(--lum-green-dark); font-weight: 700; font-size: 13px; text-transform: uppercase; letter-spacing: .04em; margin-bottom: 4px; }
+.routine-name { font-size: 18px; font-weight: 700; margin-bottom: 6px; }
+.price-old { text-decoration: line-through; color: var(--lum-muted); margin-right: 8px; }
+.price-sale { color: var(--lum-red); font-weight: 800; font-size: 18px; }
+.price-normal { font-weight: 800; font-size: 18px; }
+.badge-fit { display: inline-block; background: var(--lum-green-soft); color: var(--lum-green-dark); border-radius: 999px; padding: 4px 12px; font-size: 12px; font-weight: 700; }
+.badge-fit-temp { background: #fff3cd; color: #664d03; }
+
+/* Lich tuan. */
+
+/* Modal chi tiet + doi san pham. */
+.routine-modal .modal-content { border-radius: 20px; }
+.alt-list { display: grid; gap: 10px; }
+.alt-item { display: flex; gap: 12px; align-items: center; border: 1px solid #e9e2d3; border-radius: 14px; padding: 10px 12px; }
+.alt-img { width: 64px; height: 64px; object-fit: cover; border-radius: 10px; flex-shrink: 0; background: var(--lum-beige); }
+
+@media (max-width: 576px) {
+  .skin-hero h1 { font-size: 24px; }
+  .routine-step { flex-direction: column; }
+  .routine-img { width: 100%; height: 180px; }
+  .alt-item { flex-wrap: wrap; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .skin-fade-up, .quiz-step-active, .routine-panel-active { animation: none; }
+  .building-spinner, .building-ring { animation: none; }
+  .skin-progress-bar, .quiz-option { transition: none; }
+}

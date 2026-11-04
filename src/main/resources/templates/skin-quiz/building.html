@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="vi" th:with="pageCss='skin.css'">
+<head th:replace="~{layout/header :: head('Đang thiết lập chu trình')}"></head>
+<body>
+<div th:replace="~{layout/header :: header}"></div>
+
+<main class="skin-page">
+  <div class="container skin-narrow text-center">
+    <section class="skin-card building-card">
+      <div class="building-visual" aria-hidden="true">
+        <div class="building-spinner"><span>✦</span></div>
+        <div class="building-ring"></div>
+      </div>
+      <p class="skin-eyebrow">Luminous đang thiết lập chu trình chăm sóc da cho bạn</p>
+      <h1 class="building-title">Đang chọn sản phẩm phù hợp với làn da của bạn…</h1>
+      <div class="building-chips">
+        <span class="building-chip">Loại da: <strong th:text="${skin.name()}">Da thường</strong></span>
+        <span class="building-chip">Mục tiêu: <strong th:text="${goalLabels}">—</strong></span>
+        <span class="building-chip">Ngân sách: <strong th:text="${budgetLabel}">—</strong></span>
+      </div>
+
+      <ol class="building-steps text-start" id="buildingSteps">
+        <li><span class="building-dot"></span><strong>Phân tích loại da</strong><span class="text-muted"> — từ 5 câu trả lời của bạn.</span></li>
+        <li><span class="building-dot"></span><strong>Chấm điểm sản phẩm theo mục tiêu</strong></li>
+        <li><span class="building-dot"></span><strong>Sắp lịch sáng / tối</strong><span class="text-muted"> — sáng 3 bước, tối 4 bước.</span></li>
+        <li><span class="building-dot"></span><strong>Hoàn tất chu trình tuần</strong><span class="text-muted"> — sẵn sàng để bạn xem chi tiết.</span></li>
+      </ol>
+
+      <a th:href="@{/my-routine}" class="btn btn-lum btn-lg mt-3">Xem chu trình ngay →</a>
+    </section>
+  </div>
+</main>
+
+<div th:replace="~{layout/footer :: footer}"></div>
+<script th:src="@{/js/skin.js}"></script>
+</body>
+</html>

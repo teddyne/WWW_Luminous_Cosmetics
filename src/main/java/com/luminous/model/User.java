@@ -14,6 +14,9 @@ import java.time.LocalDateTime;
  * Chung co trong file migration 001_add_profile_fields.sql (chay kem khi import DB),
  * vi form Dang ky theo Figma bat buoc co Ngay sinh + Gioi tinh.
  * Neu chua chay migration, app se bao loi validate schema khi khoi dong (co tinh de bao loi som).
+ * MOI (migration 002): cot skinQuizAsked — he thong chi hoi trac nghiem da
+ * o lan dang nhap dau tien; chon "De sau" hoac lam xong thi danh dau true
+ * de cac lan dang nhap sau khong hoi lai (van vao lai duoc bang /skin-quiz).
  */
 @Getter
 @Setter
@@ -57,6 +60,9 @@ public class User {
 
     @Column(name = "gender", length = 10)
     private String gender; // NAM / NU
+
+    @Column(name = "skinQuizAsked", nullable = false)
+    private Boolean skinQuizAsked = false;
 
     @Column(name = "createdAt", nullable = false, updatable = false)
     private LocalDateTime createdAt = LocalDateTime.now();
