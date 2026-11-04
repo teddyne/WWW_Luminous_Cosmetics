@@ -9,7 +9,21 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
+/**
+ * Trang chu: khoi Uu dai va khoi Moi KHONG trung san pham.
+ * Ly do trung truoc day: ca 2 khoi deu lay 12 san pham moi nhat truoc
+ * (deals = san pham giam gia sap theo ngay tao, newest = san pham sap
+ * theo ngay tao), nen 1 san pham vua moi vua giam gia se hien o ca 2 khoi.
+ * Cach sua: lay deals truoc, roi lay newest trong so con lai (loai tru
+ * id cua deals). Loc theo tu khoa/danh muc van giu tinh khong trung vi
+ * loc chi thu hep tung danh sach da khong trung nhau.
+ * Luu y: neu HomeController cua ban da co logic rieng them (ngoai ban
+ * goc), chi copy 3 dong deals/newestExcluding duoi day sang file cua
+ * ban, dung ghi de ca file.
+ */
 @Controller
 public class HomeController {
     private final ProductService productService;
@@ -28,7 +42,11 @@ public class HomeController {
             Model model) {
 
         List<ProductCard> deals = productService.deals(12);
-        List<ProductCard> newest = productService.newest(12);
+        Set<Integer> dealIds = deals.stream()
+                .map(c -> c.getProduct() != null ? c.getProduct().getId() : null)
+                .filter(id -> id != null)
+                .collect(Collectors.toSet());
+        List<ProductCard> newest = productService.newestExcluding(dealIds, 12);
         List<ProductCard> best = productService.bestSellers(12);
 
         String notice = null;
@@ -45,8 +63,6 @@ public class HomeController {
                     .map(c -> "Danh mục: " + c.getName())
                     .orElse("Danh mục không tồn tại");
         } else if (categoryName != null && !categoryName.isBlank()) {
-            // Danh muc hot theo Figma nhung chua co trong DB mau (Son moi, Cushion, ...)
-            // -> khong gia vo co san pham, hien thong bao ro rang.
             boolean exists = categories.findByStatusOrderByIdAsc("ACTIVE").stream()
                     .anyMatch(c -> c.getName().equalsIgnoreCase(categoryName.trim()));
             if (!exists) {
