@@ -31,7 +31,6 @@ Quy định và cấu trúc thư mục
             CategoryStatus, DiscountType, OrderStatus, SalesChannel, PaymentMethod,    
             PaymentStatus, VoucherScope, VoucherApplicableScope...
       dto/                   # form nhận dữ liệu và dòng hiển thị, không chứa
-      # nghiệp vụ: *Form, *Row, DashboardStats, Vnd
       config/                # cấu hình web, bảo mật, định dạng
       security/              # đăng nhập, phân quyền
       src/main/resources/
