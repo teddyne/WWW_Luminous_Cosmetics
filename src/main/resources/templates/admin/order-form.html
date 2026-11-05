@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="vi">
+<head th:replace="~{admin/fragments :: head('Thêm đơn hàng')}"></head>
+<body>
+<div class="admin-shell">
+  <div th:replace="~{admin/fragments :: sidebar('orders')}"></div>
+  <div class="admin-overlay" onclick="toggleSidebar(false)"></div>
+  <main class="admin-main">
+    <div th:replace="~{admin/fragments :: topbar('Thêm đơn hàng')}"></div>
+    <div th:replace="~{admin/fragments :: toast}"></div>
+
+    <div class="admin-page-actions">
+      <a th:href="@{/admin/orders}" class="admin-back"><i class="bi bi-arrow-left"></i> Quay lại danh sách đơn hàng</a>
+    </div>
+
+    <form th:action="@{/admin/orders}" th:object="${orderForm}" method="post">
+      <input type="hidden" th:if="${_csrf != null}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+      <div class="row g-3">
+        <div class="col-lg-7">
+          <div class="admin-card mb-3">
+            <div class="admin-card-head"><h2 class="admin-card-title">Thông tin khách hàng</h2></div>
+            <div class="admin-card-body">
+              <div class="mb-3">
+                <label class="form-label" for="orderChannel">Kênh bán</label>
+                <select id="orderChannel" class="form-select" th:field="*{salesChannel}" onchange="toggleChannel()">
+                  <option value="ONLINE">Bán online</option>
+                  <option value="STORE">Bán tại cửa hàng</option>
+                </select>
+              </div>
+              <div class="mb-3">
+                <label class="form-label" for="orderCustomer">Khách hàng</label>
+                <select id="orderCustomer" class="form-select" th:field="*{customerId}" required onchange="fillRecipient(this)">
+                  <option value="">Chọn khách hàng</option>
+                  <option th:each="customer : ${customers}" th:value="${customer.id}" th:text="${customer.fullName + ' - ' + customer.phone}"
+                          th:data-name="${customer.fullName}" th:data-phone="${customer.phone}">Khách hàng</option>
+                </select>
+              </div>
+              <div class="form-check mb-3">
+                <input type="checkbox" id="walkIn" class="form-check-input" th:field="*{walkIn}" onchange="toggleWalkIn()"/>
+                <label class="form-check-label" for="walkIn">Khách vãng lai (không có tài khoản)</label>
+              </div>
+              <div id="walkInBlock" style="display: none;">
+                <div class="row g-3">
+                  <div class="col-md-6">
+                    <label class="form-label" for="walkInName">Tên khách vãng lai</label>
+                    <input type="text" id="walkInName" class="form-control" th:field="*{walkInName}" maxlength="100" oninput="syncWalkInRecipient()"/>
+                  </div>
+                  <div class="col-md-6">
+                    <label class="form-label" for="walkInPhone">Số điện thoại</label>
+                    <input type="text" id="walkInPhone" class="form-control" th:field="*{walkInPhone}" maxlength="15" oninput="syncWalkInRecipient()"/>
+                  </div>
+                </div>
+              </div>
+              <div id="recipientBlock">
+                <div class="row g-3">
+                  <div class="col-md-6">
+                    <label class="form-label" for="orderRecipientName">Người nhận</label>
+                    <input type="text" id="orderRecipientName" class="form-control" th:field="*{recipientName}" required maxlength="100"/>
+                  </div>
+                  <div class="col-md-6">
+                    <label class="form-label" for="orderRecipientPhone">Số điện thoại</label>
+                    <input type="text" id="orderRecipientPhone" class="form-control" th:field="*{recipientPhone}" required maxlength="15"/>
+                  </div>
+                </div>
+                <div class="mt-3">
+                  <label class="form-label" for="orderAddress">Địa chỉ giao hàng</label>
+                  <input type="text" id="orderAddress" class="form-control" th:field="*{shippingAddress}" required maxlength="255" placeholder="Số nhà, đường, phường, quận, thành phố"/>
+                </div>
+              </div>
+              <div class="mt-3">
+                <label class="form-label" for="orderNote">Ghi chú</label>
+                <textarea id="orderNote" class="form-control" rows="2" th:field="*{note}" maxlength="500" placeholder="Ghi chú cho đơn hàng (không bắt buộc)"></textarea>
+              </div>
+            </div>
+          </div>
+          <div class="admin-card">
+            <div class="admin-card-head">
+              <h2 class="admin-card-title">Sản phẩm trong đơn</h2>
+              <button type="button" class="btn btn-soft btn-sm" onclick="addOrderLine()"><i class="bi bi-plus-lg"></i> Thêm sản phẩm</button>
+            </div>
+            <div class="admin-card-body">
+              <div id="orderLines" th:data-preselect="${preselectedVariantId}"></div>
+              <div class="empty-state" id="orderLinesEmpty"><i class="bi bi-bag"></i>Chưa có sản phẩm nào, bấm Thêm sản phẩm để chọn</div>
+            </div>
+          </div>
+        </div>
+        <div class="col-lg-5">
+          <div class="admin-card">
+            <div class="admin-card-head"><h2 class="admin-card-title">Thanh toán</h2></div>
+            <div class="admin-card-body">
+              <div class="mb-3">
+                <label class="form-label" for="orderPaymentMethod">Phương thức thanh toán</label>
+                <select id="orderPaymentMethod" class="form-select" th:field="*{paymentMethod}" onchange="togglePaymentMethod()">
+                  <option value="COD">Tiền mặt (COD)</option>
+                  <option value="MOMO">Ví MoMo</option>
+                  <option value="VNPAY">VNPay</option>
+                  <option value="BANK_TRANSFER">Chuyển khoản ngân hàng</option>
+                </select>
+              </div>
+              <div id="cashBox">
+                <div class="mb-3">
+                  <label class="form-label" for="orderCashGiven">Tiền khách đưa (đ)</label>
+                  <input type="text" inputmode="numeric" id="orderCashGiven" class="form-control money-input" th:field="*{cashGiven}" oninput="updateChange()"/>
+                </div>
+                <div class="d-flex justify-content-between mb-2"><span class="text-muted">Tiền thừa trả khách</span><span id="orderChangeText">0đ</span></div>
+              </div>
+              <div class="mb-3">
+                <label class="form-label" for="orderShippingFee">Phí vận chuyển (đ)</label>
+                <input type="text" inputmode="numeric" id="orderShippingFee" class="form-control money-input" th:field="*{shippingFee}" oninput="updateOrderTotals()"/>
+              </div>
+              <div class="mb-3">
+                <label class="form-label" for="orderDiscount">Giảm giá (đ)</label>
+                <input type="text" inputmode="numeric" id="orderDiscount" class="form-control money-input" th:field="*{discountAmount}" oninput="updateOrderTotals()"/>
+              </div>
+              <hr/>
+              <div class="d-flex justify-content-between mb-2"><span class="text-muted">Tạm tính</span><span id="orderSubtotal">0đ</span></div>
+              <div class="d-flex justify-content-between mb-2"><span class="text-muted">Phí vận chuyển</span><span id="orderShippingText">30.000đ</span></div>
+              <div class="d-flex justify-content-between mb-2"><span class="text-muted">Giảm giá</span><span id="orderDiscountText">-0đ</span></div>
+              <hr/>
+              <div class="d-flex justify-content-between fw-bold fs-5"><span>Tổng cộng</span><span class="text-danger" id="orderTotal">0đ</span></div>
+              <div class="admin-sub mt-2">Đơn online tạo ở trạng thái Chờ xác nhận; đơn tại cửa hàng hoàn thành ngay khi lưu. Tồn kho sẽ trừ ngay khi lưu.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="admin-actions-bar">
+        <a th:href="@{/admin/orders}" class="btn btn-light rounded-pill px-4">Hủy</a>
+        <button type="submit" name="action" value="save" class="btn btn-soft">Lưu</button>
+        <button type="submit" name="action" value="save_print" class="btn btn-green">Lưu và in</button>
+      </div>
+    </form>
+  </main>
+</div>
+<div th:replace="~{admin/fragments :: scripts}"></div>
+<select id="variantOptionsTemplate" class="d-none">
+  <option value="">— Chọn sản phẩm —</option>
+  <option th:each="variant : ${variants}" th:value="${variant.id}" th:text="${variant.label + ' (' + #numbers.formatDecimal(variant.price, 0, 'POINT', 0, 'COMMA') + 'đ, còn ' + variant.stock + ')'}"
+          th:data-price="${variant.price}" th:data-stock="${variant.stock}">Biến thể</option>
+</select>
+<script>
+  var orderLineIndex = 0;
+  var currentOrderTotal = 0;
+  var allVariantOptions = [];
+  function formatVnd(n) {
+    return Math.max(0, Math.round(n)).toLocaleString("vi-VN") + "đ";
+  }
+  function buildVariantOptions() {
+    var template = document.getElementById("variantOptionsTemplate");
+    if (!template) return;
+    allVariantOptions = Array.from(template.options).map(function (o) {
+      return { value: o.value, text: o.textContent, price: o.dataset.price || "0", stock: o.dataset.stock || "0" };
+    });
+  }
+  function normalizeText(value) {
+    return (value || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/đ/g, "d").replace(/Đ/g, "D").toLowerCase();
+  }
+  function filterVariantOptions(input) {
+    var row = input.closest(".order-line");
+    var select = row.querySelector(".order-variant");
+    if (!select) return;
+    var query = normalizeText(input.value).trim();
+    var current = select.value;
+    var firstMatch = "";
+    select.innerHTML = "";
+    allVariantOptions.forEach(function (opt) {
+      if (opt.value === "") {
+        var empty = document.createElement("option");
+        empty.value = "";
+        empty.textContent = opt.text;
+        select.appendChild(empty);
+        return;
+      }
+      if (!query || normalizeText(opt.text).indexOf(query) !== -1) {
+        var option = document.createElement("option");
+        option.value = opt.value;
+        option.textContent = opt.text;
+        option.dataset.price = opt.price;
+        option.dataset.stock = opt.stock;
+        select.appendChild(option);
+        if (!firstMatch) {
+          firstMatch = opt.value;
+        }
+      }
+    });
+    if (current && select.querySelector('option[value="' + current + '"]')) {
+      select.value = current;
+    } else if (query && firstMatch) {
+      select.value = firstMatch;
+    } else {
+      select.value = "";
+    }
+    updateOrderTotals();
+  }
+  function toggleChannel() {
+    var channel = document.getElementById("orderChannel");
+    var address = document.getElementById("orderAddress");
+    var ship = document.getElementById("orderShippingFee");
+    if (!channel) {
+      return;
+    }
+    var store = channel.value === "STORE";
+    var recipientBlock = document.getElementById("recipientBlock");
+    var recipientName = document.getElementById("orderRecipientName");
+    var recipientPhone = document.getElementById("orderRecipientPhone");
+    if (recipientBlock) {
+      recipientBlock.style.display = store ? "none" : "";
+    }
+    if (recipientName) recipientName.required = !store;
+    if (recipientPhone) recipientPhone.required = !store;
+    if (address) {
+      address.required = !store;
+      address.placeholder = store ? "Bán tại cửa hàng — không giao hàng" : "Số nhà, đường, phường, quận, thành phố";
+    }
+    if (ship) {
+      if (store) {
+        ship.value = "0";
+        ship.readOnly = true;
+      } else {
+        ship.readOnly = false;
+        if (ship.value.replace(/,/g, "") === "0") {
+          ship.value = "30,000";
+        }
+      }
+    }
+    updateOrderTotals();
+  }
+  function toggleWalkIn() {
+    var check = document.getElementById("walkIn");
+    var select = document.getElementById("orderCustomer");
+    var block = document.getElementById("walkInBlock");
+    var name = document.getElementById("walkInName");
+    if (!check) {
+      return;
+    }
+    var walkIn = check.checked;
+    if (select) {
+      select.disabled = walkIn;
+      select.required = !walkIn;
+      if (walkIn) {
+        select.value = "";
+      }
+    }
+    if (block) {
+      block.style.display = walkIn ? "" : "none";
+    }
+    if (name) {
+      name.required = walkIn;
+    }
+    if (walkIn) {
+      syncWalkInRecipient();
+    }
+  }
+  function syncWalkInRecipient() {
+    var check = document.getElementById("walkIn");
+    if (!check || !check.checked) {
+      return;
+    }
+    var name = document.getElementById("walkInName");
+    var phone = document.getElementById("walkInPhone");
+    var recipientName = document.getElementById("orderRecipientName");
+    var recipientPhone = document.getElementById("orderRecipientPhone");
+    if (name && recipientName && !recipientName.value) {
+      recipientName.value = name.value || "";
+    }
+    if (phone && recipientPhone && !recipientPhone.value) {
+      recipientPhone.value = phone.value || "";
+    }
+  }
+  function fillRecipient(select) {
+    var option = select.options[select.selectedIndex];
+    if (!option || !option.dataset) {
+      return;
+    }
+    var name = document.getElementById("orderRecipientName");
+    var phone = document.getElementById("orderRecipientPhone");
+    if (name && !name.value) {
+      name.value = option.dataset.name || "";
+    }
+    if (phone && !phone.value) {
+      phone.value = option.dataset.phone || "";
+    }
+  }
+  function addOrderLine(preselectId) {
+    var container = document.getElementById("orderLines");
+    var empty = document.getElementById("orderLinesEmpty");
+    if (empty) {
+      empty.remove();
+    }
+    var template = document.getElementById("variantOptionsTemplate");
+    var row = document.createElement("div");
+    row.className = "order-line row g-2 align-items-end mb-2";
+    row.innerHTML = '<div class="col-7"><label class="form-label">Sản phẩm</label>'
+      + '<input type="text" class="form-control form-control-sm mb-1 order-variant-search" placeholder="Tìm theo tên, mã sản phẩm..." oninput="filterVariantOptions(this)"/>'
+      + '<select name="variantIds" class="form-select order-variant" required onchange="updateOrderTotals()">'
+      + template.innerHTML + "</select></div>"
+      + '<div class="col-2"><label class="form-label">Số lượng</label>'
+      + '<input type="number" name="quantities" class="form-control order-qty" min="1" value="1" required oninput="updateOrderTotals()"/></div>'
+      + '<div class="col-2"><label class="form-label">Thành tiền</label>'
+      + '<div class="fw-semibold pt-2 order-line-total">0đ</div></div>'
+      + '<div class="col-1"><button type="button" class="btn admin-action-btn danger" title="Bỏ dòng này" onclick="this.closest(\'.order-line\').remove();updateOrderTotals();"><i class="bi bi-trash"></i></button></div>';
+    container.appendChild(row);
+    if (preselectId) {
+      var select = row.querySelector(".order-variant");
+      if (select) {
+        select.value = String(preselectId);
+      }
+    }
+    updateOrderTotals();
+  }
+  function updateOrderTotals() {
+    var subtotal = 0;
+    document.querySelectorAll(".order-line").forEach(function (row) {
+      var select = row.querySelector(".order-variant");
+      var qty = parseInt(row.querySelector(".order-qty").value || "0", 10);
+      var price = 0;
+      if (select && select.selectedIndex >= 0) {
+        price = parseFloat(select.options[select.selectedIndex].dataset.price || "0");
+      }
+      var lineTotal = price * (isNaN(qty) ? 0 : qty);
+      subtotal += lineTotal;
+      var totalEl = row.querySelector(".order-line-total");
+      if (totalEl) {
+        totalEl.textContent = formatVnd(lineTotal);
+      }
+    });
+    var shipping = parseFloat(document.getElementById("orderShippingFee").value.replace(/,/g, "") || "0");
+    var discount = parseFloat(document.getElementById("orderDiscount").value.replace(/,/g, "") || "0");
+    document.getElementById("orderSubtotal").textContent = formatVnd(subtotal);
+    document.getElementById("orderShippingText").textContent = formatVnd(isNaN(shipping) ? 0 : shipping);
+    document.getElementById("orderDiscountText").textContent = "-" + formatVnd(isNaN(discount) ? 0 : discount);
+    currentOrderTotal = Math.max(0, subtotal + (isNaN(shipping) ? 0 : shipping) - (isNaN(discount) ? 0 : discount));
+    document.getElementById("orderTotal").textContent = formatVnd(currentOrderTotal);
+    updateChange();
+  }
+  function updateChange() {
+    var cashInput = document.getElementById("orderCashGiven");
+    var changeEl = document.getElementById("orderChangeText");
+    if (!cashInput || !changeEl) return;
+    var cash = parseFloat(cashInput.value.replace(/,/g, "") || "0");
+    var change = (isNaN(cash) ? 0 : cash) - currentOrderTotal;
+    changeEl.textContent = formatVnd(Math.max(0, change));
+  }
+  function togglePaymentMethod() {
+    var method = document.getElementById("orderPaymentMethod");
+    var box = document.getElementById("cashBox");
+    if (!method || !box) return;
+    var cash = method.value === "COD";
+    box.style.display = cash ? "" : "none";
+    if (!cash) {
+      var cashInput = document.getElementById("orderCashGiven");
+      if (cashInput) cashInput.value = "";
+    }
+    updateChange();
+  }
+  document.addEventListener("DOMContentLoaded", function () {
+    buildVariantOptions();
+    var container = document.getElementById("orderLines");
+    var preselect = container ? container.dataset.preselect : null;
+    addOrderLine(preselect || null);
+    toggleChannel();
+    togglePaymentMethod();
+    toggleWalkIn();
+    updateOrderTotals();
+  });
+</script>
+</body>
+</html>

@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="vi">
+<head th:replace="~{admin/fragments :: head('Đơn hàng')}"></head>
+<body>
+<div class="admin-shell">
+  <div th:replace="~{admin/fragments :: sidebar('orders')}"></div>
+  <div class="admin-overlay" onclick="toggleSidebar(false)"></div>
+  <main class="admin-main">
+    <div th:replace="~{admin/fragments :: topbar('Danh sách đơn hàng')}"></div>
+    <div th:replace="~{admin/fragments :: toast}"></div>
+
+    <form th:action="@{/admin/orders}" method="get" class="admin-toolbar">
+<div class="admin-search-group">
+        <input type="text" name="q" class="form-control" placeholder="Tìm mã đơn, tên, số điện thoại" th:value="${q}"/>
+        <button type="submit" class="btn btn-soft"><i class="bi bi-search"></i> Tìm kiếm</button>
+      </div>
+      <select name="status" class="form-select" style="width: 220px;" onchange="this.form.submit()">
+        <option value="">Tất cả trạng thái</option>
+        <option value="PENDING" th:selected="${status == 'PENDING'}">Chờ xác nhận</option>
+        <option value="CONFIRMED" th:selected="${status == 'CONFIRMED'}">Đã xác nhận</option>
+        <option value="SHIPPING" th:selected="${status == 'SHIPPING'}">Đang giao</option>
+        <option value="DELIVERED" th:selected="${status == 'DELIVERED'}">Đã giao</option>
+        <option value="COMPLETED" th:selected="${status == 'COMPLETED'}">Hoàn thành</option>
+        <option value="CANCELLED" th:selected="${status == 'CANCELLED'}">Đã hủy</option>
+      </select>
+      <select name="channel" class="form-select" style="width: 200px;" onchange="this.form.submit()">
+        <option value="">Tất cả kênh bán</option>
+        <option value="STORE" th:selected="${channel == 'STORE'}">Bán tại cửa hàng</option>
+        <option value="ONLINE" th:selected="${channel == 'ONLINE'}">Bán online</option>
+      </select>
+      <div class="d-flex align-items-center gap-1">
+        <label class="form-label mb-0 text-nowrap small text-muted" for="fromDate">Từ ngày</label>
+        <input type="date" id="fromDate" name="from" class="form-control" style="width: 180px;" th:value="${from}"/>
+      </div>
+      <div class="d-flex align-items-center gap-1">
+        <label class="form-label mb-0 text-nowrap small text-muted" for="toDate">Đến ngày</label>
+        <input type="date" id="toDate" name="to" class="form-control" style="width: 180px;" th:value="${to}"/>
+      </div>
+      <span class="flex-grow-1"></span>
+      <a th:href="@{/admin/orders}" class="btn btn-light"><i class="bi bi-arrow-counterclockwise"></i> Đặt lại</a>
+      <a th:href="@{/admin/orders/new}" class="btn btn-green"><i class="bi bi-plus-lg"></i> Thêm đơn hàng</a>
+    </form>
+
+
+    <div class="bulk-bar" id="bulkBar" data-bulk-url="/admin/orders/bulk-status" hidden>
+      <span>Đã chọn <strong id="bulkCount">0</strong> mục</span>
+      <select id="bulkStatusSelect" class="form-select form-select-sm" style="width: 180px;">
+        <option value="CONFIRMED">Đã xác nhận</option>
+        <option value="SHIPPING">Đang giao</option>
+        <option value="DELIVERED">Đã giao</option>
+        <option value="COMPLETED">Hoàn thành</option>
+        <option value="CANCELLED">Đã hủy</option>
+      </select>
+      <button type="button" class="btn btn-sm btn-green rounded-pill" onclick="submitBulk('bulk-status')">Áp dụng</button>
+    </div>
+
+    <form id="bulkForm" method="post" class="d-none">
+      <input type="hidden" th:if="${_csrf != null}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+      <input type="hidden" name="bulkAction" id="bulkActionInput"/>
+      <input type="hidden" name="newStatus" id="bulkStatusInput"/>
+    </form>
+
+    <div class="admin-card">
+      <div class="table-responsive">
+        <table class="table admin-table">
+          <thead>
+            <tr><th style="width: 40px;"><input type="checkbox" class="form-check-input select-all" title="Chọn tất cả trên trang"/></th>
+            <th>Mã đơn</th><th>Khách hàng</th><th>Ngày đặt</th><th>Kênh bán</th><th class="text-end">Tổng tiền</th><th>Trạng thái</th><th class="text-end" style="width: 1%; white-space: nowrap;">Hành động</th></tr>
+          </thead>
+          <tbody>
+            <tr th:each="item : ${orders}">
+              <td><input type="checkbox" class="form-check-input row-check" th:value="${item.id}"/></td>
+              <td class="admin-name" th:text="${item.orderCode}">DH001</td>
+              <td>
+                <div class="admin-name" th:text="${item.customerName}">Khách hàng</div>
+                <div class="admin-sub" th:text="${item.recipientPhone}">0900000000</div>
+              </td>
+              <td th:text="${#temporals.format(item.orderDate, 'dd/MM/yyyy HH:mm')}">01/01/2026</td>
+              <td th:text="${item.channelLabel()}">Bán online</td>
+              <td class="text-end fw-semibold" th:text="${item.totalText()}">0đ</td>
+              <td>
+                <span class="badge-status" th:classappend="' st-' + ${item.status}" th:text="${item.statusLabel}">Chờ xác nhận</span>
+              </td>
+              <td>
+                <div class="admin-row-actions">
+                  <a th:href="@{|/admin/orders/${item.id}|}" class="admin-action-btn" title="Xem chi tiết"><i class="bi bi-eye"></i></a>
+                </div>
+              </td>
+            </tr>
+            <tr th:if="${orders.totalElements == 0}">
+              <td colspan="8"><div class="empty-state"><i class="bi bi-receipt"></i>Không tìm thấy đơn hàng nào</div></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div th:replace="~{admin/fragments :: pager(${orders}, ${baseUrl}, ${pageQuery})}"></div>
+  </main>
+</div>
+<div th:replace="~{admin/fragments :: scripts}"></div>
+</body>
+</html>

@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="vi">
+<head th:replace="~{admin/fragments :: head('Đánh giá')}"></head>
+<body>
+<div class="admin-shell">
+  <div th:replace="~{admin/fragments :: sidebar('reviews')}"></div>
+  <div class="admin-overlay" onclick="toggleSidebar(false)"></div>
+  <main class="admin-main">
+    <div th:replace="~{admin/fragments :: topbar('Danh sách đánh giá')}"></div>
+    <div th:replace="~{admin/fragments :: toast}"></div>
+
+    <form th:action="@{/admin/reviews}" method="get" class="admin-toolbar">
+<div class="admin-search-group">
+        <input type="text" name="q" class="form-control" placeholder="Tìm sản phẩm, nội dung đánh giá" th:value="${q}"/>
+        <button type="submit" class="btn btn-soft"><i class="bi bi-search"></i> Tìm kiếm</button>
+      </div>
+      <select name="rating" class="form-select" style="width: 200px;" onchange="this.form.submit()">
+        <option value="">Tất cả số sao</option>
+        <option th:each="star : ${#numbers.sequence(5, 1, -1)}" th:value="${star}" th:text="${star} + ' sao'" th:selected="${rating == star}">5 sao</option>
+      </select>
+      <select name="visible" class="form-select" style="width: 210px;" onchange="this.form.submit()">
+        <option value="">Tất cả trạng thái</option>
+        <option value="true" th:selected="${visible == true}">Đang hiển thị</option>
+        <option value="false" th:selected="${visible == false}">Đã ẩn</option>
+      </select>
+      <span class="flex-grow-1"></span>
+      <a th:href="@{/admin/reviews}" class="btn btn-light"><i class="bi bi-arrow-counterclockwise"></i> Đặt lại</a>
+    </form>
+
+
+    <div class="bulk-bar" id="bulkBar" data-bulk-url="/admin/reviews/bulk" hidden>
+      <span>Đã chọn <strong id="bulkCount">0</strong> mục</span>
+      <button type="button" class="btn btn-sm btn-danger rounded-pill" onclick="confirmBulkDelete()">Xóa đã chọn</button>
+      <button type="button" class="btn btn-sm btn-soft rounded-pill" onclick="submitBulk('hide')">Ẩn</button>
+      <button type="button" class="btn btn-sm btn-soft rounded-pill" onclick="submitBulk('show')">Hiện</button>
+    </div>
+
+    <form id="bulkForm" method="post" class="d-none">
+      <input type="hidden" th:if="${_csrf != null}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+      <input type="hidden" name="bulkAction" id="bulkActionInput"/>
+      <input type="hidden" name="newStatus" id="bulkStatusInput"/>
+    </form>
+
+    <div class="admin-card">
+      <div class="table-responsive">
+        <table class="table admin-table">
+          <thead>
+            <tr><th style="width: 40px;"><input type="checkbox" class="form-check-input select-all" title="Chọn tất cả trên trang"/></th>
+            <th>Sản phẩm</th><th>Khách hàng</th><th>Đánh giá</th><th>Nhận xét</th><th>Ngày</th><th>Trạng thái</th><th class="text-end">Hành động</th></tr>
+          </thead>
+          <tbody>
+            <tr th:each="item : ${reviews}">
+              <td><input type="checkbox" class="form-check-input row-check" th:value="${item.id}"/></td>
+              <td>
+                <div class="d-flex align-items-center gap-2">
+                  <img th:src="${item.productImage}" th:alt="${item.productName}" class="admin-thumb-sm" onerror="this.onerror=null;this.src='/images/placeholder.svg'"/ loading="lazy"/>
+                  <span class="admin-name" th:text="${item.productName}">Sản phẩm</span>
+                </div>
+              </td>
+              <td>
+                <div class="admin-name" th:text="${item.customerName}">Khách hàng</div>
+                <div class="admin-sub" th:if="${item.anonymous}">Ẩn danh</div>
+              </td>
+              <td><span class="stars" th:text="${#strings.repeat('★', item.rating)} + ${#strings.repeat('☆', 5 - item.rating)}">★★★★★</span></td>
+              <td th:text="${item.comment}">Nhận xét</td>
+              <td th:text="${#temporals.format(item.createdAt, 'dd/MM/yyyy')}">01/01/2026</td>
+              <td>
+                <span class="badge-status" th:classappend="${item.visible} ? ' st-ACTIVE' : ' st-INACTIVE'"
+                      th:text="${item.visible} ? 'Đang hiển thị' : 'Đã ẩn'">Đang hiển thị</span>
+              </td>
+              <td>
+                <div class="admin-row-actions">
+                  <form th:action="@{|/admin/reviews/${item.id}/toggle|}" method="post" class="m-0">
+                    <input type="hidden" th:if="${_csrf != null}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                    <button type="submit" class="admin-action-btn" th:title="${item.visible} ? 'Ẩn đánh giá' : 'Hiện đánh giá'">
+                      <i th:class="${item.visible} ? 'bi bi-eye-slash' : 'bi bi-eye'"></i>
+                    </button>
+                  </form>
+                  <button type="button" class="admin-action-btn danger" title="Xóa"
+                          th:data-url="|/admin/reviews/${item.id}/delete|"
+                          data-message="Xóa đánh giá này?"
+                          onclick="openConfirm(this.dataset.url, this.dataset.message)">
+                    <i class="bi bi-trash"></i>
+                  </button>
+                </div>
+              </td>
+            </tr>
+            <tr th:if="${reviews.totalElements == 0}">
+              <td colspan="8"><div class="empty-state"><i class="bi bi-star"></i>Chưa có đánh giá nào</div></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div th:replace="~{admin/fragments :: pager(${reviews}, ${baseUrl}, ${pageQuery})}"></div>
+  </main>
+</div>
+<div th:replace="~{admin/fragments :: confirmModal}"></div>
+<div th:replace="~{admin/fragments :: scripts}"></div>
+</body>
+</html>

@@ -2,7 +2,6 @@ package com.luminous.dto;
 
 import com.luminous.model.Product;
 import com.luminous.model.ProductVariant;
-
 import java.math.BigDecimal;
 import java.text.NumberFormat;
 import java.util.List;

@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="vi">
+<head th:replace="~{admin/fragments :: head('Chi tiết đơn hàng')}"></head>
+<body>
+<div class="admin-shell">
+  <div th:replace="~{admin/fragments :: sidebar('orders')}"></div>
+  <div class="admin-overlay" onclick="toggleSidebar(false)"></div>
+  <main class="admin-main">
+    <div th:replace="~{admin/fragments :: topbar('Đơn hàng ' + ${order.orderCode})}"></div>
+    <div th:replace="~{admin/fragments :: toast}"></div>
+
+    <div class="admin-page-actions no-print">
+      <a th:href="@{/admin/orders}" class="admin-back"><i class="bi bi-arrow-left"></i> Quay lại danh sách đơn hàng</a>
+      <button type="button" class="btn btn-soft" onclick="window.print()"><i class="bi bi-printer"></i> In đơn hàng</button>
+      <form th:action="@{/admin/orders/{id}/save-bill(id=${order.id})}" method="post" class="d-inline">
+        <input type="hidden" th:if="${_csrf != null}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+        <button type="submit" class="btn btn-soft"><i class="bi bi-save"></i> Lưu hóa đơn</button>
+      </form>
+    </div>
+
+    <div class="print-receipt">
+      <div class="receipt-center">
+        <div class="receipt-shop">LUMINOUS</div>
+        <div>Địa chỉ: 12 Nguyễn Văn Bảo, Gò Vấp, TP.HCM</div>
+        <div>SĐT: 0972606925</div>
+        <div class="receipt-title">HÓA ĐƠN BÁN HÀNG</div>
+      </div>
+      <div class="receipt-row"><span>Ngày: <span th:text="${#temporals.format(order.orderDate, 'dd/MM/yyyy')}">06/11/2026</span></span><span>Số phiếu: <span th:text="${order.orderCode}">DH000001</span></span></div>
+      <div class="receipt-row"><span>Thu ngân: <span th:text="${createdByName != null ? createdByName : '—'}">Admin</span></span><span>In lúc: <span th:text="${#temporals.format(printDate, 'HH:mm')}">22:22</span></span></div>
+      <div class="receipt-sep"></div>
+      <table class="receipt-table">
+        <thead><tr><th>Mặt hàng</th><th class="text-end">SL</th><th class="text-end">Đơn giá</th><th class="text-end">T.tiền</th></tr></thead>
+        <tbody>
+          <tr th:each="line : ${lines}">
+            <td><div th:text="${line.productName}">Sản phẩm</div><div class="receipt-sub" th:text="${line.variantLabel}">500ml</div></td>
+            <td class="text-end" th:text="${line.quantity}">1</td>
+            <td class="text-end" th:text="${line.unitPriceText()}">0đ</td>
+            <td class="text-end" th:text="${line.totalPriceText()}">0đ</td>
+          </tr>
+        </tbody>
+      </table>
+      <div class="receipt-sep"></div>
+      <div class="receipt-row"><span>Tiền hàng</span><span th:text="${#numbers.formatDecimal(order.subtotal, 0, 'POINT', 0, 'COMMA')} + 'đ'">0đ</span></div>
+      <div class="receipt-row"><span>Chiết khấu</span><span th:text="'-' + ${#numbers.formatDecimal(order.discountAmount, 0, 'POINT', 0, 'COMMA')} + 'đ'">-0đ</span></div>
+      <div class="receipt-row"><span>Phí vận chuyển</span><span th:text="${#numbers.formatDecimal(order.shippingFee, 0, 'POINT', 0, 'COMMA')} + 'đ'">0đ</span></div>
+      <div class="receipt-row receipt-total"><span>Tổng cộng</span><span th:text="${#numbers.formatDecimal(order.totalAmount, 0, 'POINT', 0, 'COMMA')} + 'đ'">0đ</span></div>
+      <div class="receipt-row" th:if="${payment != null and payment.cashGiven != null}"><span>Khách đưa</span><span th:text="${#numbers.formatDecimal(payment.cashGiven, 0, 'POINT', 0, 'COMMA')} + 'đ'">0đ</span></div>
+      <div class="receipt-row" th:if="${payment != null and payment.changeAmount != null}"><span>Trả lại</span><span th:text="${#numbers.formatDecimal(payment.changeAmount, 0, 'POINT', 0, 'COMMA')} + 'đ'">0đ</span></div>
+      <div class="receipt-row"><span>Thanh toán</span><span th:text="${paymentMethod != null ? paymentMethod : '—'}">COD</span></div>
+      <div class="receipt-sep"></div>
+      <div class="receipt-center">Xin cảm ơn Quý khách!</div>
+    </div>
+
+    <div class="admin-card mb-3 no-print">
+      <div class="admin-card-body">
+        <div th:if="${order.cancelled}" class="alert alert-danger rounded-3">
+          <span class="fw-semibold">Đơn hàng này đã bị hủy.</span>
+          <span th:if="${order.cancelReason != null and !order.cancelReason.isBlank()}" th:text="'Lý do: ' + ${order.cancelReason}"></span>
+          <span th:unless="${order.cancelReason != null and !order.cancelReason.isBlank()}">Chưa ghi lý do hủy.</span>
+          <span th:if="${order.cancelledAt != null}" th:text="'Thời gian hủy: ' + ${#temporals.format(order.cancelledAt, 'dd/MM/yyyy HH:mm')}"></span>
+        </div>
+        <div th:if="${!order.cancelled and !order.storeSale}" class="order-steps">
+          <div th:each="step : ${stepItems}" class="order-step"
+               th:classappend="${step.state == 'done'} ? ' done' : (${step.state == 'current'} ? ' current' : '')">
+            <div th:text="${step.label}">Chờ xác nhận</div>
+            <div class="step-time" th:if="${step.time != null}">
+              <span th:text="${#temporals.format(step.time, 'dd/MM/yyyy')}">05/05/2026</span><br/>
+              <span th:text="${#temporals.format(step.time, 'HH:mm')}">20:09</span>
+            </div>
+          </div>
+        </div>
+        <div th:if="${!order.cancelled and order.storeSale}" class="mb-2">
+          <span class="text-muted">Trạng thái: </span><span class="fw-semibold" th:text="${statusLabel}">Chờ xác nhận</span>
+        </div>
+        <div class="row g-3 mt-3">
+          <div class="col-md-6">
+            <div class="admin-sub">Người đặt</div>
+            <div class="admin-name" th:text="${order.user != null ? order.user.fullName : order.recipientName}">Khách hàng</div>
+            <div class="admin-sub" th:if="${order.user != null}" th:text="${order.user.email}">email</div>
+            <div class="admin-sub" th:if="${order.user == null}">Khách vãng lai</div>
+            <div class="admin-sub" th:text="${order.user != null ? order.user.phone : order.recipientPhone}">0900000000</div>
+          </div>
+          <div class="col-md-6" th:if="${!order.storeSale}">
+            <div class="admin-sub">Người nhận</div>
+            <div class="admin-name" th:text="${order.recipientName}">Người nhận</div>
+            <div class="admin-sub" th:text="${order.recipientPhone}">0900000000</div>
+            <div class="admin-sub" th:text="${order.shippingAddress}">Địa chỉ</div>
+          </div>
+          <div class="col-md-4">
+            <div class="admin-sub">Ngày đặt</div>
+            <div class="admin-name" th:text="${#temporals.format(order.orderDate, 'dd/MM/yyyy HH:mm')}">01/01/2026</div>
+          </div>
+          <div class="col-md-4">
+            <div class="admin-sub">Kênh bán</div>
+            <div class="admin-name" th:text="${order.storeSale} ? 'Bán tại cửa hàng' : 'Bán online'">Bán online</div>
+          </div>
+          <div class="col-md-4">
+            <div class="admin-sub">Nhân viên tạo</div>
+            <div class="admin-name" th:text="${createdByName != null ? createdByName : '—'}">Admin</div>
+          </div>
+        </div>
+        <div th:if="${order.note}" class="alert alert-light border rounded-3 mt-3 mb-0">
+          <span class="fw-semibold">Ghi chú: </span><span th:text="${order.note}"></span>
+        </div>
+      </div>
+    </div>
+
+    <div class="row g-3 no-print">
+      <div class="col-lg-8">
+        <div class="admin-card">
+          <div class="admin-card-head"><h2 class="admin-card-title">Sản phẩm trong đơn</h2></div>
+          <div class="table-responsive">
+            <table class="table admin-table">
+              <thead><tr><th>Sản phẩm</th><th class="text-end">Đơn giá</th><th class="text-end">Số lượng</th><th class="text-end">Thành tiền</th></tr></thead>
+              <tbody>
+                <tr th:each="line : ${lines}">
+                  <td>
+                    <div class="d-flex align-items-center gap-2">
+                      <img th:src="${line.imageUrl}" th:alt="${line.productName}" class="admin-thumb-sm" onerror="this.onerror=null;this.src='/images/placeholder.svg'"/ loading="lazy"/>
+                      <div>
+                        <div class="admin-name" th:text="${line.productName}">Sản phẩm</div>
+                        <div class="admin-sub" th:text="${line.variantLabel}">500ml</div>
+                      </div>
+                    </div>
+                  </td>
+                  <td class="text-end" th:text="${line.unitPriceText()}">0đ</td>
+                  <td class="text-end" th:text="${line.quantity}">1</td>
+                  <td class="text-end fw-semibold" th:text="${line.totalPriceText()}">0đ</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+      <div class="col-lg-4">
+        <div class="admin-card mb-3">
+          <div class="admin-card-head"><h2 class="admin-card-title">Thanh toán</h2></div>
+          <div class="admin-card-body">
+            <div class="d-flex justify-content-between mb-2"><span class="text-muted">Tạm tính</span><span th:text="${#numbers.formatDecimal(order.subtotal, 0, 'POINT', 0, 'COMMA')} + 'đ'">0đ</span></div>
+            <div class="d-flex justify-content-between mb-2"><span class="text-muted">Chiết khấu</span><span th:text="'-' + ${#numbers.formatDecimal(order.discountAmount, 0, 'POINT', 0, 'COMMA')} + 'đ'">0đ</span></div>
+            <div class="d-flex justify-content-between mb-2"><span class="text-muted">Phí vận chuyển</span><span th:text="${#numbers.formatDecimal(order.shippingFee, 0, 'POINT', 0, 'COMMA')} + 'đ'">0đ</span></div>
+            <div class="d-flex justify-content-between mb-2"><span class="text-muted">Điểm đã dùng</span><span th:text="${order.usedPoints} + ' điểm'">0 điểm</span></div>
+            <hr/>
+            <div class="d-flex justify-content-between fw-bold fs-5"><span>Tổng cộng</span><span class="text-danger" th:text="${#numbers.formatDecimal(order.totalAmount, 0, 'POINT', 0, 'COMMA')} + 'đ'">0đ</span></div>
+            <div class="d-flex justify-content-between mb-2" th:if="${payment != null and payment.cashGiven != null}"><span class="text-muted">Tiền khách đưa</span><span th:text="${#numbers.formatDecimal(payment.cashGiven, 0, 'POINT', 0, 'COMMA')} + 'đ'">0đ</span></div>
+            <div class="d-flex justify-content-between mb-2" th:if="${payment != null and payment.changeAmount != null}"><span class="text-muted">Tiền thừa</span><span th:text="${#numbers.formatDecimal(payment.changeAmount, 0, 'POINT', 0, 'COMMA')} + 'đ'">0đ</span></div>
+            <hr/>
+            <div class="d-flex justify-content-between"><span class="text-muted">Phương thức thanh toán</span><span th:text="${paymentMethod != null ? paymentMethod : '—'}">Thanh toán khi nhận hàng (COD)</span></div>
+          </div>
+        </div>
+        <div class="admin-card no-print" th:if="${not #lists.isEmpty(nextStatusOptions)}">
+          <div class="admin-card-head"><h2 class="admin-card-title">Cập nhật trạng thái</h2></div>
+          <div class="admin-card-body">
+            <form th:action="@{|/admin/orders/${order.id}/status|}" method="post" onsubmit="return validateCancelReason()">
+              <input type="hidden" th:if="${_csrf != null}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+              <label class="form-label" for="newStatus">Trạng thái mới</label>
+              <select id="newStatus" name="newStatus" class="form-select mb-3" onchange="toggleCancelReason()">
+                <option th:each="opt : ${nextStatusOptions}" th:value="${opt.value}" th:text="${opt.label}">Đã xác nhận</option>
+              </select>
+              <div id="cancelReasonBox" class="mb-3 d-none">
+                <label class="form-label" for="cancelReason">Lý do hủy đơn <span class="text-danger">*</span></label>
+                <textarea id="cancelReason" name="cancelReason" class="form-control" rows="2" maxlength="500" placeholder="Ví dụ: Khách đổi ý, hết hàng, không liên lạc được..."></textarea>
+              </div>
+              <button type="submit" class="btn btn-green w-100">Cập nhật</button>
+              <div class="admin-sub mt-2">Chuyển sang Hoàn thành sẽ tự cộng điểm cho khách (1 điểm / 1.000đ). Đơn đã hủy có thể mở lại về Chờ xác nhận.</div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+<div th:replace="~{admin/fragments :: scripts}"></div>
+<script th:if="${print == '1'}">window.addEventListener('load', function () { window.print(); });</script>
+</body>
+</html>

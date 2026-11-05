@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="vi">
+<head th:replace="~{admin/fragments :: head('Cài đặt')}"></head>
+<body>
+<div class="admin-shell">
+  <div th:replace="~{admin/fragments :: sidebar('settings')}"></div>
+  <div class="admin-overlay" onclick="toggleSidebar(false)"></div>
+  <main class="admin-main">
+    <div th:replace="~{admin/fragments :: topbar('Cài đặt tài khoản')}"></div>
+    <div th:replace="~{admin/fragments :: toast}"></div>
+
+    <div th:if="${formError}" class="alert alert-danger rounded-3" th:text="${formError}"></div>
+
+    <div class="row g-3">
+      <div class="col-lg-6">
+        <div class="form-card">
+          <h2><span class="step-num">1</span> Thông tin tài khoản</h2>
+          <form th:action="@{/admin/settings/profile}" th:object="${profileForm}" method="post">
+            <input type="hidden" th:if="${_csrf != null}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+            <div class="mb-3">
+              <label class="form-label" for="profileName">Họ tên</label>
+              <input type="text" id="profileName" class="form-control" th:field="*{fullName}" required maxlength="100"/>
+              <div class="text-danger small mt-1" th:if="${#fields.hasErrors('fullName')}" th:errors="*{fullName}"></div>
+            </div>
+            <div class="mb-3">
+              <label class="form-label" for="profilePhone">Số điện thoại</label>
+              <input type="text" id="profilePhone" class="form-control" th:field="*{phone}" maxlength="15"/>
+              <div class="text-danger small mt-1" th:if="${#fields.hasErrors('phone')}" th:errors="*{phone}"></div>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Email đăng nhập</label>
+              <input type="text" class="form-control" th:value="${currentUser.user.email}" disabled/>
+            </div>
+            <button type="submit" class="btn btn-green">Lưu thay đổi</button>
+          </form>
+        </div>
+      </div>
+      <div class="col-lg-6">
+        <div class="form-card">
+          <h2><span class="step-num">2</span> Đổi mật khẩu</h2>
+          <form th:action="@{/admin/settings/password}" th:object="${passwordForm}" method="post">
+            <input type="hidden" th:if="${_csrf != null}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+            <div class="mb-3">
+              <label class="form-label" for="currentPassword">Mật khẩu hiện tại</label>
+              <input type="password" id="currentPassword" class="form-control" th:field="*{currentPassword}" required autocomplete="current-password"/>
+              <div class="text-danger small mt-1" th:if="${#fields.hasErrors('currentPassword')}" th:errors="*{currentPassword}"></div>
+            </div>
+            <div class="mb-3">
+              <label class="form-label" for="newPassword">Mật khẩu mới</label>
+              <input type="password" id="newPassword" class="form-control" th:field="*{newPassword}" required autocomplete="new-password"/>
+              <div class="text-danger small mt-1" th:if="${#fields.hasErrors('newPassword')}" th:errors="*{newPassword}"></div>
+            </div>
+            <div class="mb-3">
+              <label class="form-label" for="confirmPassword">Nhập lại mật khẩu mới</label>
+              <input type="password" id="confirmPassword" class="form-control" th:field="*{confirmPassword}" required autocomplete="new-password"/>
+              <div class="text-danger small mt-1" th:if="${#fields.hasErrors('confirmPassword')}" th:errors="*{confirmPassword}"></div>
+            </div>
+            <button type="submit" class="btn btn-green">Đổi mật khẩu</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+<div th:replace="~{admin/fragments :: scripts}"></div>
+</body>
+</html>

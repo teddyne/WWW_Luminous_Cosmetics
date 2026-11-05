@@ -1,8 +1,8 @@
 package com.luminous.config;
 
 import com.luminous.model.User;
-import com.luminous.repository.SkinRoutineRepository;
 import com.luminous.repository.UserRepository;
+import com.luminous.repository.skinquiz.SkinRoutineRepository;
 import com.luminous.security.CustomUserDetails;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -17,7 +17,6 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.springframework.security.web.savedrequest.HttpSessionRequestCache;
 import org.springframework.security.web.savedrequest.SavedRequest;
-
 import java.io.IOException;
 
 /**
