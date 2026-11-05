@@ -5,7 +5,9 @@ import com.luminous.model.ProductVariant;
 
 import java.math.BigDecimal;
 import java.text.NumberFormat;
+import java.util.List;
 import java.util.Locale;
+import java.util.Objects;
 
 public class ProductCard {
     private final Product product;
@@ -84,6 +86,29 @@ public class ProductCard {
     /** Dinh dang tien Viet: 245.000đ (khong de logic dinh dang trong template). */
     public String displayPriceText() {
         return format(displayPrice());
+    }
+
+    /**
+     * Khoang gia hien thi tren trang San pham, tinh theo gia hien thi
+     * (gia sale neu co) cua cac variant dang ban: "122.000đ - 399.000đ".
+     * Chi co 1 muc gia thi hien 1 gia nhu binh thuong.
+     */
+    public String priceRangeText() {
+        List<BigDecimal> prices = product.getVariants().stream()
+                .filter(v -> Boolean.TRUE.equals(v.getIsActive()))
+                .map(ProductVariant::displayPrice)
+                .filter(Objects::nonNull)
+                .sorted()
+                .toList();
+        if (prices.isEmpty()) {
+            return displayPriceText();
+        }
+        BigDecimal min = prices.get(0);
+        BigDecimal max = prices.get(prices.size() - 1);
+        if (min.compareTo(max) == 0) {
+            return format(min);
+        }
+        return format(min) + " - " + format(max);
     }
 
     public String priceText() {
