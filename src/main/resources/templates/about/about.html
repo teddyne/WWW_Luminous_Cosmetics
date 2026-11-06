@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Giới thiệu | LUMINOUS Cosmetics</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+          rel="stylesheet">
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"
+          rel="stylesheet">
+
+    <link rel="stylesheet" th:href="@{/css/about.css}">
+</head>
+
+<body>
+
+<header th:fragment="header" class="site-header">
+    <div class="container">
+        <div class="header-row">
+            <a th:href="@{/menu}" class="header-icon menu-link page-transition-link text-decoration-none" title="Menu" aria-label="Mở menu">
+                <i class="bi bi-list"></i>
+            </a>
+            <!-- Logo LA HINH ANH (khong phai chu text don thuan) -->
+            <a th:href="@{/}" class="header-logo text-decoration-none" aria-label="LUMINOUS - Trang chủ">
+                <img th:src="@{/images/logo.png}" alt="LUMINOUS" class="logo-img"/>
+            </a>
+            <div class="d-flex align-items-center gap-2">
+                <!-- Tai khoan: Guest -> Dang nhap; da dang nhap -> dropdown theo role -->
+                <div th:if="${currentUser == null}">
+                    <a th:href="@{/login}" class="header-icon text-decoration-none" title="Tài khoản" aria-label="Tài khoản"><i class="bi bi-person"></i></a>
+                </div>
+                <div th:if="${currentUser != null}" class="dropdown">
+                    <button class="btn header-icon dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Tài khoản">
+                        <i class="bi bi-person-check"></i>
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end">
+                        <li><span class="dropdown-item-text fw-bold" th:text="${currentUser.fullName()}">Tên người dùng</span></li>
+                        <li><span class="dropdown-item-text text-muted small">
+              <span th:text="${currentUser.roleName() == 'ROLE_ADMIN' ? 'Quản trị viên' : 'Khách hàng'}">Khách hàng</span>
+              <span th:if="${currentUser.user.pointBalance != null}" th:text="' • ' + ${currentUser.user.pointBalance} + ' điểm'"></span>
+            </span></li>
+                        <li><hr class="dropdown-divider"/></li>
+                        <li th:if="${currentUser.admin}"><a class="dropdown-item" th:href="@{/admin}">Trang quản trị</a></li>
+                        <li><a class="dropdown-item" th:href="@{/cart}">Giỏ hàng</a></li>
+                        <li>
+                            <form th:action="@{/logout}" method="post" class="m-0">
+                                <input type="hidden" th:if="${_csrf != null}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                                <button class="dropdown-item" type="submit">Đăng xuất</button>
+                            </form>
+                        </li>
+                    </ul>
+                </div>
+                <a th:href="@{/cart}" class="header-icon text-decoration-none position-relative" title="Giỏ hàng" aria-label="Giỏ hàng">
+                    <i class="bi bi-cart3"></i>
+                    <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-success">0</span>
+                </a>
+            </div>
+        </div>
+    </div>
+
+</header>
+
+<section class="about-hero">
+    <div class="container hero-inner">
+
+        <div class="hero-text">
+
+            <span class="eyebrow">WELCOME TO LUMINOUS</span>
+
+            <h1>
+                Vẻ đẹp tự nhiên<br>
+                <span>bắt đầu từ sự yêu thương.</span>
+            </h1>
+
+            <p>
+                LUMINOUS tin rằng mỗi người đều sở hữu vẻ đẹp riêng.
+                Chúng tôi mong muốn đồng hành cùng bạn trên hành trình
+                chăm sóc và trân trọng làn da mỗi ngày.
+            </p>
+
+            <a href="#our-story" class="primary-button">
+                Khám phá câu chuyện
+                <i class="bi bi-arrow-down"></i>
+            </a>
+
+        </div>
+
+        <div class="hero-label">
+            <span>BEAUTY</span>
+            <strong>IN EVERY<br>DETAIL</strong>
+            <i class="bi bi-flower2"></i>
+        </div>
+
+    </div>
+</section>
+
+<section class="story-section section-space" id="our-story">
+    <div class="container">
+
+        <div class="row align-items-center g-5">
+
+            <div class="col-lg-6">
+
+                <div class="story-placeholder">
+
+                    <i class="bi bi-flower1"></i>
+
+                    <span>LUMINOUS</span>
+
+                    <small>BEAUTY & COSMETICS</small>
+
+                    <div class="story-decoration">
+                        <i class="bi bi-flower2"></i>
+                    </div>
+
+                </div>
+
+            </div>
+
+            <div class="col-lg-6">
+
+                <div class="story-content">
+
+                    <span class="eyebrow">ABOUT LUMINOUS</span>
+
+                    <h2>
+                        Câu chuyện<br>
+                        <span>của chúng tôi</span>
+                    </h2>
+
+                    <p>
+                        LUMINOUS được xây dựng với mong muốn mang đến
+                        một không gian mua sắm mỹ phẩm thân thiện,
+                        nơi khách hàng có thể tìm thấy những sản phẩm
+                        phù hợp với nhu cầu chăm sóc sắc đẹp của mình.
+                    </p>
+
+                    <p>
+                        Chúng tôi hiểu rằng mỗi làn da đều có đặc điểm
+                        riêng. Vì vậy, việc lựa chọn mỹ phẩm không chỉ
+                        đơn giản là tìm kiếm một sản phẩm được yêu thích,
+                        mà còn cần sự tìm hiểu và cân nhắc kỹ lưỡng.
+                    </p>
+
+                    <p>
+                        Với định hướng lấy khách hàng làm trung tâm,
+                        LUMINOUS luôn hướng đến việc cung cấp thông tin
+                        sản phẩm rõ ràng, hỗ trợ tư vấn tận tình và
+                        xây dựng trải nghiệm mua sắm tích cực.
+                    </p>
+
+                    <div class="story-signature">
+                        <i class="bi bi-flower1"></i>
+                        <span>Shine in your own way.</span>
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+</section>
+
+<section class="brand-message">
+    <div class="container text-center">
+
+        <span class="eyebrow">OUR PHILOSOPHY</span>
+
+        <h2>
+            “Vẻ đẹp không nằm ở sự hoàn hảo,<br>
+            mà nằm ở cách bạn yêu thương chính mình.”
+        </h2>
+
+        <p>
+            LUMINOUS – Đồng hành cùng bạn trong từng bước chăm sóc bản thân.
+        </p>
+
+        <i class="bi bi-flower2"></i>
+
+    </div>
+</section>
+
+<section class="mission-section section-space">
+    <div class="container">
+
+        <div class="section-title text-center">
+
+            <span class="eyebrow">OUR DIRECTION</span>
+
+            <h2>Tầm nhìn & Sứ mệnh</h2>
+
+            <p>
+                Những định hướng tạo nên giá trị và bản sắc của LUMINOUS.
+            </p>
+
+        </div>
+
+        <div class="row g-4 mt-3">
+
+            <div class="col-md-6">
+
+                <div class="direction-card">
+
+                    <div class="direction-icon">
+                        <i class="bi bi-eye"></i>
+                    </div>
+
+                    <span>01 / VISION</span>
+
+                    <h3>Tầm nhìn</h3>
+
+                    <p>
+                        Trở thành địa chỉ mua sắm mỹ phẩm đáng tin cậy,
+                        nơi khách hàng có thể dễ dàng tiếp cận các sản phẩm
+                        chăm sóc sắc đẹp phù hợp với nhu cầu cá nhân.
+                    </p>
+
+                    <div class="direction-decoration">
+                        <i class="bi bi-flower1"></i>
+                    </div>
+
+                </div>
+
+            </div>
+
+            <div class="col-md-6">
+
+                <div class="direction-card mission-card">
+
+                    <div class="direction-icon">
+                        <i class="bi bi-heart"></i>
+                    </div>
+
+                    <span>02 / MISSION</span>
+
+                    <h3>Sứ mệnh</h3>
+
+                    <p>
+                        Mang đến những lựa chọn mỹ phẩm phù hợp,
+                        thông tin minh bạch và dịch vụ tư vấn tận tâm,
+                        giúp khách hàng tự tin hơn trong hành trình
+                        chăm sóc và hoàn thiện bản thân.
+                    </p>
+
+                    <div class="direction-decoration">
+                        <i class="bi bi-flower2"></i>
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+</section>
+
+<section class="values-section section-space">
+    <div class="container">
+
+        <div class="section-title text-center">
+
+            <span class="eyebrow">OUR CORE VALUES</span>
+
+            <h2>Giá trị cốt lõi</h2>
+
+            <p>
+                Bốn giá trị định hướng mọi hoạt động của LUMINOUS.
+            </p>
+
+        </div>
+
+        <div class="row g-4 mt-3">
+
+            <div class="col-sm-6 col-lg-3">
+
+                <div class="value-card">
+
+                    <div class="value-icon">
+                        <i class="bi bi-patch-check"></i>
+                    </div>
+
+                    <h3>Chất lượng</h3>
+
+                    <p>
+                        Chú trọng chất lượng sản phẩm và cung cấp
+                        thông tin rõ ràng để khách hàng an tâm lựa chọn.
+                    </p>
+
+                </div>
+
+            </div>
+
+            <div class="col-sm-6 col-lg-3">
+
+                <div class="value-card">
+
+                    <div class="value-icon">
+                        <i class="bi bi-shield-check"></i>
+                    </div>
+
+                    <h3>Uy tín</h3>
+
+                    <p>
+                        Đặt sự trung thực và trách nhiệm lên hàng đầu
+                        trong quá trình phục vụ khách hàng.
+                    </p>
+
+                </div>
+
+            </div>
+
+            <div class="col-sm-6 col-lg-3">
+
+                <div class="value-card">
+
+                    <div class="value-icon">
+                        <i class="bi bi-chat-heart"></i>
+                    </div>
+
+                    <h3>Tận tâm</h3>
+
+                    <p>
+                        Lắng nghe nhu cầu, hỗ trợ tư vấn và đồng hành
+                        cùng khách hàng trong quá trình lựa chọn.
+                    </p>
+
+                </div>
+
+            </div>
+
+            <div class="col-sm-6 col-lg-3">
+
+                <div class="value-card">
+
+                    <div class="value-icon">
+                        <i class="bi bi-stars"></i>
+                    </div>
+
+                    <h3>Trải nghiệm</h3>
+
+                    <p>
+                        Không ngừng cải thiện dịch vụ để mang đến
+                        trải nghiệm mua sắm thuận tiện và tích cực.
+                    </p>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+</section>
+
+<section class="commitment-section section-space">
+    <div class="container">
+
+        <div class="row align-items-center g-5">
+
+            <div class="col-lg-5">
+
+                <span class="eyebrow">OUR COMMITMENT</span>
+
+                <h2>
+                    Sự hài lòng<br>
+                    của bạn là<br>
+                    điều chúng tôi<br>
+                    luôn hướng đến.
+                </h2>
+
+                <p>
+                    LUMINOUS mong muốn xây dựng mối quan hệ lâu dài
+                    với khách hàng bằng sự tận tâm, minh bạch
+                    và tinh thần phục vụ trách nhiệm.
+                </p>
+
+            </div>
+
+            <div class="col-lg-7">
+
+                <div class="commitment-list">
+
+                    <div class="commitment-item">
+
+                        <div class="commitment-icon">
+                            <i class="bi bi-info-circle"></i>
+                        </div>
+
+                        <div>
+                            <h3>Thông tin rõ ràng</h3>
+
+                            <p>
+                                Cung cấp thông tin sản phẩm để khách hàng
+                                có cơ sở tìm hiểu trước khi mua.
+                            </p>
+                        </div>
+
+                    </div>
+
+                    <div class="commitment-item">
+
+                        <div class="commitment-icon">
+                            <i class="bi bi-person-heart"></i>
+                        </div>
+
+                        <div>
+                            <h3>Tư vấn phù hợp</h3>
+
+                            <p>
+                                Hỗ trợ khách hàng lựa chọn sản phẩm
+                                dựa trên nhu cầu và đặc điểm làn da.
+                            </p>
+                        </div>
+
+                    </div>
+
+                    <div class="commitment-item">
+
+                        <div class="commitment-icon">
+                            <i class="bi bi-bag-check"></i>
+                        </div>
+
+                        <div>
+                            <h3>Mua sắm thuận tiện</h3>
+
+                            <p>
+                                Hướng đến quy trình mua sắm đơn giản,
+                                dễ dàng và tiết kiệm thời gian.
+                            </p>
+                        </div>
+
+                    </div>
+
+                    <div class="commitment-item">
+
+                        <div class="commitment-icon">
+                            <i class="bi bi-headset"></i>
+                        </div>
+
+                        <div>
+                            <h3>Đồng hành sau mua</h3>
+
+                            <p>
+                                Sẵn sàng tiếp nhận phản hồi và hỗ trợ
+                                khách hàng khi cần thiết.
+                            </p>
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+</section>
+
+<section class="about-cta">
+    <div class="container text-center">
+
+        <span class="eyebrow">LET YOUR BEAUTY SHINE</span>
+
+        <h2>
+            Hãy bắt đầu hành trình<br>
+            yêu thương làn da của bạn.
+        </h2>
+
+        <p>
+            Khám phá những sản phẩm chăm sóc sắc đẹp tại LUMINOUS.
+        </p>
+
+        <a th:href="@{/#products}" class="primary-button">
+            Khám phá sản phẩm
+            <i class="bi bi-arrow-right"></i>
+        </a>
+
+    </div>
+</section>
+
+<footer th:fragment="footer" class="site-footer mt-5 pt-5 pb-4" id="site-footer">
+    <img th:src="@{/images/banner/hero-01-ke-my-pham.jpg}" alt="" aria-hidden="true" class="footer-bg"/>
+    <div class="container position-relative">
+        <div class="row g-4">
+            <div class="col-md-4">
+                <img th:src="@{/images/logo.png}" alt="LUMINOUS" class="logo-img mb-2"/>
+                <p class="text-muted">Shop mỹ phẩm Comestic</p>
+                <p class="mb-1"><i class="bi bi-geo-alt"></i> 12 Nguyễn Văn Bảo, Gò Vấp, TP.HCM</p>
+                <p class="mb-1"><i class="bi bi-telephone"></i> 0972606925</p>
+                <p class="mb-1"><i class="bi bi-envelope"></i> admin@luminous.vn</p>
+            </div>
+            <div class="col-md-2">
+                <h6 class="fw-bold">Danh mục</h6>
+                <ul class="list-unstyled">
+                    <li><a th:href="@{/}">Sản phẩm</a></li>
+                    <li><a th:href="@{/#why-choose}">Giới thiệu</a></li>
+                    <li><a th:href="@{/#brands}">Thương hiệu</a></li>
+                    <li><a th:href="@{/blog}">Bài viết</a></li>
+                </ul>
+            </div>
+            <div class="col-md-3">
+                <h6 class="fw-bold">Về chúng tôi</h6>
+                <!-- Chua co trang chinh sach rieng: tam ve trang chu de khong 404,
+                     khi co trang that thi doi tung link, khong doi khung footer. -->
+                <ul class="list-unstyled">
+                    <li><a th:href="@{/}">Chính sách giao hàng</a></li>
+                    <li><a th:href="@{/}">Chính sách đổi trả</a></li>
+                    <li><a th:href="@{/}">Hướng dẫn mua hàng</a></li>
+                    <li><a th:href="@{/register}">Điều kiện chung</a></li>
+                </ul>
+            </div>
+            <div class="col-md-3">
+                <h6 class="fw-bold">Kết nối với chúng tôi</h6>
+                <div>
+                    <a href="https://www.tiktok.com" target="_blank" rel="noopener" class="social-icon" title="TikTok"><i class="bi bi-music-note-beamed"></i></a>
+                    <a href="https://www.instagram.com" target="_blank" rel="noopener" class="social-icon" title="Instagram"><i class="bi bi-instagram"></i></a>
+                    <a href="https://www.facebook.com" target="_blank" rel="noopener" class="social-icon" title="Facebook"><i class="bi bi-facebook"></i></a>
+                    <a href="https://zalo.me" target="_blank" rel="noopener" class="social-icon" title="Zalo"><i class="bi bi-chat-dots"></i></a>
+                </div>
+            </div>
+        </div>
+        <hr/>
+        <p class="text-center text-muted small mb-0">© 2026 LUMINOUS - Nhóm 6 WWW - Đại học Công Nghiệp TP.HCM.</p>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script th:src="@{/js/main.js}"></script>
+</footer>
+
+
+</body>
+</html>

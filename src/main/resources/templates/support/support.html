@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="vi"
+      xmlns:th="http://www.thymeleaf.org"
+      th:with="pageCss='support.css'">
+
+<head th:replace="~{layout/header :: head('Hỗ trợ')}">
+    <title>Hỗ trợ | LUMINOUS</title>
+</head>
+
+<body>
+
+<div th:replace="~{layout/header :: header}"></div>
+
+<main class="support-page">
+    <section class="support-hero">
+        <div class="container">
+            <div class="support-hero-content">
+                <span class="support-eyebrow">
+                    LUMINOUS CUSTOMER CARE
+                </span>
+
+                <h1>Chúng tôi luôn sẵn sàng hỗ trợ bạn</h1>
+
+                <p>
+                    LUMINOUS luôn mong muốn mang đến cho bạn trải nghiệm
+                    mua sắm mỹ phẩm dễ dàng, an tâm và hài lòng nhất.
+                    Hãy tìm câu trả lời cho những thắc mắc của bạn tại đây.
+                </p>
+
+                <a href="#faq" class="btn-support">
+                    Khám phá câu hỏi thường gặp
+                    <i class="bi bi-arrow-down"></i>
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <section class="support-categories">
+        <div class="container">
+
+            <div class="section-heading">
+                <span>CHÚNG TÔI CÓ THỂ GIÚP GÌ CHO BẠN?</span>
+                <h2>Danh mục hỗ trợ</h2>
+                <p>
+                    Chọn chủ đề bạn đang quan tâm để tìm hiểu thông tin
+                    nhanh chóng hơn.
+                </p>
+            </div>
+
+            <div class="row g-4">
+
+                <div class="col-12 col-sm-6 col-lg-3">
+                    <a href="#order" class="support-category-card">
+                        <div class="category-icon">
+                            <i class="bi bi-bag-check"></i>
+                        </div>
+                        <h3>Đặt hàng</h3>
+                        <p>Hướng dẫn đặt hàng và theo dõi đơn hàng.</p>
+                        <span>Tìm hiểu thêm <i class="bi bi-arrow-right"></i></span>
+                    </a>
+                </div>
+
+                <div class="col-12 col-sm-6 col-lg-3">
+                    <a href="#payment" class="support-category-card">
+                        <div class="category-icon">
+                            <i class="bi bi-credit-card"></i>
+                        </div>
+                        <h3>Thanh toán</h3>
+                        <p>Thông tin về các phương thức thanh toán.</p>
+                        <span>Tìm hiểu thêm <i class="bi bi-arrow-right"></i></span>
+                    </a>
+                </div>
+
+                <div class="col-12 col-sm-6 col-lg-3">
+                    <a href="#shipping" class="support-category-card">
+                        <div class="category-icon">
+                            <i class="bi bi-truck"></i>
+                        </div>
+                        <h3>Giao hàng</h3>
+                        <p>Giải đáp thắc mắc về vận chuyển và nhận hàng.</p>
+                        <span>Tìm hiểu thêm <i class="bi bi-arrow-right"></i></span>
+                    </a>
+                </div>
+
+                <div class="col-12 col-sm-6 col-lg-3">
+                    <a href="#return" class="support-category-card">
+                        <div class="category-icon">
+                            <i class="bi bi-arrow-repeat"></i>
+                        </div>
+                        <h3>Đổi trả</h3>
+                        <p>Hướng dẫn xử lý khi sản phẩm có vấn đề.</p>
+                        <span>Tìm hiểu thêm <i class="bi bi-arrow-right"></i></span>
+                    </a>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <section class="support-faq" id="faq">
+        <div class="container">
+
+            <div class="section-heading">
+                <span>FREQUENTLY ASKED QUESTIONS</span>
+                <h2>Câu hỏi thường gặp</h2>
+                <p>
+                    Những câu hỏi phổ biến giúp bạn hiểu rõ hơn
+                    về dịch vụ và chính sách của LUMINOUS.
+                </p>
+            </div>
+
+            <div class="faq-container">
+                <div class="faq-group" id="order">
+                    <h3><i class="bi bi-bag-check"></i> Đặt hàng</h3>
+
+                    <details class="faq-item">
+                        <summary>Làm thế nào để đặt hàng tại LUMINOUS?</summary>
+                        <div class="faq-answer">
+                            <p>
+                                Bạn có thể lựa chọn sản phẩm yêu thích trên website,
+                                thêm sản phẩm vào giỏ hàng và tiến hành đặt hàng
+                                theo hướng dẫn. Vui lòng kiểm tra thông tin nhận hàng
+                                trước khi xác nhận đơn.
+                            </p>
+                        </div>
+                    </details>
+
+                    <details class="faq-item">
+                        <summary>Làm sao để kiểm tra tình trạng đơn hàng?</summary>
+                        <div class="faq-answer">
+                            <p>
+                                Bạn có thể kiểm tra tình trạng đơn hàng trong tài khoản
+                                cá nhân nếu chức năng theo dõi đơn hàng đã được kích hoạt.
+                                Nếu cần hỗ trợ thêm, hãy liên hệ với nhân viên LUMINOUS.
+                            </p>
+                        </div>
+                    </details>
+
+                    <details class="faq-item">
+                        <summary>Tôi có thể thay đổi thông tin đơn hàng không?</summary>
+                        <div class="faq-answer">
+                            <p>
+                                Nếu muốn thay đổi địa chỉ nhận hàng hoặc thông tin
+                                đơn hàng, bạn nên liên hệ với LUMINOUS sớm nhất có thể.
+                                Việc điều chỉnh phụ thuộc vào tình trạng xử lý đơn hàng.
+                            </p>
+                        </div>
+                    </details>
+                </div>
+
+                <div class="faq-group" id="payment">
+                    <h3><i class="bi bi-credit-card"></i> Thanh toán</h3>
+
+                    <details class="faq-item">
+                        <summary>LUMINOUS hỗ trợ những phương thức thanh toán nào?</summary>
+                        <div class="faq-answer">
+                            <p>
+                                Các phương thức thanh toán được hỗ trợ sẽ được hiển thị
+                                tại bước thanh toán của đơn hàng. Bạn vui lòng kiểm tra
+                                các lựa chọn thực tế trên website trước khi xác nhận.
+                            </p>
+                        </div>
+                    </details>
+
+                    <details class="faq-item">
+                        <summary>Tôi cần làm gì nếu thanh toán không thành công?</summary>
+                        <div class="faq-answer">
+                            <p>
+                                Bạn hãy kiểm tra lại thông tin thanh toán và thử thực hiện
+                                lại giao dịch. Nếu vấn đề vẫn tiếp diễn, vui lòng liên hệ
+                                bộ phận hỗ trợ để được kiểm tra.
+                            </p>
+                        </div>
+                    </details>
+                </div>
+
+                <div class="faq-group" id="shipping">
+                    <h3><i class="bi bi-truck"></i> Giao hàng</h3>
+
+                    <details class="faq-item">
+                        <summary>Thời gian giao hàng mất bao lâu?</summary>
+                        <div class="faq-answer">
+                            <p>
+                                Thời gian giao hàng phụ thuộc vào địa chỉ nhận hàng,
+                                đơn vị vận chuyển và thời điểm đặt hàng. Thông tin dự kiến
+                                sẽ được cập nhật trong quá trình xử lý đơn.
+                            </p>
+                        </div>
+                    </details>
+
+                    <details class="faq-item">
+                        <summary>Tôi cần làm gì nếu chưa nhận được hàng?</summary>
+                        <div class="faq-answer">
+                            <p>
+                                Bạn có thể kiểm tra trạng thái đơn hàng trước.
+                                Nếu đơn hàng đã quá thời gian dự kiến mà vẫn chưa được
+                                giao, hãy liên hệ LUMINOUS để được hỗ trợ kiểm tra.
+                            </p>
+                        </div>
+                    </details>
+                </div>
+
+                <div class="faq-group" id="return">
+                    <h3><i class="bi bi-arrow-repeat"></i> Đổi trả và sản phẩm</h3>
+
+                    <details class="faq-item">
+                        <summary>Tôi có thể đổi trả sản phẩm không?</summary>
+                        <div class="faq-answer">
+                            <p>
+                                Việc đổi trả được thực hiện theo chính sách đổi trả
+                                hiện hành của LUMINOUS. Bạn vui lòng liên hệ nhân viên
+                                để được hướng dẫn điều kiện và quy trình cụ thể.
+                            </p>
+                        </div>
+                    </details>
+
+                    <details class="faq-item">
+                        <summary>Làm sao để chọn mỹ phẩm phù hợp với loại da?</summary>
+                        <div class="faq-answer">
+                            <p>
+                                Bạn nên xác định loại da và nhu cầu chăm sóc da của mình,
+                                sau đó tham khảo thành phần, công dụng và hướng dẫn sử dụng
+                                của từng sản phẩm. Nếu chưa chắc chắn, bạn có thể liên hệ
+                                nhân viên LUMINOUS để được tư vấn thêm.
+                            </p>
+                        </div>
+                    </details>
+
+                    <details class="faq-item">
+                        <summary>Làm thế nào để kiểm tra thông tin thành phần mỹ phẩm?</summary>
+                        <div class="faq-answer">
+                            <p>
+                                Bạn có thể xem thông tin thành phần được cung cấp
+                                trong phần mô tả sản phẩm và trên bao bì.
+                                Hãy đọc kỹ hướng dẫn sử dụng và lưu ý của nhà sản xuất.
+                            </p>
+                        </div>
+                    </details>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <section class="support-contact">
+        <div class="container">
+            <div class="support-contact-box">
+
+                <div class="support-contact-icon">
+                    <i class="bi bi-headset"></i>
+                </div>
+
+                <div class="support-contact-content">
+                    <span>WE ARE HERE TO HELP</span>
+                    <h2>Bạn vẫn cần hỗ trợ?</h2>
+                    <p>
+                        Đừng ngần ngại liên hệ với chúng tôi.
+                        Đội ngũ LUMINOUS luôn sẵn sàng lắng nghe
+                        và hỗ trợ bạn giải đáp những thắc mắc.
+                    </p>
+                </div>
+
+                <a th:href="@{/contact}" class="btn-contact-support">
+                    Liên hệ ngay
+                    <i class="bi bi-arrow-right"></i>
+                </a>
+
+            </div>
+        </div>
+    </section>
+
+</main>
+
+<div th:replace="~{layout/footer :: footer}"></div>
+
+</body>
+</html>
