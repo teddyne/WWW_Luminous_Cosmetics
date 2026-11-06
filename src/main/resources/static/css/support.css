@@ -1,0 +1,348 @@
+.support-page {
+    color: var(--lum-text);
+    overflow: hidden;
+}
+
+.support-page a {
+    text-decoration: none;
+}
+
+.support-hero {
+    position: relative;
+    padding: 95px 0;
+    background:
+            linear-gradient(90deg, rgba(29, 84, 32, .94), rgba(69, 106, 65, .82)),
+            url("../images/banner/hero-01-ke-my-pham.jpg") center/cover no-repeat;
+    color: #fff;
+}
+
+.support-hero-content {
+    max-width: 720px;
+    margin: 0 auto;
+    text-align: center;
+}
+
+.support-eyebrow {
+    display: inline-block;
+    margin-bottom: 18px;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 3px;
+    color: #dcebd8;
+}
+
+.support-hero h1 {
+    margin-bottom: 20px;
+    font-size: clamp(32px, 5vw, 48px);
+    line-height: 1.3;
+    font-weight: 800;
+}
+
+.support-hero p {
+    max-width: 650px;
+    margin: 0 auto 30px;
+    color: rgba(255, 255, 255, .9);
+    font-size: 16px;
+    line-height: 1.9;
+}
+
+.btn-support {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 14px 25px;
+    border-radius: 30px;
+    background: #fff;
+    color: var(--lum-green-dark);
+    font-weight: 700;
+    transition: .25s ease;
+}
+
+.btn-support:hover {
+    background: var(--lum-green-soft);
+    color: var(--lum-green-dark);
+    transform: translateY(-3px);
+}
+
+.section-heading {
+    max-width: 700px;
+    margin: 0 auto 45px;
+    text-align: center;
+}
+
+.section-heading > span {
+    display: block;
+    margin-bottom: 12px;
+    color: var(--lum-green);
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: 2px;
+}
+
+.section-heading h2 {
+    margin-bottom: 14px;
+    color: var(--lum-green-dark);
+    font-size: 32px;
+    font-weight: 800;
+}
+
+.section-heading p {
+    margin: 0;
+    color: var(--lum-muted);
+    line-height: 1.8;
+}
+
+.support-categories {
+    padding: 85px 0;
+    background: var(--lum-beige);
+}
+
+.support-category-card {
+    display: block;
+    height: 100%;
+    padding: 30px 24px;
+    border: 1px solid #eee8dc;
+    border-radius: var(--lum-radius);
+    background: #fff;
+    color: var(--lum-text);
+    transition: .25s ease;
+}
+
+.support-category-card:hover {
+    transform: translateY(-7px);
+    border-color: var(--lum-green);
+    box-shadow: 0 12px 30px rgba(29, 84, 32, .09);
+}
+
+.category-icon {
+    display: flex;
+    width: 58px;
+    height: 58px;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 22px;
+    border-radius: 17px;
+    background: var(--lum-green-soft);
+    color: var(--lum-green-dark);
+    font-size: 27px;
+}
+
+.support-category-card h3 {
+    margin-bottom: 12px;
+    color: var(--lum-green-dark);
+    font-size: 19px;
+    font-weight: 800;
+}
+
+.support-category-card p {
+    min-height: 52px;
+    margin-bottom: 20px;
+    color: var(--lum-muted);
+    font-size: 14px;
+    line-height: 1.8;
+}
+
+.support-category-card > span {
+    color: var(--lum-green);
+    font-size: 13px;
+    font-weight: 700;
+}
+
+.support-faq {
+    padding: 85px 0;
+    background: #fff;
+}
+
+.faq-container {
+    max-width: 850px;
+    margin: 0 auto;
+}
+
+.faq-group {
+    margin-bottom: 38px;
+    scroll-margin-top: 100px;
+}
+
+.faq-group h3 {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 18px;
+    color: var(--lum-green-dark);
+    font-size: 20px;
+    font-weight: 800;
+}
+
+.faq-group h3 i {
+    display: inline-flex;
+    width: 40px;
+    height: 40px;
+    align-items: center;
+    justify-content: center;
+    border-radius: 12px;
+    background: var(--lum-green-soft);
+    font-size: 20px;
+}
+
+.faq-item {
+    margin-bottom: 12px;
+    overflow: hidden;
+    border: 1px solid #e9e9e9;
+    border-radius: 12px;
+    background: #fff;
+    transition: .2s ease;
+}
+
+.faq-item[open] {
+    border-color: #c8ddc5;
+    background: #fcfefb;
+}
+
+.faq-item summary {
+    position: relative;
+    padding: 19px 55px 19px 22px;
+    color: var(--lum-text);
+    font-size: 15px;
+    font-weight: 700;
+    line-height: 1.6;
+    list-style: none;
+    cursor: pointer;
+}
+
+.faq-item summary::-webkit-details-marker {
+    display: none;
+}
+
+.faq-item summary::after {
+    content: "+";
+    position: absolute;
+    top: 50%;
+    right: 22px;
+    color: var(--lum-green);
+    font-size: 25px;
+    font-weight: 400;
+    transform: translateY(-50%);
+}
+
+.faq-item[open] summary::after {
+    content: "−";
+}
+
+.faq-answer {
+    padding: 0 22px 20px;
+}
+
+.faq-answer p {
+    margin: 0;
+    padding-top: 15px;
+    border-top: 1px solid #edf0ea;
+    color: var(--lum-muted);
+    font-size: 14px;
+    line-height: 1.9;
+}
+
+.support-contact {
+    padding: 25px 0 85px;
+}
+
+.support-contact-box {
+    display: flex;
+    align-items: center;
+    gap: 28px;
+    padding: 42px;
+    border-radius: 22px;
+    background: var(--lum-green-soft);
+}
+
+.support-contact-icon {
+    display: flex;
+    width: 75px;
+    height: 75px;
+    flex-shrink: 0;
+    align-items: center;
+    justify-content: center;
+    border-radius: 22px;
+    background: var(--lum-green);
+    color: #fff;
+    font-size: 34px;
+}
+
+.support-contact-content {
+    flex: 1;
+}
+
+.support-contact-content > span {
+    color: var(--lum-green);
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 2px;
+}
+
+.support-contact-content h2 {
+    margin: 8px 0 10px;
+    color: var(--lum-green-dark);
+    font-size: 27px;
+    font-weight: 800;
+}
+
+.support-contact-content p {
+    max-width: 650px;
+    margin: 0;
+    color: #53634f;
+    font-size: 14px;
+    line-height: 1.8;
+}
+
+.btn-contact-support {
+    display: inline-flex;
+    flex-shrink: 0;
+    align-items: center;
+    gap: 10px;
+    padding: 14px 24px;
+    border-radius: 30px;
+    background: var(--lum-green-dark);
+    color: #fff;
+    font-size: 14px;
+    font-weight: 700;
+    transition: .25s ease;
+}
+
+.btn-contact-support:hover {
+    background: var(--lum-green);
+    color: #fff;
+    transform: translateY(-3px);
+}
+
+@media (max-width: 767px) {
+    .support-hero {
+        padding: 70px 0;
+    }
+
+    .support-categories,
+    .support-faq {
+        padding: 60px 0;
+    }
+
+    .section-heading {
+        margin-bottom: 32px;
+    }
+
+    .section-heading h2 {
+        font-size: 26px;
+    }
+
+    .support-contact-box {
+        flex-direction: column;
+        align-items: flex-start;
+        padding: 28px 22px;
+    }
+
+    .support-contact-content h2 {
+        font-size: 23px;
+    }
+
+    .btn-contact-support {
+        width: 100%;
+        justify-content: center;
+    }
+}

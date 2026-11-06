@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bài viết | LUMINOUS Cosmetics</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+          rel="stylesheet">
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"
+          rel="stylesheet">
+
+    <link rel="stylesheet" th:href="@{/css/blog.css}">
+    <script th:src="@{/js/blog.js}" defer></script>
+</head>
+
+<body>
+
+<header class="blog-header">
+    <div class="container">
+        <div class="header-content">
+
+            <a th:href="@{/}" class="logo">
+                <img th:src="@{/images/logo.png}" alt="LUMINOUS">
+            </a>
+
+            <nav>
+                <a th:href="@{/}">Trang chủ</a>
+                <a th:href="@{/#products}">Sản phẩm</a>
+                <a th:href="@{/#brands}">Thương hiệu</a>
+                <a th:href="@{/blog}" class="active">Bài viết</a>
+            </nav>
+
+            <div class="header-actions">
+                <a th:href="@{/login}">
+                    <i class="bi bi-person"></i>
+                </a>
+                <a th:href="@{/cart}">
+                    <i class="bi bi-cart3"></i>
+                </a>
+            </div>
+
+        </div>
+    </div>
+</header>
+
+<section class="blog-hero">
+    <div class="container">
+
+        <div class="hero-content">
+
+            <span class="eyebrow">
+                LUMINOUS BEAUTY JOURNAL
+            </span>
+
+            <h1>
+                Chăm da đúng cách,<br>
+                <span>đẹp theo cách của bạn.</span>
+            </h1>
+
+            <p>
+                Khám phá kiến thức chăm sóc da, bí quyết lựa chọn mỹ phẩm
+                và những câu chuyện làm đẹp tích cực mỗi ngày.
+            </p>
+
+            <a href="#article-list" class="hero-button">
+                Khám phá bài viết
+                <i class="bi bi-arrow-down"></i>
+            </a>
+
+        </div>
+
+        <div class="hero-decoration">
+            <span>YOUR SKIN</span>
+            <strong>YOUR<br>STORY</strong>
+            <i class="bi bi-flower1"></i>
+        </div>
+
+    </div>
+</section>
+
+<section class="container blog-container" id="article-list">
+
+    <div class="section-heading">
+
+        <div>
+            <span class="eyebrow">GÓC LÀM ĐẸP LUMINOUS</span>
+
+            <h2>Bài viết mới nhất</h2>
+
+            <p>
+                Những thông tin hữu ích dành cho hành trình chăm sóc làn da.
+            </p>
+        </div>
+
+        <div class="search-box">
+            <i class="bi bi-search"></i>
+
+            <input type="text"
+                   id="searchInput"
+                   placeholder="Tìm kiếm bài viết...">
+        </div>
+
+    </div>
+
+    <div class="category-filter">
+
+        <button class="filter-btn active" data-category="all">
+            Tất cả
+        </button>
+
+        <button class="filter-btn" data-category="skincare">
+            Chăm sóc da
+        </button>
+
+        <button class="filter-btn" data-category="sunscreen">
+            Chống nắng
+        </button>
+
+        <button class="filter-btn" data-category="green">
+            Sống xanh
+        </button>
+
+        <button class="filter-btn" data-category="product">
+            Sản phẩm
+        </button>
+
+    </div>
+
+    <div class="row g-4" id="articleList">
+        <div class="col-md-6 col-lg-3 article-item"
+             data-category="green"
+             data-title="Đổi vỏ chai cũ nhận quà xanh bảo vệ môi trường">
+
+            <div class="article-card">
+                <div class="article-image green-image">
+                    <img src="/images/blog/blog-doi-vo-chai.jpg"
+                         alt="Làm đẹp xanh và bảo vệ môi trường"
+                         class="article-card-img">
+
+                    <span class="article-category">Sống xanh</span>
+                </div>
+
+                <div class="article-body">
+
+                    <small>05/05/2026 • 4 phút đọc</small>
+
+                    <h3>
+                        Đổi vỏ chai cũ nhận quà xanh:
+                        Làm đẹp gắn với bảo vệ môi trường
+                    </h3>
+
+                    <p>
+                        Một thói quen nhỏ sau khi sử dụng mỹ phẩm
+                        có thể góp phần giảm rác thải nhựa.
+                    </p>
+
+                    <button class="read-more"
+                            onclick="readArticle('green')">
+                        Đọc bài viết
+                        <i class="bi bi-arrow-right"></i>
+                    </button>
+
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6 col-lg-3 article-item"
+             data-category="skincare"
+             data-title="Routine chăm sóc da dầu mùa hè">
+
+            <div class="article-card">
+                <div class="article-image skincare-image">
+                    <img src="/images/blog/blog-routine-da-dau.jpg"
+                         alt="Sản phẩm chăm sóc da"
+                         class="article-card-img">
+
+                    <span class="article-category">Chăm sóc da</span>
+                </div>
+
+                <div class="article-body">
+
+                    <small>12/05/2026 • 5 phút đọc</small>
+
+                    <h3>
+                        Routine chăm sóc da dầu mùa hè:
+                        Gọn nhẹ mà vẫn đủ bước
+                    </h3>
+
+                    <p>
+                        Ưu tiên làm sạch dịu nhẹ, dưỡng ẩm phù hợp
+                        và chống nắng mỗi ngày.
+                    </p>
+
+                    <button class="read-more"
+                            onclick="readArticle('skincare')">
+                        Đọc bài viết
+                        <i class="bi bi-arrow-right"></i>
+                    </button>
+
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6 col-lg-3 article-item"
+             data-category="sunscreen"
+             data-title="Cách chọn kem chống nắng cho da nhạy cảm">
+
+            <div class="article-card">
+                <div class="article-image sunscreen-image">
+                    <img src="/images/blog/blog-kem-chong-nang.jpg"
+                         alt="Kem chống nắng bảo vệ da"
+                         class="article-card-img">
+
+                    <span class="article-category">Chống nắng</span>
+                </div>
+
+                <div class="article-body">
+
+                    <small>18/05/2026 • 6 phút đọc</small>
+
+                    <h3>
+                        Cách chọn kem chống nắng phù hợp
+                        cho làn da nhạy cảm
+                    </h3>
+
+                    <p>
+                        Tìm hiểu SPF, PA và kết cấu sản phẩm
+                        để chọn lựa phù hợp với làn da.
+                    </p>
+
+                    <button class="read-more"
+                            onclick="readArticle('sunscreen')">
+                        Đọc bài viết
+                        <i class="bi bi-arrow-right"></i>
+                    </button>
+
+                </div>
+            </div>
+        </div>
+
+
+        <div class="col-md-6 col-lg-3 article-item"
+             data-category="product"
+             data-title="Nước tẩy trang bí đao có gì đặc biệt">
+
+            <div class="article-card">
+                <div class="article-image product-image">
+                    <img src="/images/blog/blog-tay-trang-bi-dao.jpg"
+                         alt="Sản phẩm mỹ phẩm chăm sóc da"
+                         class="article-card-img">
+
+                    <span class="article-category">Sản phẩm</span>
+                </div>
+
+                <div class="article-body">
+
+                    <small>25/05/2026 • 4 phút đọc</small>
+
+                    <h3>
+                        Nước tẩy trang bí đao có gì
+                        khiến nhiều người yêu thích?
+                    </h3>
+
+                    <p>
+                        Tìm hiểu vai trò của bước tẩy trang
+                        và cách lựa chọn sản phẩm phù hợp.
+                    </p>
+
+                    <button class="read-more"
+                            onclick="readArticle('product')">
+                        Đọc bài viết
+                        <i class="bi bi-arrow-right"></i>
+                    </button>
+
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+
+    <div id="noResult" class="no-result" style="display:none">
+        <i class="bi bi-search"></i>
+        <p>Không tìm thấy bài viết phù hợp.</p>
+    </div>
+
+</section>
+
+<section class="blog-bottom">
+
+    <div class="container">
+
+        <div>
+            <span class="eyebrow">Ở LẠI CÙNG LUMINOUS</span>
+
+            <h2>
+                Mỗi ngày một chút yêu thương làn da.
+            </h2>
+
+            <p>
+                Khám phá thêm những sản phẩm chăm sóc da phù hợp với bạn.
+            </p>
+        </div>
+
+        <a th:href="@{/}" class="hero-button">
+            Khám phá sản phẩm
+            <i class="bi bi-arrow-up-right"></i>
+        </a>
+
+    </div>
+
+</section>
+
+
+<footer th:fragment="footer" class="site-footer mt-5 pt-5 pb-4" id="site-footer">
+    <img th:src="@{/images/banner/hero-01-ke-my-pham.jpg}" alt="" aria-hidden="true" class="footer-bg"/>
+    <div class="container position-relative">
+        <div class="row g-4">
+            <div class="col-md-4">
+                <img th:src="@{/images/logo.png}" alt="LUMINOUS" class="logo-img mb-2"/>
+                <p class="text-muted">Shop mỹ phẩm Comestic</p>
+                <p class="mb-1"><i class="bi bi-geo-alt"></i> 12 Nguyễn Văn Bảo, Gò Vấp, TP.HCM</p>
+                <p class="mb-1"><i class="bi bi-telephone"></i> 0972606925</p>
+                <p class="mb-1"><i class="bi bi-envelope"></i> admin@luminous.vn</p>
+            </div>
+            <div class="col-md-2">
+                <h6 class="fw-bold">Danh mục</h6>
+                <ul class="list-unstyled">
+                    <li><a th:href="@{/}">Sản phẩm</a></li>
+                    <li><a th:href="@{/#why-choose}">Giới thiệu</a></li>
+                    <li><a th:href="@{/#brands}">Thương hiệu</a></li>
+                    <li><a th:href="@{/blog}">Bài viết</a></li>
+                </ul>
+            </div>
+            <div class="col-md-3">
+                <h6 class="fw-bold">Về chúng tôi</h6>
+                <!-- Chua co trang chinh sach rieng: tam ve trang chu de khong 404,
+                     khi co trang that thi doi tung link, khong doi khung footer. -->
+                <ul class="list-unstyled">
+                    <li><a th:href="@{/}">Chính sách giao hàng</a></li>
+                    <li><a th:href="@{/}">Chính sách đổi trả</a></li>
+                    <li><a th:href="@{/}">Hướng dẫn mua hàng</a></li>
+                    <li><a th:href="@{/register}">Điều kiện chung</a></li>
+                </ul>
+            </div>
+            <div class="col-md-3">
+                <h6 class="fw-bold">Kết nối với chúng tôi</h6>
+                <div>
+                    <a href="https://www.tiktok.com" target="_blank" rel="noopener" class="social-icon" title="TikTok"><i class="bi bi-music-note-beamed"></i></a>
+                    <a href="https://www.instagram.com" target="_blank" rel="noopener" class="social-icon" title="Instagram"><i class="bi bi-instagram"></i></a>
+                    <a href="https://www.facebook.com" target="_blank" rel="noopener" class="social-icon" title="Facebook"><i class="bi bi-facebook"></i></a>
+                    <a href="https://zalo.me" target="_blank" rel="noopener" class="social-icon" title="Zalo"><i class="bi bi-chat-dots"></i></a>
+                </div>
+            </div>
+        </div>
+        <hr/>
+        <p class="text-center text-muted small mb-0">© 2026 LUMINOUS - Nhóm 6 WWW - Đại học Công Nghiệp TP.HCM.</p>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script th:src="@{/js/main.js}"></script>
+</footer>
+
+<div class="article-modal" id="articleModal">
+
+    <div class="modal-overlay" onclick="closeArticle()"></div>
+
+    <div class="modal-content-custom">
+
+        <button class="close-modal" onclick="closeArticle()">
+            <i class="bi bi-x-lg"></i>
+        </button>
+
+        <button class="back-button" onclick="closeArticle()">
+            <i class="bi bi-arrow-left"></i>
+            Quay lại danh sách
+        </button>
+
+        <div class="modal-body-custom">
+
+            <span id="modalCategory" class="modal-category"></span>
+
+            <h1 id="modalTitle"></h1>
+
+            <div id="modalDate" class="modal-date"></div>
+
+            <div id="modalDescription" class="article-content-full"></div>
+
+            <div class="article-thank">
+                <i class="bi bi-flower1"></i>
+                Cảm ơn bạn đã đọc LUMINOUS Beauty Journal.
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+</body>
+</html>

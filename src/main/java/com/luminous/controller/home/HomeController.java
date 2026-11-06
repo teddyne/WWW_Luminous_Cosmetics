@@ -81,4 +81,16 @@ public class HomeController {
         model.addAttribute("notice", notice);
         return "homepage/home";
     }
+    @GetMapping("/about")
+    public String about() {
+        return "about/about";
+    }
+    @GetMapping("/contact")
+    public String contact() {
+        return "contact/contact";
+    }
+    @GetMapping("/support")
+    public String support() {
+        return "support/support";
+    }
 }

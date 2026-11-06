@@ -20,10 +20,8 @@ public class PlaceholderController {
     }
 
     @GetMapping("/blog")
-    public String blog(Model model) {
-        model.addAttribute("title", "Bài viết mới");
-        model.addAttribute("message", "Trang danh sách bài viết sẽ được làm ở bước tiếp theo. 4 bài viết trên trang chủ hiện là nội dung giới thiệu theo Figma.");
-        return "placeholder/coming-soon";
+    public String blog() {
+        return "blog/blog";
     }
 
     @GetMapping("/forgot-password")
