@@ -4,16 +4,8 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-
 import java.time.LocalDateTime;
 
-/**
- * Khop bang SkinQuizResult trong luminous_db.sql.
- * LUU Y: khong map quan he toi SkinQuiz bang @ManyToOne, chi giu quizId
- * dang so nguyen. Ly do: bang SkinQuiz co cot questions kieu JSON cua
- * MariaDB, map thanh entity de bi loi validate schema; phan doc cau hoi
- * nam o SkinQuizDataLoader (native query, chi doc).
- */
 @Getter
 @Setter
 @NoArgsConstructor

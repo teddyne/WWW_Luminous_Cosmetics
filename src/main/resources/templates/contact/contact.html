@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="vi"
+      xmlns:th="http://www.thymeleaf.org"
+      th:with="pageCss='contact.css'">
+
+<head th:replace="~{layout/header :: head('Liên hệ')}"></head>
+    <title>Liên hệ | LUMINOUS</title>
+</head>
+
+<body>
+
+<div th:replace="~{layout/header :: header}"></div>
+
+<main class="contact-page">
+
+    <section class="contact-hero">
+        <div class="container">
+            <div class="contact-hero-content">
+                <span class="contact-eyebrow">LUMINOUS BEAUTY & COSMETICS</span>
+
+                <h1>Chúng tôi luôn <span>lắng nghe</span> bạn</h1>
+
+                <p>
+                    Mọi thắc mắc, góp ý hoặc nhu cầu tư vấn của bạn đều rất
+                    quan trọng với LUMINOUS. Hãy liên hệ với chúng tôi,
+                    chúng tôi luôn sẵn sàng hỗ trợ bạn.
+                </p>
+
+                <a href="#contact-information" class="btn-lum text-decoration-none">
+                    Liên hệ ngay
+                    <i class="bi bi-arrow-down ms-2"></i>
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <section class="contact-information section-padding"
+             id="contact-information">
+
+        <div class="container">
+
+            <div class="section-heading text-center">
+                <span class="contact-eyebrow">GET IN TOUCH</span>
+                <h2>Thông tin liên hệ</h2>
+                <p>
+                    Kết nối với LUMINOUS để được tư vấn và hỗ trợ
+                    trong quá trình lựa chọn sản phẩm chăm sóc sắc đẹp.
+                </p>
+            </div>
+
+            <div class="row g-4 mt-4">
+
+                <div class="col-lg-4 col-md-6">
+                    <div class="contact-info-card">
+                        <div class="contact-info-icon">
+                            <i class="bi bi-geo-alt"></i>
+                        </div>
+
+                        <h3>Địa chỉ cửa hàng</h3>
+
+                        <p>
+                            12 Nguyễn Văn Bảo,<br>
+                            Gò Vấp, TP. Hồ Chí Minh
+                        </p>
+
+                        <a href="https://www.google.com/maps/search/?api=1&query=12+Nguyen+Van+Bao+Go+Vap+Ho+Chi+Minh"
+                           target="_blank"
+                           rel="noopener">
+                            Xem chỉ đường
+                            <i class="bi bi-arrow-up-right"></i>
+                        </a>
+                    </div>
+                </div>
+
+                <div class="col-lg-4 col-md-6">
+                    <div class="contact-info-card">
+                        <div class="contact-info-icon">
+                            <i class="bi bi-telephone"></i>
+                        </div>
+
+                        <h3>Điện thoại</h3>
+
+                        <p>
+                            0972 606 925<br>
+                            Hỗ trợ tư vấn khách hàng
+                        </p>
+
+                        <a href="tel:0972606925">
+                            Gọi cho chúng tôi
+                            <i class="bi bi-arrow-up-right"></i>
+                        </a>
+                    </div>
+                </div>
+
+                <div class="col-lg-4 col-md-6">
+                    <div class="contact-info-card">
+                        <div class="contact-info-icon">
+                            <i class="bi bi-envelope"></i>
+                        </div>
+
+                        <h3>Email</h3>
+
+                        <p>
+                            admin@luminous.vn<br>
+                            Tiếp nhận câu hỏi và góp ý
+                        </p>
+
+                        <a href="mailto:admin@luminous.vn">
+                            Gửi email
+                            <i class="bi bi-arrow-up-right"></i>
+                        </a>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <section class="contact-location section-padding">
+
+        <div class="container">
+
+            <div class="section-heading text-center">
+                <span class="contact-eyebrow">VISIT OUR STORE</span>
+                <h2>Ghé thăm cửa hàng của chúng tôi</h2>
+                <p>
+                    LUMINOUS rất vui được chào đón bạn đến tham quan
+                    và trải nghiệm các sản phẩm trực tiếp tại cửa hàng.
+                </p>
+            </div>
+
+            <div class="row g-4 mt-4 align-items-stretch">
+
+                <div class="col-lg-8">
+                    <div class="map-wrapper">
+                        <iframe
+                                src="https://maps.google.com/maps?q=12%20Nguyen%20Van%20Bao%2C%20Go%20Vap%2C%20Ho%20Chi%20Minh&t=&z=16&ie=UTF8&iwloc=&output=embed"
+                                width="100%"
+                                height="100%"
+                                style="border:0;"
+                                allowfullscreen=""
+                                loading="lazy"
+                                referrerpolicy="no-referrer-when-downgrade"
+                                title="Bản đồ cửa hàng LUMINOUS">
+                        </iframe>
+                    </div>
+                </div>
+
+                <div class="col-lg-4">
+                    <div class="store-hours-card">
+
+                        <div class="contact-info-icon">
+                            <i class="bi bi-clock"></i>
+                        </div>
+
+                        <span class="contact-eyebrow">OPENING HOURS</span>
+
+                        <h3>Giờ hoạt động</h3>
+
+                        <p>
+                            Chúng tôi luôn sẵn sàng chào đón và
+                            hỗ trợ bạn trong thời gian hoạt động.
+                        </p>
+
+                        <div class="hours-item">
+                            <span>Thứ 2 - Thứ 6</span>
+                            <strong>08:00 - 21:00</strong>
+                        </div>
+
+                        <div class="hours-item">
+                            <span>Thứ 7 - Chủ nhật</span>
+                            <strong>08:00 - 21:00</strong>
+                        </div>
+
+                        <div class="hours-note">
+                            <i class="bi bi-info-circle"></i>
+                            Vui lòng liên hệ trước nếu bạn cần hỗ trợ
+                            ngoài khung giờ hoạt động.
+                        </div>
+
+                        <a href="https://www.google.com/maps/search/?api=1&query=12+Nguyen+Van+Bao+Go+Vap+Ho+Chi+Minh"
+                           target="_blank"
+                           rel="noopener"
+                           class="btn-lum text-decoration-none d-inline-block mt-3">
+                            <i class="bi bi-geo-alt me-2"></i>
+                            Chỉ đường đến cửa hàng
+                        </a>
+
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <section class="contact-cta">
+        <div class="container text-center">
+
+            <span class="contact-eyebrow">WE ARE HERE FOR YOU</span>
+
+            <h2>Cảm ơn bạn đã tin tưởng LUMINOUS</h2>
+
+            <p>
+                Sự hài lòng của bạn là động lực để chúng tôi
+                không ngừng hoàn thiện và mang đến những trải nghiệm tốt hơn.
+            </p>
+
+            <a href="mailto:admin@luminous.vn"
+               class="btn-lum text-decoration-none">
+                <i class="bi bi-envelope me-2"></i>
+                Liên hệ với chúng tôi
+            </a>
+
+        </div>
+    </section>
+
+</main>
+
+<div th:replace="~{layout/footer :: footer}"></div>
+
+</body>
+</html>

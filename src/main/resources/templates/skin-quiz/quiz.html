@@ -14,10 +14,6 @@
 
     <div th:if="${error}" class="alert alert-danger" th:text="${error}">Lỗi</div>
 
-    <div th:if="${#lists.isEmpty(questions)}" class="alert alert-warning">
-      Chưa tải được bộ câu hỏi từ bảng SkinQuiz trong database. Bạn kiểm tra lại đã import file luminous_db.sql (bảng SkinQuiz có 1 bản ghi, quizID = 1) rồi tải lại trang này.
-    </div>
-
     <form th:if="${!#lists.isEmpty(questions)}" th:action="@{/skin-quiz/submit}" method="post" id="skinQuizForm" novalidate>
       <input type="hidden" th:if="${_csrf != null}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
       <input type="hidden" name="quizId" th:value="${quizId}"/>

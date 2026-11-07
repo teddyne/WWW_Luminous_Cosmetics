@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="vi">
+<head th:replace="~{admin/fragments :: head('Khuyến mãi')}"></head>
+<body>
+<div class="admin-shell">
+  <div th:replace="~{admin/fragments :: sidebar('vouchers')}"></div>
+  <div class="admin-overlay" onclick="toggleSidebar(false)"></div>
+  <main class="admin-main">
+    <div th:replace="~{admin/fragments :: topbar('Danh sách khuyến mãi')}"></div>
+    <div th:replace="~{admin/fragments :: toast}"></div>
+
+    <form th:action="@{/admin/vouchers}" method="get" class="admin-toolbar">
+<div class="admin-search-group">
+        <input type="text" name="q" class="form-control" placeholder="Tìm mã voucher, tên chương trình" th:value="${q}"/>
+        <button type="submit" class="btn btn-soft"><i class="bi bi-search"></i> Tìm kiếm</button>
+      </div>
+      <select name="active" class="form-select" style="width: 210px;" onchange="this.form.submit()">
+        <option value="">Tất cả trạng thái</option>
+        <option value="true" th:selected="${active == true}">Đang kích hoạt</option>
+        <option value="false" th:selected="${active == false}">Đã tạm dừng</option>
+      </select>
+      <span class="flex-grow-1"></span>
+      <a th:href="@{/admin/vouchers}" class="btn btn-light"><i class="bi bi-arrow-counterclockwise"></i> Đặt lại</a>
+      <a th:href="@{/admin/vouchers/new}" class="btn btn-green"><i class="bi bi-plus-lg"></i> Tạo khuyến mãi mới</a>
+    </form>
+
+
+    <div class="bulk-bar" id="bulkBar" data-bulk-url="/admin/vouchers/bulk" hidden>
+      <span>Đã chọn <strong id="bulkCount">0</strong> mục</span>
+      <button type="button" class="btn btn-sm btn-danger rounded-pill" onclick="confirmBulkDelete()">Xóa đã chọn</button>
+      <button type="button" class="btn btn-sm btn-soft rounded-pill" onclick="submitBulk('deactivate')">Tạm dừng</button>
+      <button type="button" class="btn btn-sm btn-soft rounded-pill" onclick="submitBulk('activate')">Kích hoạt</button>
+    </div>
+
+    <form id="bulkForm" method="post" class="d-none">
+      <input type="hidden" th:if="${_csrf != null}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+      <input type="hidden" name="bulkAction" id="bulkActionInput"/>
+      <input type="hidden" name="newStatus" id="bulkStatusInput"/>
+    </form>
+
+    <div class="admin-card">
+      <div class="table-responsive">
+        <table class="table admin-table">
+          <thead>
+            <tr><th style="width: 40px;"><input type="checkbox" class="form-check-input select-all" title="Chọn tất cả trên trang"/></th>
+            <th>Mã</th><th>Tên chương trình</th><th>Mức giảm</th><th>ĐK tối thiểu</th><th>Ngày bắt đầu</th><th>Ngày kết thúc</th><th>Trạng thái</th><th class="text-end">Hành động</th></tr>
+          </thead>
+          <tbody>
+            <tr th:each="item : ${vouchers}">
+              <td><input type="checkbox" class="form-check-input row-check" th:value="${item.id}"/></td>
+              <td class="admin-name" th:text="${item.voucherCode}">WELCOME10</td>
+              <td>
+                <div class="admin-name" th:text="${item.voucherName}">Tên chương trình</div>
+                <div class="admin-sub" th:text="'Đã dùng ' + ${item.usedCount} + '/' + ${item.usageLimit}">Đã dùng 0/100</div>
+              </td>
+              <td class="fw-semibold" th:text="${item.discountText()}">10%</td>
+              <td th:text="${#numbers.formatDecimal(item.minOrderValue, 0, 'POINT', 0, 'COMMA')} + 'đ'">0đ</td>
+              <td th:text="${#temporals.format(item.startDate, 'dd/MM/yyyy')}">01/01/2026</td>
+              <td th:text="${#temporals.format(item.endDate, 'dd/MM/yyyy')}">01/01/2026</td>
+              <td>
+                <span class="badge-status"
+                      th:classappend="${item.displayStatus == 'Đang chạy'} ? ' st-running' : (${item.displayStatus == 'Hết hạn'} ? ' st-expired' : (${item.displayStatus == 'Sắp diễn ra'} ? ' st-upcoming' : ' st-paused'))"
+                      th:text="${item.displayStatus}">Đang chạy</span>
+              </td>
+              <td>
+                <div class="admin-row-actions">
+                  <a th:href="@{|/admin/vouchers/${item.id}/edit|}" class="admin-action-btn" title="Chỉnh sửa"><i class="bi bi-pencil"></i></a>
+                  <form th:action="@{|/admin/vouchers/${item.id}/toggle|}" method="post" class="m-0">
+                    <input type="hidden" th:if="${_csrf != null}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                    <button type="submit" class="admin-action-btn" th:title="${item.active} ? 'Tạm dừng' : 'Kích hoạt lại'">
+                      <i th:class="${item.active} ? 'bi bi-pause-circle' : 'bi bi-play-circle'"></i>
+                    </button>
+                  </form>
+                  <button type="button" class="admin-action-btn danger" title="Xóa"
+                          th:data-url="|/admin/vouchers/${item.id}/delete|"
+                          th:data-message="|Xóa khuyến mãi ${item.voucherCode}? Chỉ xóa được khi khuyến mãi chưa từng được sử dụng.|"
+                          onclick="openConfirm(this.dataset.url, this.dataset.message)">
+                    <i class="bi bi-trash"></i>
+                  </button>
+                </div>
+              </td>
+            </tr>
+            <tr th:if="${vouchers.totalElements == 0}">
+              <td colspan="9"><div class="empty-state"><i class="bi bi-ticket-perforated"></i>Chưa có khuyến mãi nào</div></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div th:replace="~{admin/fragments :: pager(${vouchers}, ${baseUrl}, ${pageQuery})}"></div>
+  </main>
+</div>
+<div th:replace="~{admin/fragments :: confirmModal}"></div>
+<div th:replace="~{admin/fragments :: scripts}"></div>
+</body>
+</html>

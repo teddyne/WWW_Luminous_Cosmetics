@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="vi">
+<head th:replace="~{admin/fragments :: head('Khuyến mãi')}"></head>
+<body>
+<div class="admin-shell">
+  <div th:replace="~{admin/fragments :: sidebar('vouchers')}"></div>
+  <div class="admin-overlay" onclick="toggleSidebar(false)"></div>
+  <main class="admin-main">
+    <div th:replace="~{admin/fragments :: topbar(${formTitle})}"></div>
+    <div th:replace="~{admin/fragments :: toast}"></div>
+
+    <div class="admin-page-actions">
+      <a th:href="@{/admin/vouchers}" class="admin-back"><i class="bi bi-arrow-left"></i> Quay lại danh sách khuyến mãi</a>
+    </div>
+
+    <div th:if="${formError}" class="alert alert-danger rounded-3" th:text="${formError}"></div>
+
+    <form th:action="${formAction}" th:object="${voucherForm}" method="post" enctype="multipart/form-data">
+      <input type="hidden" th:if="${_csrf != null}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+      <div class="row g-3">
+        <div class="col-lg-7">
+          <div class="form-card mb-3">
+            <h2><span class="step-num">1</span> Thông tin khuyến mãi</h2>
+            <div class="row g-3">
+              <div class="col-12">
+                <label class="form-label" for="voucherName">Tên chương trình</label>
+                <input type="text" id="voucherName" class="form-control" th:field="*{voucherName}" placeholder="Ví dụ: Chào bạn mới giảm 10%" required maxlength="100"/>
+                <div class="text-danger small mt-1" th:if="${#fields.hasErrors('voucherName')}" th:errors="*{voucherName}"></div>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label" for="voucherCode">Mã Voucher</label>
+                <div class="input-group">
+                  <input type="text" id="voucherCode" class="form-control" th:field="*{voucherCode}" placeholder="Để trống để tự tạo" maxlength="50" style="text-transform: uppercase;"/>
+                  <button type="button" class="btn btn-outline-secondary" onclick="generateVoucherCode()">Tạo mã ngẫu nhiên</button>
+                </div>
+                <div class="text-danger small mt-1" th:if="${#fields.hasErrors('voucherCode')}" th:errors="*{voucherCode}"></div>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label" for="voucherScope">Áp dụng cho</label>
+                <select id="voucherScope" class="form-select" th:field="*{applicableScope}">
+                  <option value="ALL">Toàn bộ đơn hàng</option>
+                  <option value="SHIPPING">Miễn phí vận chuyển</option>
+                </select>
+              </div>
+              <div class="col-12">
+                <label class="form-label" for="voucherDescription">Mô tả</label>
+                <textarea id="voucherDescription" class="form-control" rows="2" th:field="*{description}" placeholder="Mô tả ngắn về chương trình"></textarea>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-card mb-3">
+            <h2><span class="step-num">2</span> Hình thức &amp; Mức giảm</h2>
+            <div class="row g-3">
+              <div class="col-12">
+                <div class="form-check form-check-inline">
+                  <input class="form-check-input" type="radio" id="discountPercent" th:field="*{discountType}" value="PERCENTAGE"/>
+                  <label class="form-check-label" for="discountPercent">Theo phần trăm (%)</label>
+                </div>
+                <div class="form-check form-check-inline">
+                  <input class="form-check-input" type="radio" id="discountFixed" th:field="*{discountType}" value="FIXED_AMOUNT"/>
+                  <label class="form-check-label" for="discountFixed">Số tiền cố định (VNĐ)</label>
+                </div>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label" for="discountValue">Mức giảm</label>
+                <div class="input-group">
+                  <input type="text" inputmode="decimal" id="discountValue" class="form-control money-input" th:field="*{discountValue}" required/>
+                  <span class="input-group-text" id="discountUnit">%</span>
+                </div>
+                <div class="text-danger small mt-1" th:if="${#fields.hasErrors('discountValue')}" th:errors="*{discountValue}"></div>
+              </div>
+              <div class="col-md-6" id="maxDiscountGroup">
+                <label class="form-label" for="maxDiscount">Tối đa (đ)</label>
+                <input type="text" inputmode="numeric" id="maxDiscount" class="form-control money-input" th:field="*{maxDiscountAmount}" placeholder="Để trống nếu không giới hạn"/>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-card mb-3">
+            <h2><span class="step-num">3</span> Điều kiện &amp; Giới hạn</h2>
+            <div class="row g-3">
+              <div class="col-md-6">
+                <label class="form-label" for="minOrder">Giá trị đơn tối thiểu (đ)</label>
+                <input type="text" inputmode="numeric" id="minOrder" class="form-control money-input" th:field="*{minOrderValue}" required/>
+                <div class="text-danger small mt-1" th:if="${#fields.hasErrors('minOrderValue')}" th:errors="*{minOrderValue}"></div>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label" for="usageLimit">Tổng số lượng mã</label>
+                <input type="number" id="usageLimit" class="form-control" th:field="*{usageLimit}" min="1" step="1" required/>
+                <div class="text-danger small mt-1" th:if="${#fields.hasErrors('usageLimit')}" th:errors="*{usageLimit}"></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-card">
+            <h2><span class="step-num">4</span> Khung thời gian hiệu lực</h2>
+            <div class="row g-3">
+              <div class="col-md-6">
+                <label class="form-label" for="startDate">Bắt đầu</label>
+                <input type="datetime-local" id="startDate" class="form-control" th:field="*{startDate}" required/>
+                <div class="text-danger small mt-1" th:if="${#fields.hasErrors('startDate')}" th:errors="*{startDate}"></div>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label" for="endDate">Kết thúc</label>
+                <input type="datetime-local" id="endDate" class="form-control" th:field="*{endDate}" required/>
+                <div class="text-danger small mt-1" th:if="${#fields.hasErrors('endDate')}" th:errors="*{endDate}"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-lg-5">
+          <div class="form-card mb-3">
+            <h2><span class="step-num">5</span> Phạm vi</h2>
+            <div class="mb-3">
+              <div class="form-check">
+                <input class="form-check-input" type="radio" id="scopeAll" th:field="*{scopeType}" value="ALL"/>
+                <label class="form-check-label" for="scopeAll">Tất cả sản phẩm</label>
+              </div>
+              <div class="form-check">
+                <input class="form-check-input" type="radio" id="scopeCategory" th:field="*{scopeType}" value="CATEGORY"/>
+                <label class="form-check-label" for="scopeCategory">Theo loại sản phẩm</label>
+              </div>
+              <div class="form-check">
+                <input class="form-check-input" type="radio" id="scopeProduct" th:field="*{scopeType}" value="PRODUCT"/>
+                <label class="form-check-label" for="scopeProduct">Sản phẩm cụ thể</label>
+              </div>
+            </div>
+            <div id="categoryScope" class="d-none">
+              <label class="form-label">Loại sản phẩm áp dụng</label>
+              <div class="check-list">
+                <div class="form-check" th:each="cat : ${categories}">
+                  <input class="form-check-input" type="checkbox" th:id="'cat-' + ${cat.id}" th:field="*{categoryIds}" th:value="${cat.id}"/>
+                  <label class="form-check-label" th:for="'cat-' + ${cat.id}" th:text="${cat.name}">Loại</label>
+                </div>
+              </div>
+            </div>
+            <div id="productScope" class="d-none">
+              <label class="form-label">Sản phẩm áp dụng</label>
+              <div class="check-list">
+                <div class="form-check" th:each="prod : ${products}">
+                  <input class="form-check-input" type="checkbox" th:id="'prod-' + ${prod.id}" th:field="*{productIds}" th:value="${prod.id}"/>
+                  <label class="form-check-label" th:for="'prod-' + ${prod.id}" th:text="${prod.name}">Sản phẩm</label>
+                </div>
+              </div>
+            </div>
+            <div class="mt-3">
+              <label class="form-label" for="voucherImage">Ảnh voucher</label>
+              <label class="upload-box" for="voucherImage">
+                <i class="bi bi-cloud-arrow-up"></i>
+                <span>Tải lên ảnh voucher</span>
+                <input type="file" id="voucherImage" name="image" accept="image/*" class="d-none" data-preview="voucherImagePreview"/>
+              </label>
+              <img id="voucherImagePreview" alt="Ảnh voucher"
+                   th:src="${voucherForm.imgUrl}" th:class="${voucherForm.imgUrl != null and voucherForm.imgUrl != ''} ? 'upload-preview' : 'upload-preview d-none'"
+                   onerror="this.onerror=null;this.src='/images/placeholder.svg'"/>
+              <input type="url" class="form-control mt-2" th:field="*{imgUrl}" placeholder="Hoặc dán đường dẫn ảnh" maxlength="500"/>
+            </div>
+          </div>
+
+          <div class="form-card">
+            <h2><span class="step-num">6</span> Trạng thái</h2>
+            <div class="form-check form-switch">
+              <input class="form-check-input" type="checkbox" id="voucherActive" th:field="*{active}"/>
+              <label class="form-check-label" for="voucherActive">Kích hoạt voucher</label>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="admin-actions-bar">
+        <a th:href="@{/admin/vouchers}" class="btn btn-light rounded-pill px-4">Hủy</a>
+        <button type="submit" class="btn btn-green">Lưu &amp; đăng</button>
+      </div>
+    </form>
+  </main>
+</div>
+<div th:replace="~{admin/fragments :: scripts}"></div>
+</body>
+</html>

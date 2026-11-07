@@ -1,24 +1,62 @@
-LUMINOUS — Bán mỹ phẩm (README ý chính)
-Hệ thống thương mại điện tử bán mỹ phẩm theo Figma Project of cosmetics, sinh viên Bùi Ngọc Hiến (MSSV 23690851), làm việc bằng tiếng Việt, ưu tiên chức năng chạy đúng, giao diện đẹp, code ngắn gọn dễ hiểu.
-Công nghệ
-Java, Spring Boot, Spring Data JPA, Spring Security, Thymeleaf, Bootstrap 5.3, vanilla JS, MariaDB (LUMINOUS_DB, jdbc:mariadb://localhost:3307/LUMINOUS_DB, ddl-auto=validate); máy thật dùng Spring Boot 4.1.2 / Java 25 nên giữ nguyên pom và application.properties, không đổi ngược về 3.3.5; chạy bằng mvn clean compile rồi mvn spring-boot:run, Ctrl+F5 nếu cache cũ.
-Cấu trúc
-java/com/luminous: config, controller (Home, Menu, Auth), service (ProductService, CustomUserDetailsService), model, repository, dto/ProductCard; templates: layout/header.html, layout/footer.html, homepage/home.html, menu/menu.html, auth/login.html, auth/register.html; static: css/style.css (chung), home.css, menu.css, auth.css, js/main.js, images/logo.png, banner/, categories/, products/.
-Database
-Bảng chính: Role, User, Address, Category, Product, ProductMedia, ProductVariant, Cart, CartItem, Orders, Payment, OrderDetail, Voucher, Review, Notification, SkinQuiz; Role 1 ADMIN, 2 CUSTOMER; tài khoản test (không hiện trên giao diện): admin@luminous.vn, thanhtruc@gmail.com, mật khẩu chung Luminous@123 (BCrypt); danh mục (5): Tẩy trang (1), Sữa rửa mặt (2), Serum & Dưỡng chất (3), Kem chống nắng (4), Kem dưỡng ẩm (5); sản phẩm (8): 1 Cocoon bí đao, 2 CeraVe sữa rửa mặt, 3 Cetaphil, 4 Ordinary Niacinamide, 5 Klairs Vitamin C, 6 La Roche-Posay Anthelios, 7 Skin Aqua, 8 CeraVe Moisturising; voucher: SUMMER2026, FREESHIP30, WELCOME10; lệch đã xử lý: User thiếu ngày sinh/giới tính → chạy migration 001_add_profile_fields.sql, đăng ký bằng phone → email nội bộ phone_<số>@luminous.vn, Review.rating là TINYINT nên entity dùng Byte, URL ảnh example.com trong DB không tải được → dùng ảnh local.
-Chức năng
-Đã làm thật: đăng nhập/đăng ký (captcha /captcha.png, mật khẩu ≥ 8 ký tự, BCrypt, role mặc định CUSTOMER, remember-me 7 ngày), phân quyền (/admin/** chỉ ADMIN; /cart, /orders, /account, /checkout cho CUSTOMER + ADMIN; còn lại public gồm /, /menu, /login, /register), đăng xuất về /?logout + modal "Bạn đã đăng xuất thành công.", trang chủ lấy số liệu thật (ưu đãi từ salePrice, mới nhất theo createdAt, bán chạy theo OrderDetail, sao theo Review), header/footer dùng chung, menu /menu, tìm kiếm, danh mục hot, slider.
-Chưa làm (đừng ghi là xong): giỏ thật, checkout, chi tiết sản phẩm, admin CRUD + tìm kiếm back-end, email thật, Facebook/Google thật, blog thật, trang chính sách/Giới thiệu/Liên hệ riêng, AI, barcode, VNPay/MoMo, tích điểm, dashboard realtime.
-Luật nghiệp vụ: sản phẩm chưa có trong đơn mới xóa được, danh mục chưa có sản phẩm mới xóa được, tài khoản chưa từng đặt online mới xóa được, không xem được password, đơn sắp theo ngày mua, sửa được số lượng trong đơn; validate ở client hoặc model, không dùng Function / Check constraint / Stored Procedure trong DB.
-Quy định ảnh
-Tên ảnh theo quy tắc [slug-ten-san-pham]-[productID].jpg, ví dụ nuoc-tay-trang-cocoon-bi-dao-1.jpg, sua-rua-mat-cerave-sach-sau-2.jpg, serum-the-ordinary-niacinamide-4.jpg, kem-duong-am-cerave-moisturising-8.jpg; slug không dấu, nối -, chỉ giữ lõi tên sản phẩm; không số đuôi, không is_featured (mỗi sản phẩm hiện chỉ có 1 ảnh, ảnh thứ 2 sau này mới thêm hậu tố ví dụ slug-9-2.jpg); không kích thước trong tên ảnh chung (ảnh riêng theo dung tích mới dùng ví dụ ...-500ml.jpg); file phẳng trong static/images/products/, không chia thư mục danh mục; tất cả .jpg phải là JPEG thật (kiểm tra bằng file), logo là logo.png (PNG, nền trong suốt); DB dùng sẵn ProductMedia (mediaID, productID, mediaURL = tên file), không tạo bảng product_images mới, ProductService.LOCAL_IMAGES là bảng tra file → sản phẩm duy nhất; thêm sản phẩm mới thì thêm DB → đặt tên ảnh đúng quy tắc → thêm dòng LOCAL_IMAGES + dòng ProductMedia (displayOrder = 1).
-Quy định giao diện
-Header: hamburger trái — logo giữa (64px) — tài khoản/giỏ phải, đã bỏ tìm kiếm ở header (tìm kiếm chỉ ở banner trang chủ); footer: nền ảnh mờ 4 cột, Nguyễn Văn Bảo, Gò Vấp, icon chỉ icon trong vòng 38px không chữ; màu: xanh #456A41, xanh đậm #1D5420, xanh nhạt #E0F4E3, nền be #FFFCF4, font Be Vietnam Pro; hero: 1 ảnh tĩnh banner/hero-01-ke-my-pham.jpg, không carousel, không Ken Burns, tiêu đề "Vẻ đẹp từ thiên nhiên / CHO LÀN DA RẠNG RỠ", gợi ý là 4 danh mục thật, tìm kiếm GET / với q, ô tìm kiếm khi chọn (:focus-within) nền trắng viền xanh lá, nút mật khẩu chỉ icon mắt không chữ Ẩn/Hiện.
-Menu /menu: trang riêng, không header/footer, full 100vh, trái 50% + ảnh phải cố định 50%, 6 mục, gạch chân chỉ ở mục vừa nhấn; bộ lọc rộng 480px khi mở, nav padding còn 8px, mục menu còn 12px, hover chờ 0.12s rồi nở 0.30s (tổng 0.42s, lướt qua dưới 0.12s thì không mở, đóng không delay), link bộ lọc delay 0.15s → 0.35s, chỉ ẩn khi chuột rời toàn bộ khối trái + đợi 250ms, bấm nút thì khóa mở; mở menu: mờ trang cũ trong style.css 0.10s, vào trang không dùng 1 animation cho cả trang mà từng thành phần bay lên so le (menuItemIn, 0.25s, delay 0.02s → 0.17s, ảnh scale 1.03 → 1 trong 0.4s), tổng ~0.42s, có prefers-reduced-motion thì tắt hiệu ứng; lưu ý bản CSS giao trong chat mới hơn bản CSS trong zip cuối (zip cũ còn bộ lọc 280px, mờ 0.2s) nên khi chép ưu tiên bản chat.
-Quy định code và giao file
-Chỉ giao file liên quan, không giao nguyên project, chép đè src/ và giữ application.properties + pom; chép đè không tự xóa file cũ nên phải xóa tay file/thư mục cũ đã đổi tên hoặc bỏ đi sau khi chép; tách CSS theo trang (style.css chỉ chứa chung, CSS riêng ở home.css, menu.css, auth.css, nạp qua pageCss); giữ nguyên tên biến Thymeleaf, fragment, bảng/cột, endpoint, số liệu mẫu trừ khi được gọi tên chỗ đổi, chỉ sửa đúng chỗ đó sau khi đối chiếu file thật; dữ liệu từ DB thật, không tự sinh số mẫu, chưa có dữ liệu (Son môi, Phấn mắt, Cushion, Nước hoa hồng, Mặt nạ, Chăm sóc da, Makeup, Dưỡng môi) thì hiện thông báo, không giả vờ có hàng; code ngắn gọn, dễ hiểu, ưu tiên chạy đúng hơn viết dài.
-Gỡ lỗi nhanh
-Đừng chẩn đoán từ 1 dòng lỗi, cần đủ symbol/file/dòng; phân biệt IntelliJ với lỗi thật bằng mvn clean compile ở terminal (terminal BUILD SUCCESS → lỗi đỏ trong IntelliJ chỉ là lỗi index, đừng sửa code theo dòng đỏ, kiểm tra Settings Maven và Invalidate Caches; terminal cũng lỗi → đó mới là lỗi thật); Thymeleaf render dở chừng, trang cụt, ERR_INCOMPLETE_CHUNKED_ENCODING thì lấy đoạn Caused by cuối log, thường do thẻ sản phẩm đầu tiên; schema: missing column [avt_url] → thêm naming strategy, không đổi ddl-auto thành update, rating sai kiểu → dùng Byte, CSRF tắt mà template còn input _csrf vô điều kiện sẽ lỗi 500 → thêm th:if="${_csrf != null}"; hiệu ứng: thời gian mờ CSS và thời gian chờ trong main.js phải khớp nhau nếu không sẽ đứng màn trắng hoặc bị cắt, cảm giác "đứng 3s" khi mở menu không phải do CSS 0.2s mà do thời gian tải lại trang /menu, muốn hết hẳn phải bỏ chờ trong main.js hoặc chuyển menu thành overlay, không sửa bằng CSS thuần được.
-Checklist thêm mới
-Thêm DB trước đúng id/cột không đổi bảng cũ → thêm ảnh đúng quy định, kiểm tra file, cập nhật LOCAL_IMAGES → trang mới thì template riêng + CSS riêng qua pageCss và dùng chung header/footer → hiệu ứng mới thì ghi rõ 3 số phải khớp (mờ CSS, chờ main.js, vào trang) + prefers-reduced-motion → chạy mvn clean compile, mvn spring-boot:run, kiểm tra Ctrl+F5 ở cả trang chủ, menu, đăng nhập/đăng ký và trang mới → xóa tay file cũ đã thay thế rồi mới coi là xong.
-Bản này thay bản 172 dòng trước đó, chỉ giữ ý chính, mỗi ý viết trên 1 hàng dài, không tự ngắt dòng giữa chừng.
+Quy định và cấu trúc thư mục
+1. Cấu trúc thư mục
+   src/main/java/com/luminous/
+   controller/            # điều khiển request, trả về tên template
+       admin/               # trang quản trị: Admin*Controller (10 class)
+       auth/                # đăng nhập, đăng ký, captcha
+       home/                # trang chủ
+       menu/                # trang menu
+       product/             # trang sản phẩm của shop
+       shop/                # trang phụ của shop
+       skinquiz/            # trắc nghiệm da, chu trình
+   service/               # xử lý nghiệp vụ, gọi repository
+       admin/               # Admin*Service (7 class)
+       auth/                # đăng nhập, captcha
+       product/             # sản phẩm của shop
+       skinquiz/            # trắc nghiệm da, chu trình
+       FileStorageService   # lưu file ảnh (dùng chung, để ở package cha)
+       ProductImage         # đường dẫn ảnh sản phẩm (dùng chung)
+   repository/            # truy vấn database (JPA)
+       category/            # loại sản phẩm
+       order/               # đơn hàng, chi tiết đơn, thanh toán, tích điểm
+       product/             # sản phẩm, biến thể, ảnh sản phẩm
+       review/              # đánh giá
+       skinquiz/            # kết quả trắc nghiệm, chu trình
+       voucher/             # khuyến mãi và phạm vi áp dụng
+       UserRepository       # tài khoản (dùng chung, để ở package cha)
+       RoleRepository       # vai trò (dùng chung, để ở package cha)
+   model/                 # entity JPA + enum
+       Orders, User, Product, Category, Voucher, Payment, ...
+       enums/
+            CategoryStatus, DiscountType, OrderStatus, SalesChannel, PaymentMethod,    
+            PaymentStatus, VoucherScope, VoucherApplicableScope...
+      dto/                   # form nhận dữ liệu và dòng hiển thị, không chứa
+      config/                # cấu hình web, bảo mật, định dạng
+      security/              # đăng nhập, phân quyền
+      src/main/resources/
+      templates/
+          admin/               # giao diện trang quản trị
+          homepage/            # giao diện trang chủ (template home.html)
+          ...                  # giao diện các trang shop khác
+      static/
+          css/                 # admin.css, style.css
+          js/                  # admin.js
+          images/products/     # ảnh sản phẩm, chia theo thư mục tên loại
+      database/
+          migrations/            # 003_admin.sql ... 008_order_walkin.sql
+          seed_orders_reviews.sql  # dữ liệu đơn hàng, đánh giá mẫu (chạy 1 lần)
+      bill/                    # hóa đơn đã lưu, dạng bill/<mã đơn>.html
+2. Quy định
+   Đặt class đúng thư mục: class có tên chứa Admin thì để trong thư mục admin/ của tầng đó; class khác để trong thư mục theo tên tính năng (ví dụ product/, skinquiz/); class dùng chung cho nhiều tính năng thì để ở package cha. dto/,
+   model/, security/, config/ giữ nguyên, không chia thư mục con. Khi đổi thư mục của class thì xóa file ở đường dẫn cũ, nếu không sẽ trùng bean.
+   Enum nằm trong model/: không tạo thư mục enums/ riêng. Enum lưu xuống database dạng chuỗi (@Enumerated(EnumType.STRING), đổi enum không cần migration. Form và tham số request giữ kiểu chuỗi, service chuyển sang enum bằng hàm from() và dùng giá trị mặc định khi chuỗi không hợp lệ (không trả lỗi 400).
+   Database thay đổi bằng migration: mọi thay đổi cột, bảng đều viết thành file migration mới trong database/migrations/, đặt tên số tiếp theo (ví dụ 009_...), chạy theo thứ tự, mỗi file chỉ chạy một lần. Không sửa các migration đã chạy.
+   Entity phải khớp database vì ddl-auto=validate.
+   Tiền tệ: hiển thị tiền bằng Vnd.format(); ô nhập tiền dùng lass money-input (kiểu text, không đặt min/step).
+   Bảo mật form: mọi form POST đều có token CSRF, viết kèm th:if="${_csrf != null}".
+   Ảnh sản phẩm: lưu vào static/images/products/<tên-loại>/ (tên thư mục là dạng slug của tên loại hiện tại). Đổi tên loại không dời thư mục cũ, xóa loại không xóa thư mục. Ảnh tối đa 5MB, chỉ nhận jpg / jpeg / png / webp / gif. 
+   Đơn hàng: trạng thái chỉ chuyển theo luồng PENDING → CONFIRMED → SHIPPING → DELIVERED → COMPLETED, đơn hủy (CANCELLED) phải có lý do và có thể mở lại thành PENDING. Doanh thu chỉ tính đơn COMPLETED. Đơn hoàn thành cộng 1 điểm cho mỗi 1.000đ, cộng đúng một lần. Đơn khách vãng lai lưu userID = NULL, không tạo tài khoản, không tích điểm.
+   Hóa đơn: nút Lưu hóa đơn ghi file bill/<mã đơn>.html vào thư mục gốc project (lưu lại thì ghi đè). In hóa đơn dùng hết chiều rộng trang.
+   Giao file: chỉ gửi file đã thay đổi; khi giao lại file trùng tên với project thì giữ nguyên mọi hàm và logic cũ, chỉ thêm mới.
+   Không ghi đè bản gốc, chỉ sửa đúng chỗ đã gọi tên.
+   Code: code ngắn gọn, dễ đọc, dễ hiểu.

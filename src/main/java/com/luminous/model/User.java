@@ -4,20 +4,9 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
-/**
- * Khop bang `User` trong luminous_db.sql.
- * LUU Y: 2 cot dateOfBirth, gender KHONG co trong file SQL goc.
- * Chung co trong file migration 001_add_profile_fields.sql (chay kem khi import DB),
- * vi form Dang ky theo Figma bat buoc co Ngay sinh + Gioi tinh.
- * Neu chua chay migration, app se bao loi validate schema khi khoi dong (co tinh de bao loi som).
- * MOI (migration 002): cot skinQuizAsked — he thong chi hoi trac nghiem da
- * o lan dang nhap dau tien; chon "De sau" hoac lam xong thi danh dau true
- * de cac lan dang nhap sau khong hoi lai (van vao lai duoc bang /skin-quiz).
- */
 @Getter
 @Setter
 @NoArgsConstructor

@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="vi">
+<head th:replace="~{admin/fragments :: head('Chi tiết khách hàng')}"></head>
+<body>
+<div class="admin-shell">
+  <div th:replace="~{admin/fragments :: sidebar('customers')}"></div>
+  <div class="admin-overlay" onclick="toggleSidebar(false)"></div>
+  <main class="admin-main">
+    <div th:replace="~{admin/fragments :: topbar(${customer.fullName})}"></div>
+    <div th:replace="~{admin/fragments :: toast}"></div>
+
+    <div class="admin-page-actions">
+      <a th:href="@{/admin/customers}" class="admin-back"><i class="bi bi-arrow-left"></i> Quay lại danh sách khách hàng</a>
+    </div>
+
+    <div class="row g-3">
+      <div class="col-lg-4">
+        <div class="admin-card mb-3">
+          <div class="admin-card-body text-center">
+            <span class="admin-avatar" style="width: 72px; height: 72px; font-size: 28px;" th:text="${#strings.substring(customer.fullName, 0, 1)}">A</span>
+            <h2 class="fs-5 fw-bold mt-3 mb-1" th:text="${customer.fullName}">Tên khách hàng</h2>
+            <div class="admin-sub" th:text="${customer.email}">email</div>
+            <div class="mt-3 d-flex justify-content-center gap-2">
+              <span class="badge-status" th:classappend="${customer.admin} ? ' st-CONFIRMED' : ' st-ACTIVE'"
+                    th:text="${customer.admin} ? 'Quản trị viên' : 'Khách hàng'">Khách hàng</span>
+              <span class="badge-status" th:classappend="${customer.active} ? ' st-ACTIVE' : ' st-INACTIVE'"
+                    th:text="${customer.active} ? 'Đang hoạt động' : 'Đã khóa'">Đang hoạt động</span>
+            </div>
+            <hr/>
+            <div class="row text-center">
+              <div class="col-4"><div class="fw-bold fs-5" th:text="${customer.orderCount}">0</div><div class="admin-sub">Đơn hàng</div></div>
+              <div class="col-4"><div class="fw-bold fs-5" th:text="${customer.totalSpentText()}">0đ</div><div class="admin-sub">Đã chi tiêu</div></div>
+              <div class="col-4"><div class="fw-bold fs-5" th:text="${customer.pointBalance}">0</div><div class="admin-sub">Điểm</div></div>
+            </div>
+          </div>
+        </div>
+        <div class="admin-card">
+          <div class="admin-card-head"><h2 class="admin-card-title">Chỉnh sửa tài khoản</h2></div>
+          <div class="admin-card-body">
+            <form th:action="@{|/admin/customers/${customer.id}|}" th:object="${profileForm}" method="post">
+              <input type="hidden" th:if="${_csrf != null}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+              <div class="mb-3">
+                <label class="form-label" for="customerName">Họ tên</label>
+                <input type="text" id="customerName" class="form-control" th:field="*{fullName}" required maxlength="100"/>
+                <div class="text-danger small mt-1" th:if="${#fields.hasErrors('fullName')}" th:errors="*{fullName}"></div>
+              </div>
+              <div class="mb-3">
+                <label class="form-label" for="customerPhone">Số điện thoại</label>
+                <input type="text" id="customerPhone" class="form-control" th:field="*{phone}" maxlength="15"/>
+                <div class="text-danger small mt-1" th:if="${#fields.hasErrors('phone')}" th:errors="*{phone}"></div>
+              </div>
+              <div class="mb-3">
+                <label class="form-label" for="customerRole">Vai trò</label>
+                <select id="customerRole" name="roleName" class="form-select">
+                  <option value="ROLE_CUSTOMER" th:selected="${customer.roleName == 'ROLE_CUSTOMER'}">Khách hàng</option>
+                  <option value="ROLE_ADMIN" th:selected="${customer.roleName == 'ROLE_ADMIN'}">Quản trị viên</option>
+                </select>
+              </div>
+              <button type="submit" class="btn btn-green w-100">Lưu thay đổi</button>
+            </form>
+            <form th:action="@{|/admin/customers/${customer.id}/toggle|}" method="post" class="mt-2">
+              <input type="hidden" th:if="${_csrf != null}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+              <button type="submit" class="btn w-100 rounded-pill"
+                      th:classappend="${customer.active} ? ' btn-outline-danger' : ' btn-outline-success'"
+                      th:text="${customer.active} ? 'Khóa tài khoản' : 'Mở khóa tài khoản'">Khóa tài khoản</button>
+            </form>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-lg-8">
+        <div class="admin-card mb-3">
+          <div class="admin-card-head"><h2 class="admin-card-title">Lịch sử đơn hàng</h2></div>
+          <div class="table-responsive">
+            <table class="table admin-table">
+              <thead><tr><th>Mã đơn</th><th>Ngày đặt</th><th class="text-end">Tổng tiền</th><th>Trạng thái</th><th></th></tr></thead>
+              <tbody>
+                <tr th:each="item : ${orders}">
+                  <td class="admin-name" th:text="${item.orderCode}">DH001</td>
+                  <td th:text="${#temporals.format(item.orderDate, 'dd/MM/yyyy HH:mm')}">01/01/2026</td>
+                  <td class="text-end fw-semibold" th:text="${item.totalText()}">0đ</td>
+                  <td th:text="${item.statusLabel}">Chờ xác nhận</td>
+                  <td class="text-end"><a th:href="@{|/admin/orders/${item.id}|}" class="admin-action-btn" title="Xem đơn"><i class="bi bi-eye"></i></a></td>
+                </tr>
+                <tr th:if="${#lists.isEmpty(orders)}">
+                  <td colspan="5"><div class="empty-state"><i class="bi bi-receipt"></i>Khách hàng chưa có đơn hàng nào</div></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <div class="admin-card">
+          <div class="admin-card-head"><h2 class="admin-card-title">Đánh giá của khách hàng</h2></div>
+          <div class="table-responsive">
+            <table class="table admin-table">
+              <thead><tr><th>Sản phẩm</th><th>Đánh giá</th><th>Nhận xét</th><th>Ngày</th></tr></thead>
+              <tbody>
+                <tr th:each="review : ${reviews}">
+                  <td>
+                    <div class="d-flex align-items-center gap-2">
+                      <img th:src="${review.productImage}" th:alt="${review.productName}" class="admin-thumb-sm" onerror="this.onerror=null;this.src='/images/placeholder.svg'"/>
+                      <span class="admin-name" th:text="${review.productName}">Sản phẩm</span>
+                    </div>
+                  </td>
+                  <td><span class="stars" th:text="${#strings.repeat('★', review.rating)} + ${#strings.repeat('☆', 5 - review.rating)}">★★★★★</span></td>
+                  <td th:text="${review.comment}">Nhận xét</td>
+                  <td th:text="${#temporals.format(review.createdAt, 'dd/MM/yyyy')}">01/01/2026</td>
+                </tr>
+                <tr th:if="${#lists.isEmpty(reviews)}">
+                  <td colspan="4"><div class="empty-state"><i class="bi bi-star"></i>Khách hàng chưa có đánh giá nào</div></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+<div th:replace="~{admin/fragments :: scripts}"></div>
+</body>
+</html>

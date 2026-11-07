@@ -5,7 +5,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-/** Khop bang Role trong luminous_db.sql: (1, ROLE_ADMIN), (2, ROLE_CUSTOMER). */
 @Getter
 @Setter
 @NoArgsConstructor

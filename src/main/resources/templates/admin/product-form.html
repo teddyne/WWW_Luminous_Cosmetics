@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="vi">
+<head th:replace="~{admin/fragments :: head('Sản phẩm')}"></head>
+<body>
+<div class="admin-shell">
+  <div th:replace="~{admin/fragments :: sidebar('products')}"></div>
+  <div class="admin-overlay" onclick="toggleSidebar(false)"></div>
+  <main class="admin-main">
+    <div th:replace="~{admin/fragments :: topbar(${formTitle})}"></div>
+    <div th:replace="~{admin/fragments :: toast}"></div>
+
+    <div class="admin-page-actions">
+      <a th:href="@{/admin/products}" class="admin-back"><i class="bi bi-arrow-left"></i> Quay lại danh sách sản phẩm</a>
+    </div>
+
+    <div th:if="${formError}" class="alert alert-danger rounded-3" th:text="${formError}"></div>
+
+    <form th:action="${formAction}" th:object="${productForm}" method="post" enctype="multipart/form-data">
+      <input type="hidden" th:if="${_csrf != null}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+      <div class="row g-3">
+        <div class="col-lg-7">
+          <div class="form-card mb-3">
+            <h2><span class="step-num">1</span> Thông tin sản phẩm</h2>
+            <div class="row g-3">
+              <div class="col-md-6">
+                <label class="form-label" for="productName">Tên sản phẩm</label>
+                <input type="text" id="productName" class="form-control" th:field="*{name}" placeholder="Ví dụ: Sữa rửa mặt CeraVe" required maxlength="200"/>
+                <div class="text-danger small mt-1" th:if="${#fields.hasErrors('name')}" th:errors="*{name}"></div>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label" for="productSku">Mã sản phẩm</label>
+                <input type="text" id="productSku" class="form-control" th:field="*{sku}" placeholder="Để trống để tự tạo mã" maxlength="50"/>
+                <div class="text-danger small mt-1" th:if="${#fields.hasErrors('sku')}" th:errors="*{sku}"></div>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label" for="productCategory">Loại sản phẩm</label>
+                <select id="productCategory" class="form-select" th:field="*{categoryId}" required>
+                  <option value="">Chọn loại sản phẩm</option>
+                  <option th:each="cat : ${categories}" th:value="${cat.id}" th:text="${cat.name}">Loại</option>
+                </select>
+                <div class="text-danger small mt-1" th:if="${#fields.hasErrors('categoryId')}" th:errors="*{categoryId}"></div>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label" for="productBrand">Thương hiệu</label>
+                <input type="text" id="productBrand" class="form-control" th:field="*{brand}" placeholder="Ví dụ: CERAVE" maxlength="100"/>
+              </div>
+              <div class="col-12">
+                <label class="form-label" for="productDescription">Mô tả chi tiết</label>
+                <textarea id="productDescription" class="form-control" rows="4" th:field="*{description}" placeholder="Mô tả công dụng, cách dùng, lưu ý..."></textarea>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-card">
+            <h2><span class="step-num">2</span> Giá và số lượng</h2>
+            <div class="row g-3">
+              <div class="col-md-4">
+                <label class="form-label" for="productPrice">Giá bán (đ)</label>
+                <input type="text" inputmode="numeric" id="productPrice" class="form-control money-input" th:field="*{price}" placeholder="Ví dụ: 300,000" required/>
+                <div class="text-danger small mt-1" th:if="${#fields.hasErrors('price')}" th:errors="*{price}"></div>
+              </div>
+              <div class="col-md-4">
+                <label class="form-label" for="productSalePrice">Giá khuyến mãi (đ)</label>
+                <input type="text" inputmode="numeric" id="productSalePrice" class="form-control money-input" th:field="*{salePrice}" placeholder="Để trống nếu không giảm"/>
+                <div class="text-danger small mt-1" th:if="${#fields.hasErrors('salePrice')}" th:errors="*{salePrice}"></div>
+              </div>
+              <div class="col-md-4">
+                <label class="form-label" for="productStock">Số lượng</label>
+                <input type="number" id="productStock" class="form-control" th:field="*{stockQuantity}" min="0" step="1" required/>
+                <div class="text-danger small mt-1" th:if="${#fields.hasErrors('stockQuantity')}" th:errors="*{stockQuantity}"></div>
+              </div>
+              <div class="col-md-4">
+                <label class="form-label" for="productSize">Dung tích</label>
+                <input type="text" id="productSize" class="form-control" th:field="*{size}" placeholder="Ví dụ: 500ml" maxlength="50"/>
+              </div>
+              <div class="col-md-4">
+                <label class="form-label" for="productShade">Tên màu</label>
+                <input type="text" id="productShade" class="form-control" th:field="*{shadeName}" placeholder="Dành cho son, phấn..." maxlength="100"/>
+              </div>
+              <div class="col-md-4">
+                <label class="form-label" for="productHex">Mã màu (không bắt buộc)</label>
+                <input type="text" id="productHex" class="form-control" th:field="*{hexCode}" placeholder="#FF0000" maxlength="10"/>
+                <div class="text-danger small mt-1" th:if="${#fields.hasErrors('hexCode')}" th:errors="*{hexCode}"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-lg-5">
+          <div class="form-card mb-3">
+            <h2><span class="step-num">3</span> Thành phần và da phù hợp</h2>
+            <div class="mb-3">
+              <label class="form-label" for="productIngredients">Thành phần</label>
+              <textarea id="productIngredients" class="form-control" rows="3" th:field="*{ingredients}" placeholder="Liệt kê thành phần chính, cách nhau bằng dấu phẩy"></textarea>
+            </div>
+            <label class="form-label">Da phù hợp</label>
+            <div class="d-flex flex-wrap gap-3">
+              <div class="form-check" th:each="skin : ${skinTypes}">
+                <input class="form-check-input" type="checkbox" th:id="'skin-' + ${skin.code}" th:field="*{suitableSkinTypes}" th:value="${skin.code}"/>
+                <label class="form-check-label" th:for="'skin-' + ${skin.code}" th:text="${skin.label}">Da dầu</label>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-card">
+            <h2><span class="step-num">4</span> Hình ảnh và video sản phẩm</h2>
+            <label class="upload-box" for="productImage">
+              <i class="bi bi-cloud-arrow-up"></i>
+              <span>Tải lên ảnh chính</span>
+              <input type="file" id="productImage" name="image" accept="image/*" class="d-none" data-preview="productImagePreview"/>
+            </label>
+            <img id="productImagePreview" class="upload-preview d-none" alt="Ảnh chính"
+                 th:src="${productForm.imageUrl}" th:class="${productForm.imageUrl != null and productForm.imageUrl != ''} ? 'upload-preview' : 'upload-preview d-none'"
+                 onerror="this.onerror=null;this.src='/images/placeholder.svg'"/>
+            <div class="mt-3">
+              <label class="form-label" for="productImageUrl">Hoặc dán đường dẫn ảnh</label>
+              <input type="url" id="productImageUrl" class="form-control" th:field="*{imageUrl}" placeholder="https://..." maxlength="500"/>
+            </div>
+            <div class="mt-3">
+              <label class="form-label" for="productGallery">Ảnh phụ (chọn nhiều ảnh)</label>
+              <input type="file" id="productGallery" name="gallery" accept="image/*" class="form-control" multiple/>
+            </div>
+            <div class="mt-3">
+              <label class="form-label" for="productVideo">Đường dẫn video</label>
+              <input type="url" id="productVideo" class="form-control" th:field="*{videoUrl}" placeholder="https://..." maxlength="500"/>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="admin-actions-bar">
+        <a th:href="@{/admin/products}" class="btn btn-light rounded-pill px-4">Hủy</a>
+        <button type="submit" name="action" value="draft" class="btn btn-soft">Lưu bản nháp</button>
+        <button type="submit" name="action" value="publish" class="btn btn-green">Lưu &amp; đăng</button>
+      </div>
+    </form>
+  </main>
+</div>
+<div th:replace="~{admin/fragments :: scripts}"></div>
+</body>
+</html>

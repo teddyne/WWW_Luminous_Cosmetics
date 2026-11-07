@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="vi">
+<head th:fragment="head(title)">
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title th:text="${title} + ' | LUMINOUS Admin'">LUMINOUS Admin</title>
+  <link rel="icon" th:href="@{/images/logo.svg}" type="image/svg+xml"/>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"/>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" th:href="@{/css/admin.css}"/>
+</head>
+<body>
+
+<aside th:fragment="sidebar(activeMenu)" class="admin-sidebar" id="adminSidebar">
+  <a th:href="@{/admin}" class="admin-brand">
+    <img th:src="@{/images/logo.png}" src="/images/logo.svg" onerror="this.onerror=null;this.src='/images/logo.svg'" alt="LUMINOUS"/>
+  </a>
+  <nav class="admin-nav">
+    <a th:href="@{/admin}" th:classappend="${activeMenu == 'dashboard'} ? ' active'" class="admin-nav-link">
+      <i class="bi bi-speedometer2"></i><span>Tổng quan</span>
+    </a>
+    <div class="admin-nav-label">Mỹ phẩm</div>
+    <a th:href="@{/admin/categories}" th:classappend="${activeMenu == 'categories'} ? ' active'" class="admin-nav-link">
+      <i class="bi bi-tags"></i><span>Loại sản phẩm</span>
+    </a>
+    <a th:href="@{/admin/products}" th:classappend="${activeMenu == 'products'} ? ' active'" class="admin-nav-link">
+      <i class="bi bi-bag"></i><span>Danh sách</span>
+    </a>
+    <div class="admin-nav-label">Bán hàng</div>
+    <a th:href="@{/admin/orders}" th:classappend="${activeMenu == 'orders'} ? ' active'" class="admin-nav-link">
+      <i class="bi bi-receipt"></i><span>Đơn hàng</span>
+    </a>
+    <a th:href="@{/admin/customers}" th:classappend="${activeMenu == 'customers'} ? ' active'" class="admin-nav-link">
+      <i class="bi bi-people"></i><span>Khách hàng</span>
+    </a>
+    <a th:href="@{/admin/vouchers}" th:classappend="${activeMenu == 'vouchers'} ? ' active'" class="admin-nav-link">
+      <i class="bi bi-ticket-perforated"></i><span>Khuyến mãi</span>
+    </a>
+    <a th:href="@{/admin/reviews}" th:classappend="${activeMenu == 'reviews'} ? ' active'" class="admin-nav-link">
+      <i class="bi bi-star"></i><span>Đánh giá</span>
+    </a>
+    <div class="admin-nav-label">Hệ thống</div>
+    <a th:href="@{/admin/settings}" th:classappend="${activeMenu == 'settings'} ? ' active'" class="admin-nav-link">
+      <i class="bi bi-gear"></i><span>Cài đặt</span>
+    </a>
+    <a th:href="@{/admin/customers(role='ROLE_ADMIN')}" th:classappend="${activeMenu == 'admins'} ? ' active'" class="admin-nav-link">
+      <i class="bi bi-shield-check"></i><span>Quản trị viên</span>
+    </a>
+    <a th:href="@{/}" class="admin-nav-link">
+      <i class="bi bi-shop"></i><span>Xem cửa hàng</span>
+    </a>
+  </nav>
+  <div class="admin-sidebar-user" th:if="${currentUser != null}">
+    <span class="admin-avatar" th:text="${#strings.substring(currentUser.fullName(), 0, 1)}">A</span>
+    <span class="admin-sidebar-name" th:text="${currentUser.fullName()}">Quản trị viên</span>
+    <form th:action="@{/logout}" method="post" class="m-0">
+      <input type="hidden" th:if="${_csrf != null}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+      <button type="submit" class="admin-icon-btn" title="Đăng xuất" aria-label="Đăng xuất"><i class="bi bi-box-arrow-right"></i></button>
+    </form>
+  </div>
+</aside>
+
+<header th:fragment="topbar(title)" class="admin-topbar">
+  <button class="admin-icon-btn d-lg-none" type="button" onclick="toggleSidebar(true)" aria-label="Mở menu">
+    <i class="bi bi-list"></i>
+  </button>
+  <h1 class="admin-page-title" th:text="${title}">Tổng quan</h1>
+  <div class="admin-topbar-right">
+    <a th:href="@{/admin/orders(status='PENDING')}" class="admin-icon-btn" title="Đơn chờ xác nhận" aria-label="Đơn chờ xác nhận">
+      <i class="bi bi-bell"></i>
+    </a>
+    <div class="dropdown" th:if="${currentUser != null}">
+      <button class="admin-user-chip dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+        <span class="admin-avatar" th:text="${#strings.substring(currentUser.fullName(), 0, 1)}">A</span>
+        <span th:text="${currentUser.fullName()}">Quản trị viên</span>
+      </button>
+      <ul class="dropdown-menu dropdown-menu-end">
+        <li><a class="dropdown-item" th:href="@{/admin/settings}">Cài đặt tài khoản</a></li>
+        <li><a class="dropdown-item" th:href="@{/}">Xem cửa hàng</a></li>
+        <li><hr class="dropdown-divider"/></li>
+        <li>
+          <form th:action="@{/logout}" method="post" class="m-0">
+            <input type="hidden" th:if="${_csrf != null}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+            <button class="dropdown-item" type="submit">Đăng xuất</button>
+          </form>
+        </li>
+      </ul>
+    </div>
+  </div>
+</header>
+
+<div th:fragment="toast" th:if="${toast}" th:class="'admin-toast alert alert-' + (${toastType == 'error'} ? 'danger' : 'success') + ' alert-dismissible fade show'" role="alert">
+  <span th:text="${toast}">Thông báo</span>
+  <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Đóng"></button>
+</div>
+
+<nav th:fragment="pager(page, baseUrl, pageQuery)" class="admin-pager" aria-label="Phân trang">
+  <th:block th:if="${page.totalPages > 1}">
+    <a class="admin-pager-btn" th:classappend="${page.first} ? ' disabled'"
+       th:href="@{|${baseUrl}?${pageQuery}&size=${page.size}&page=${page.number - 1}|}" aria-label="Trang trước">
+      <i class="bi bi-chevron-left"></i>
+    </a>
+    <th:block th:each="i : ${#numbers.sequence(0, page.totalPages - 1)}">
+      <span th:if="${page.totalPages > 7 and i == 1 and page.number > 2}" class="admin-pager-dots">…</span>
+      <a th:if="${page.totalPages <= 7 or i == 0 or i == page.totalPages - 1 or (i >= page.number - 1 and i <= page.number + 1)}"
+         class="admin-pager-btn" th:classappend="${i == page.number} ? ' current'"
+         th:href="@{|${baseUrl}?${pageQuery}&size=${page.size}&page=${i}|}" th:text="${i + 1}">1</a>
+      <span th:if="${page.totalPages > 7 and i == page.totalPages - 2 and page.number < page.totalPages - 3}" class="admin-pager-dots">…</span>
+    </th:block>
+    <a class="admin-pager-btn" th:classappend="${page.last} ? ' disabled'"
+       th:href="@{|${baseUrl}?${pageQuery}&size=${page.size}&page=${page.number + 1}|}" aria-label="Trang sau">
+      <i class="bi bi-chevron-right"></i>
+    </a>
+  </th:block>
+  <span class="admin-pager-info" th:text="'Trang ' + (${page.number + 1}) + ' / ' + ${page.totalPages} + ' • ' + ${page.totalElements} + ' mục'"></span>
+  <label class="admin-pagesize">Hiển thị:
+    <select class="form-select form-select-sm" onchange="changePageSize(this.value)">
+      <option th:each="s : ${ {10, 20, 100} }" th:value="${s}" th:selected="${page.size == s}" th:text="${s}">10</option>
+    </select>
+  </label>
+</nav>
+
+<div th:fragment="confirmModal" class="modal fade" id="confirmModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header border-0 pb-0">
+        <h5 class="modal-title fw-bold">Xác nhận</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng"></button>
+      </div>
+      <div class="modal-body">
+        <p class="mb-0" id="confirmText">Bạn có chắc chắn muốn thực hiện thao tác này?</p>
+      </div>
+      <div class="modal-footer border-0">
+        <button type="button" class="btn btn-light rounded-pill px-4" data-bs-dismiss="modal">Hủy</button>
+        <form id="confirmForm" method="post" class="m-0">
+          <input type="hidden" th:if="${_csrf != null}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+          <button type="submit" class="btn btn-danger rounded-pill px-4">Xác nhận xóa</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<th:block th:fragment="scripts">
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script th:src="@{/js/admin.js}"></script>
+</th:block>
+
+</body>
+</html>
