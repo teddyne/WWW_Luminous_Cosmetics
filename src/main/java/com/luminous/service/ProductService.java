@@ -144,6 +144,46 @@ public class ProductService {
         return variants.findById(variantId);
     }
 
+    /** Du lieu day du cho trang chi tiet, chi cho phep san pham dang ban. */
+    public Optional<ProductCard> detailCard(Integer productId) {
+        return products.findById(productId)
+                .filter(p -> Boolean.TRUE.equals(p.getIsActive()))
+                .map(p -> toCards(List.of(p), 1))
+                .filter(list -> !list.isEmpty())
+                .map(list -> list.get(0));
+    }
+
+    /** Cac bien the dang ban cua san pham, dung cho nut chon dung tich/mau. */
+    public List<ProductCard> activeVariantCards(Integer productId) {
+        return variants.findByProductIdAndIsActiveTrue(productId).stream()
+                .map(this::cardForVariant)
+                .toList();
+    }
+
+    /** San pham lien quan: cung danh muc, con hoat dong, khong lap san pham hien tai. */
+    public List<ProductCard> relatedCards(Integer categoryId, Integer excludeProductId, int limit) {
+        return products.findByIsActiveTrueAndCategoryIdOrderByCreatedAtDesc(categoryId).stream()
+                .filter(p -> !Objects.equals(p.getId(), excludeProductId))
+                .filter(p -> firstVariant(p) != null)
+                .map(p -> toCards(List.of(p), 1).get(0))
+                .limit(limit)
+                .toList();
+    }
+
+    /** Danh sach anh gallery, uu tien anh variant hien tai va anh trong ProductMedia. */
+    public List<String> galleryImages(ProductCard card) {
+        LinkedHashSet<String> urls = new LinkedHashSet<>();
+        urls.add(card.getImageUrl());
+        Product p = card.getProduct();
+        p.getMedia().stream()
+                .filter(m -> "IMAGE".equals(m.getMediaType()))
+                .map(m -> m.getThumbnailUrl() != null ? m.getThumbnailUrl() : m.getMediaUrl())
+                .filter(Objects::nonNull)
+                .filter(url -> !url.contains("example.com") && !url.contains("images.unsplash.com"))
+                .forEach(urls::add);
+        return new ArrayList<>(urls);
+    }
+
     private List<ProductCard> toCards(List<Product> list, int limit) {
         return list.stream()
                 .filter(p -> firstVariant(p) != null)

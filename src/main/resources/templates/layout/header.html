@@ -79,10 +79,12 @@
      Sao: so thap phan (vd 4.7) + icon sao + so luong danh gia, lay tu Review that.
      Hover: nen xanh la nhat (xem home.css .product-card:hover; the nay chi dung o trang chu, trang chu nap home.css). -->
 <article th:fragment="productCard(card, showSale)" class="product-card">
-  <img th:src="${card.getImageUrl()}" th:alt="${card.name()}" loading="lazy"/>
+  <a class="product-card-link product-card-image-link" th:href="@{/products/{id}(id=${card.product.id})}">
+    <img th:src="${card.getImageUrl()}" th:alt="${card.name()}" loading="lazy"/>
+  </a>
   <div class="p-3 d-flex flex-column flex-grow-1">
     <div class="product-brand" th:text="${card.brand()}">THƯƠNG HIỆU</div>
-    <div class="product-name" th:text="${card.name()}">Tên sản phẩm</div>
+    <a class="product-card-link product-name" th:href="@{/products/{id}(id=${card.product.id})}" th:text="${card.name()}">Tên sản phẩm</a>
     <div class="mt-1">
       <span th:if="${card.getReviewCount() > 0}">
         <span class="rating-number" th:text="${#numbers.formatDecimal(card.getRating(), 1, 1)}">4.7</span>

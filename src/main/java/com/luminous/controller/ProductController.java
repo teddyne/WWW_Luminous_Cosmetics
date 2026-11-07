@@ -8,6 +8,9 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.server.ResponseStatusException;
+import org.springframework.http.HttpStatus;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -73,6 +76,18 @@ public class ProductController {
         model.addAttribute("sort", sort);
         model.addAttribute("notice", notice);
         return "product/list";
+    }
+
+    @GetMapping("/products/{id}")
+    public String detail(@PathVariable Integer id, Model model) {
+        ProductCard card = productService.detailCard(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+        model.addAttribute("card", card);
+        model.addAttribute("variants", productService.activeVariantCards(id));
+        model.addAttribute("galleryImages", productService.galleryImages(card));
+        model.addAttribute("relatedProducts", productService.relatedCards(
+                card.getProduct().getCategory().getId(), id, 4));
+        return "product/detail";
     }
 
     /** Chuoi rong hoac sai dinh dang -> null (khong loc), khong nem loi. */
