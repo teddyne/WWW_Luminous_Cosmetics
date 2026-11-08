@@ -32,7 +32,7 @@
 .quantity-control input { border-left: 1px solid #e5e9e5; border-right: 1px solid #e5e9e5; }
 .quantity-control input::-webkit-inner-spin-button { appearance: none; }
 .detail-actions { display: grid; grid-template-columns: 1.2fr 1fr; gap: 10px; margin-top: 18px; }
-.detail-actions a { display: inline-flex; justify-content: center; align-items: center; gap: 8px; min-height: 44px; border-radius: 5px; text-decoration: none; font-weight: 700; font-size: 13px; }
+.detail-actions a, .detail-actions button { display: inline-flex; justify-content: center; align-items: center; gap: 8px; min-height: 44px; border-radius: 5px; text-decoration: none; font-weight: 700; font-size: 13px; font-family: inherit; cursor: pointer; }
 .btn-detail-cart { border: 1px solid var(--lum-text); background: #fff; }
 .btn-detail-buy { background: var(--lum-green); color: #fff; }
 .btn-detail-buy:hover { color: #fff; background: var(--lum-green-dark); }
@@ -56,7 +56,7 @@
 .related-name { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden; min-height: 42px; font-size: 15px; line-height: 1.4; font-weight: 600; text-decoration: none; margin-top: 5px; }
 .related-price { color: var(--lum-green-dark); font-size: 16px; font-weight: 700; margin-top: 8px; }
 .related-rating { font-size: 14px; margin-top: 8px; }
-.related-cart { position: absolute; right: 16px; bottom: 16px; width: 40px; height: 40px; display: grid; place-items: center; background: var(--lum-green); color: #fff; border-radius: 50%; font-size: 18px; text-decoration: none; transition: background .2s ease; }
+.related-cart { position: absolute; right: 16px; bottom: 16px; width: 40px; height: 40px; display: grid; place-items: center; background: var(--lum-green); color: #fff; border: 0; border-radius: 50%; font-size: 18px; text-decoration: none; cursor: pointer; transition: background .2s ease; }
 .related-cart:hover { color: #fff; background: var(--lum-green-dark); }
 @media (max-width: 992px) { .detail-hero { grid-template-columns: 1fr; gap: 28px; } .related-grid { grid-template-columns: repeat(2, 1fr); } }
 @media (max-width: 576px) { .detail-gallery { grid-template-columns: 56px minmax(0, 1fr); gap: 8px; } .detail-actions { grid-template-columns: 1fr; } .related-products { padding: 16px 10px; } .related-grid { gap: 8px; } }

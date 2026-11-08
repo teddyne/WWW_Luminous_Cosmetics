@@ -8,6 +8,9 @@ import com.luminous.repository.order.OrderDetailRepository;
 import com.luminous.repository.product.ProductRepository;
 import com.luminous.repository.product.ProductVariantRepository;
 import com.luminous.repository.review.ReviewRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
@@ -111,6 +114,20 @@ public class ProductService {
         }
         // sort rong/khong hop le: giu nguyen thu tu mac dinh (moi nhat truoc).
         return result;
+    }
+
+    public Page<ProductCard> searchPage(String q, String brand, List<Integer> categoryIds,
+                                        BigDecimal minPrice, BigDecimal maxPrice,
+                                        Double minRating, String sort, boolean onSaleOnly,
+                                        int page, int size) {
+        int safeSize = size <= 0 ? 12 : size;
+        List<ProductCard> all = search(q, brand, categoryIds, minPrice, maxPrice, minRating, sort, onSaleOnly);
+        int totalPages = (int) Math.ceil((double) all.size() / safeSize);
+        int safePage = Math.max(0, Math.min(page, Math.max(0, totalPages - 1)));
+        int from = safePage * safeSize;
+        int to = Math.min(from + safeSize, all.size());
+        List<ProductCard> content = from >= all.size() ? List.of() : all.subList(from, to);
+        return new PageImpl<>(content, PageRequest.of(safePage, safeSize), all.size());
     }
 
     private boolean hasVariantInPriceRange(ProductCard card, BigDecimal min, BigDecimal max) {

@@ -63,7 +63,8 @@
         </div>
         <a th:href="@{/cart}" class="header-icon text-decoration-none position-relative" title="Giỏ hàng" aria-label="Giỏ hàng">
           <i class="bi bi-cart3"></i>
-          <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-success">0</span>
+          <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-success"
+                th:if="${cartCount > 0}" th:text="${cartCount > 99 ? '99+' : cartCount}">0</span>
         </a>
       </div>
     </div>
@@ -99,9 +100,13 @@
         <div th:class="${showSale and card.onSale() ? 'price-sale' : 'price-normal'}"
              th:text="${showSale and card.onSale() ? card.displayPriceText() : card.priceText()}">245.000đ</div>
       </div>
-      <!-- Giai doan nay: nut dan ve /cart (Guest se duoc Security chuyen ve /login).
-           Khi lam gio that se doi thanh POST them vao gio, khong doi khung the. -->
-      <a th:href="@{/cart}" class="btn-add-cart" title="Thêm vào giỏ hàng" aria-label="Thêm vào giỏ hàng"><i class="bi bi-cart-plus"></i></a>
+
+      <form th:action="@{/cart/add}" method="post">
+        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+        <input type="hidden" name="variantId" th:value="${card.variant.id}"/>
+        <input type="hidden" name="quantity" value="1"/>
+        <button type="submit" class="btn-add-cart" title="Thêm vào giỏ hàng" aria-label="Thêm vào giỏ hàng"><i class="bi bi-cart-plus"></i></button>
+      </form>
     </div>
   </div>
 </article>

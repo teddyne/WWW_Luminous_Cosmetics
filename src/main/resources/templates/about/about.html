@@ -55,7 +55,7 @@
                 </div>
                 <a th:href="@{/cart}" class="header-icon text-decoration-none position-relative" title="Giỏ hàng" aria-label="Giỏ hàng">
                     <i class="bi bi-cart3"></i>
-                    <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-success">0</span>
+                    <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-success" th:if="${cartCount > 0}" th:text="${cartCount > 99 ? '99+' : cartCount}">0</span>
                 </a>
             </div>
         </div>

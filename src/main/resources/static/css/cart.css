@@ -1,0 +1,99 @@
+/* Trang gio hang: cung thang co chu voi toan web (Be Vietnam Pro o style.css),
+   co chu theo trang chi tiet: tieu de muc 13px, ten san pham 15px, gia 15px,
+   tong cong 24px. */
+.cart-page { padding: 18px 0 56px; }
+.cart-breadcrumb { display: flex; gap: 8px; color: var(--lum-muted); font-size: 13px; margin-bottom: 20px; white-space: nowrap; overflow: hidden; }
+.cart-breadcrumb a { text-decoration: none; color: var(--lum-text); }
+.cart-breadcrumb span:last-child { overflow: hidden; text-overflow: ellipsis; }
+
+/* Gio trong */
+.cart-empty { text-align: center; padding: 64px 16px; background: #fff; border: 1px solid #e5e9e5; border-radius: var(--lum-radius); }
+.cart-empty i { font-size: 56px; color: var(--lum-green); }
+.cart-empty h1 { font-size: 22px; font-weight: 600; margin: 16px 0 8px; }
+.cart-empty p { font-size: 14px; color: var(--lum-muted); margin-bottom: 24px; }
+.cart-empty .btn-cart-primary { display: inline-flex; width: auto; padding: 0 28px; }
+
+/* Bo cuc 2 cot: bang gio hang + hoa don */
+.cart-layout { display: grid; grid-template-columns: minmax(0, 1fr) 360px; gap: 24px; align-items: start; }
+.cart-main { background: #fff; border: 1px solid #e5e9e5; border-radius: var(--lum-radius); overflow: hidden; }
+.cart-table-head, .cart-row { display: grid; grid-template-columns: 28px minmax(0, 1fr) minmax(0, 428px); gap: 16px; align-items: center; padding: 14px 20px; }
+.cart-head-side, .cart-row-side { display: grid; grid-template-columns: 110px 120px 110px 40px; gap: 16px; align-items: center; }
+.cart-table-head { font-size: 13px; font-weight: 600; color: var(--lum-muted); border-bottom: 1px solid #e5e9e5; background: #fafafa; }
+.cart-table-head span { white-space: nowrap; }
+.cart-head-side span:last-child { text-align: right; }
+.cart-row + .cart-row { border-top: 1px solid #eef1ee; }
+.cart-row.out-of-stock { opacity: .75; }
+
+/* Checkbox: giong mau chu dao cua web */
+.cart-select, .cart-select-all { width: 18px; height: 18px; accent-color: var(--lum-green); cursor: pointer; }
+
+/* Cot san pham */
+.cart-product { display: flex; gap: 12px; min-width: 0; }
+.cart-thumb { flex-shrink: 0; }
+.cart-thumb img { display: block; width: 76px; height: 76px; object-fit: cover; border-radius: 8px; border: 1px solid #e5e9e5; background: var(--lum-green-soft); }
+.cart-product-info { min-width: 0; }
+.cart-brand { color: var(--lum-text); font-size: 12px; font-weight: 800; letter-spacing: .8px; text-transform: uppercase; }
+.cart-name { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden; font-size: 15px; line-height: 1.4; font-weight: 600; text-decoration: none; margin-top: 4px; }
+.cart-name:hover { color: var(--lum-green-dark); }
+.cart-variant { font-size: 13px; color: var(--lum-muted); margin-top: 4px; }
+.cart-stock-low { font-size: 12px; color: var(--lum-red); margin-top: 4px; }
+.cart-stock-out { font-size: 12px; color: var(--lum-red); font-weight: 600; margin-top: 4px; }
+
+/* Gia, so luong, thanh tien, xoa (giong nut tang giam o trang chi tiet) */
+.cart-price-now { display: block; font-size: 15px; font-weight: 700; }
+.cart-price-old { display: block; font-size: 13px; color: var(--lum-muted); text-decoration: line-through; }
+.quantity-control { display: inline-flex; border: 1px solid #b9c4b5; border-radius: 6px; overflow: hidden; }
+.quantity-control button, .quantity-control input { width: 36px; height: 34px; border: 0; background: #fff; text-align: center; }
+.quantity-control button { cursor: pointer; font-size: 18px; color: var(--lum-green-dark); }
+.quantity-control button:disabled { color: var(--lum-muted); cursor: not-allowed; }
+.quantity-control input { border-left: 1px solid #e5e9e5; border-right: 1px solid #e5e9e5; }
+.quantity-control input::-webkit-inner-spin-button { appearance: none; }
+.cart-line-total { font-size: 15px; font-weight: 800; }
+.cart-delete { border: 0; background: transparent; color: var(--lum-red); font-size: 18px; cursor: pointer; padding: 4px; }
+
+/* Hang duoi bang */
+.cart-bottom { display: flex; justify-content: space-between; align-items: center; gap: 16px; flex-wrap: wrap; padding: 16px 20px; border-top: 1px solid #e5e9e5; }
+.cart-continue { font-size: 14px; color: var(--lum-green-dark); text-decoration: none; font-weight: 600; }
+.cart-continue i { margin-right: 4px; }
+.cart-bottom-actions { display: flex; align-items: center; gap: 18px; font-size: 14px; }
+.cart-select-all-label { display: flex; align-items: center; gap: 8px; cursor: pointer; }
+.cart-link-danger { border: 0; background: none; color: var(--lum-red); font-size: 14px; font-weight: 600; cursor: pointer; padding: 0; }
+
+/* Cot hoa don */
+.cart-summary { background: #fff; border: 1px solid #e5e9e5; border-radius: var(--lum-radius); padding: 22px; position: sticky; top: 100px; }
+.cart-summary h2 { font-size: 18px; font-weight: 700; margin: 0 0 12px; }
+.summary-row { display: flex; justify-content: space-between; gap: 12px; font-size: 14px; padding: 8px 0; }
+.summary-row strong { white-space: nowrap; }
+.text-discount { color: var(--lum-red); }
+.voucher-form { display: flex; gap: 8px; margin-top: 8px; }
+.voucher-form input { flex: 1; min-width: 0; font-size: 14px; padding: 10px 12px; border: 1px solid #b9c4b5; border-radius: 6px; }
+.voucher-form button { background: var(--lum-green); color: #fff; border: 0; border-radius: 6px; font-size: 14px; font-weight: 700; padding: 10px 14px; cursor: pointer; }
+.voucher-form button:hover { background: var(--lum-green-dark); }
+.voucher-error { font-size: 13px; color: var(--lum-red); margin: 8px 0 0; }
+.voucher-chip { display: flex; justify-content: space-between; align-items: center; gap: 12px; background: var(--lum-green-soft); border-radius: 8px; padding: 10px 12px; margin-top: 8px; }
+.voucher-chip strong { display: block; font-size: 14px; }
+.voucher-chip span { font-size: 13px; color: var(--lum-muted); }
+.voucher-chip button { border: 0; background: transparent; color: var(--lum-text); font-size: 14px; cursor: pointer; }
+.voucher-desc { font-size: 13px; color: var(--lum-muted); margin: 8px 0 0; }
+.summary-total { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; border-top: 1px solid #ddd; padding-top: 14px; margin-top: 10px; }
+.summary-total span { font-size: 15px; font-weight: 700; }
+.summary-total strong { font-size: 24px; font-weight: 800; color: var(--lum-red); }
+.summary-vat { font-size: 12px; color: var(--lum-muted); text-align: right; margin: 4px 0 16px; }
+
+/* Nut chinh: giong nut "Mua ngay" o trang chi tiet (xanh dam, chu trang). */
+.btn-cart-primary { display: flex; justify-content: center; align-items: center; width: 100%; min-height: 48px; background: var(--lum-green); color: #fff; border: 0; border-radius: 8px; font-size: 15px; font-weight: 700; text-decoration: none; cursor: pointer; }
+.btn-cart-primary:hover { background: var(--lum-green-dark); color: #fff; }
+.btn-cart-primary:disabled { background: var(--lum-muted); cursor: not-allowed; }
+
+@media (max-width: 992px) {
+  .cart-layout { grid-template-columns: 1fr; }
+  .cart-summary { position: static; }
+  .cart-table-head, .cart-row { grid-template-columns: 28px minmax(0, 1fr) minmax(0, 360px); gap: 12px; padding: 14px 16px; }
+  .cart-head-side, .cart-row-side { grid-template-columns: 80px 100px 80px 62px; gap: 12px; }
+}
+@media (max-width: 576px) {
+  .cart-table-head { display: none; }
+  .cart-row { grid-template-columns: 24px minmax(0, 1fr); }
+  .cart-row-side { grid-column: 1 / -1; grid-template-columns: repeat(2, 1fr); row-gap: 8px; }
+  .cart-bottom { flex-direction: column; align-items: flex-start; }
+}

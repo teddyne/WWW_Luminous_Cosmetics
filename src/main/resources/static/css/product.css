@@ -2,11 +2,18 @@
    Dung bien mau chung trong style.css (--lum-green, --lum-radius...). */
 
 .product-page {
-  padding-top: 24px;
+  padding-top: 9px;
   padding-bottom: 48px;
 }
 
-/* O tim kiem tren dinh trang: vien xanh, bo tron, nut tim kiem xanh. */
+.shop-search-wrap {
+  position: sticky;
+  top: 85px;
+  z-index: 50;
+  background: #fff;
+  padding-top: 15px;
+}
+
 .shop-search {
   display: flex;
   border: 1.5px solid var(--lum-green);
@@ -242,6 +249,8 @@
   justify-content: center;
   font-size: 18px;
   text-decoration: none;
+  border: 0;
+  cursor: pointer;
   flex-shrink: 0;
 }
 
@@ -261,10 +270,15 @@
   font-weight: 600;
 }
 
-/* Man hinh hep: sidebar len tren, luoi co lai. */
+/* Man hinh hep: sidebar len tren, luoi co lai. Tat co dinh o day vi
+   sidebar luc nay nam tren luoi san pham (gim no se che het san pham). */
 @media (max-width: 992px) {
   .shop-layout {
     flex-direction: column;
+  }
+
+  .shop-search-wrap {
+    position: static;
   }
 
   .filter-sidebar {
@@ -275,3 +289,9 @@
     grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
   }
 }
+
+.shop-pagination { display: flex; justify-content: center; align-items: center; gap: 8px; margin-top: 28px; flex-wrap: wrap; }
+.shop-pagination .page-link { display: inline-flex; justify-content: center; align-items: center; min-width: 40px; height: 40px; padding: 0 12px; border: 1px solid #b9c4b5; border-radius: 6px; background: #fff; color: var(--lum-text); font-size: 14px; font-weight: 600; text-decoration: none; }
+.shop-pagination a.page-link:hover { border-color: var(--lum-green); color: var(--lum-green-dark); background: var(--lum-green-soft); }
+.shop-pagination .page-link-current { background: var(--lum-green); border-color: var(--lum-green); color: #fff; }
+.shop-pagination .page-link-disabled { color: var(--lum-muted); cursor: not-allowed; }

@@ -5,6 +5,7 @@ import com.luminous.model.Category;
 import com.luminous.model.enums.CategoryStatus;
 import com.luminous.repository.category.CategoryRepository;
 import com.luminous.service.product.ProductService;
+import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -18,6 +19,8 @@ import java.util.List;
 
 @Controller
 public class ProductController {
+    //12 sp 1 trang
+    private static final int PAGE_SIZE = 12;
     private final ProductService productService;
     private final CategoryRepository categories;
 
@@ -37,6 +40,7 @@ public class ProductController {
             @RequestParam(required = false) String minRating,
             @RequestParam(required = false) String sort,
             @RequestParam(required = false) String onSale,
+            @RequestParam(defaultValue = "1") int page,
             Model model) {
 
         List<Integer> effectiveCategoryIds = categoryId;
@@ -58,24 +62,33 @@ public class ProductController {
             }
         }
 
-        List<ProductCard> products = productService.search(
+        Page<ProductCard> result = productService.searchPage(
                 q, brand, effectiveCategoryIds,
                 toDecimal(minPrice), toDecimal(maxPrice), toDouble(minRating), sort,
-                "true".equalsIgnoreCase(onSale));
+                "true".equalsIgnoreCase(onSale), page - 1, PAGE_SIZE);
 
-        model.addAttribute("products", products);
+        model.addAttribute("products", result.getContent());
         model.addAttribute("categories", categories.findByStatusOrderByIdAsc(CategoryStatus.ACTIVE));
         model.addAttribute("brands", productService.allActiveCards().stream()
                 .map(ProductCard::brand).filter(b -> !b.isBlank()).distinct().sorted().toList());
-        // Giua nguyen chuoi nguoi dung go de form hien lai dung trang thai da chon.
         model.addAttribute("q", q);
         model.addAttribute("brand", brand);
         model.addAttribute("categoryId", effectiveCategoryIds);
+        model.addAttribute("categoryName", categoryName);
         model.addAttribute("minPrice", minPrice);
         model.addAttribute("maxPrice", maxPrice);
         model.addAttribute("minRating", minRating);
         model.addAttribute("sort", sort);
+        model.addAttribute("onSale", onSale);
         model.addAttribute("notice", notice);
+        model.addAttribute("totalItems", result.getTotalElements());
+        model.addAttribute("totalPages", result.getTotalPages());
+        int currentPage = result.getNumber() + 1;
+        model.addAttribute("currentPage", currentPage);
+        int windowStart = Math.max(1, Math.min(currentPage - 2, result.getTotalPages() - 4));
+        int windowEnd = Math.min(result.getTotalPages(), windowStart + 4);
+        model.addAttribute("pageWindowStart", windowStart);
+        model.addAttribute("pageWindowEnd", windowEnd);
         return "product/list";
     }
 
