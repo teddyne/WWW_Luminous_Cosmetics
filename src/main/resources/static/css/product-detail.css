@@ -8,13 +8,14 @@
 .gallery-thumb { padding: 0; border: 1px solid #e5e9e5; background: #fff; border-radius: 8px; overflow: hidden; cursor: pointer; }
 .gallery-thumb.active { border: 2px solid var(--lum-green); }
 .gallery-thumb img { display: block; width: 100%; aspect-ratio: 1; object-fit: cover; }
-.gallery-main { border-radius: var(--lum-radius); overflow: hidden; background: var(--lum-green-soft); }
+.gallery-main { border-radius: var(--lum-radius); overflow: hidden; background: #fff; position: relative; }
 .gallery-main img { display: block; width: 100%; aspect-ratio: 1; object-fit: contain; }
 .detail-info { padding-top: 4px; }
 .detail-brand { color: var(--lum-text); font-size: 12px; font-weight: 800; letter-spacing: .8px; text-transform: uppercase; }
 .detail-info h1 { font-size: clamp(22px, 2.2vw, 30px); line-height: 1.35; margin: 8px 0 12px; font-weight: 600; }
 .detail-rating { font-size: 14px; margin-bottom: 18px; }
 .detail-rating a { color: var(--lum-red); text-decoration: none; margin-left: 5px; }
+.stars-gold { color: #f5a623; }
 .detail-price-row { display: flex; align-items: baseline; gap: 12px; border-bottom: 1px solid #ddd; padding-bottom: 18px; }
 .detail-price { color: var(--lum-red); font-size: 27px; font-weight: 800; }
 .detail-old-price { color: var(--lum-muted); text-decoration: line-through; font-size: 14px; }
@@ -31,6 +32,9 @@
 .quantity-control button { cursor: pointer; font-size: 18px; color: var(--lum-green-dark); }
 .quantity-control input { border-left: 1px solid #e5e9e5; border-right: 1px solid #e5e9e5; }
 .quantity-control input::-webkit-inner-spin-button { appearance: none; }
+.quantity-control.invalid { border-color: var(--lum-red); }
+.quantity-error { color: var(--lum-red); font-size: 13px; margin: 8px 0 0; }
+.detail-actions button:disabled { opacity: .5; cursor: not-allowed; }
 .detail-actions { display: grid; grid-template-columns: 1.2fr 1fr; gap: 10px; margin-top: 18px; }
 .detail-actions a, .detail-actions button { display: inline-flex; justify-content: center; align-items: center; gap: 8px; min-height: 44px; border-radius: 5px; text-decoration: none; font-weight: 700; font-size: 13px; font-family: inherit; cursor: pointer; }
 .btn-detail-cart { border: 1px solid var(--lum-text); background: #fff; }
@@ -60,3 +64,60 @@
 .related-cart:hover { color: #fff; background: var(--lum-green-dark); }
 @media (max-width: 992px) { .detail-hero { grid-template-columns: 1fr; gap: 28px; } .related-grid { grid-template-columns: repeat(2, 1fr); } }
 @media (max-width: 576px) { .detail-gallery { grid-template-columns: 56px minmax(0, 1fr); gap: 8px; } .detail-actions { grid-template-columns: 1fr; } .related-products { padding: 16px 10px; } .related-grid { gap: 8px; } }
+
+/* ---------- Gallery video ---------- */
+.gallery-thumb-video { position: relative; }
+.gallery-thumb-video img { opacity: .55; }
+.gallery-video-badge { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; color: var(--lum-green-dark); font-size: 11px; font-weight: 700; }
+.gallery-video-badge i { font-size: 22px; }
+.gallery-main video { display: block; width: 100%; aspect-ratio: 1; object-fit: contain; background: #fff; }
+.detail-video-link { display: flex; align-items: center; justify-content: center; gap: 6px; width: 100%; aspect-ratio: 1; background: #fff; color: var(--lum-green-dark); font-weight: 600; text-decoration: none; }
+
+/* Nut < > luot qua lai giua video + cac anh (nam tren anh chinh). */
+.gallery-nav { position: absolute; top: 50%; transform: translateY(-50%); z-index: 5; width: 38px; height: 38px; border-radius: 50%; border: 1px solid #e5e9e5; background: rgba(255, 255, 255, .92); color: var(--lum-text); font-size: 20px; display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 2px 8px rgba(0, 0, 0, .12); transition: background .2s ease, color .2s ease; }
+.gallery-nav:hover { background: var(--lum-green); color: #fff; border-color: var(--lum-green); }
+.gallery-nav-prev { left: 10px; }
+.gallery-nav-next { right: 10px; }
+
+/* ---------- Danh gia san pham ---------- */
+.product-reviews { margin-top: 36px; background: #fff; border: 1px solid #e5e9e5; border-radius: 12px; padding: 24px 26px; }
+.product-reviews > h2 { font-size: 18px; font-weight: 800; letter-spacing: .5px; margin-bottom: 16px; }
+.review-summary { background: #fff; border: 1px solid #eee; border-radius: 12px; padding: 22px 26px; display: flex; gap: 32px; align-items: flex-start; flex-wrap: wrap; }
+.review-score-number { font-size: 40px; font-weight: 800; color: var(--lum-red); line-height: 1; white-space: nowrap; }
+.review-score-total { font-size: 15px; font-weight: 600; color: var(--lum-text); }
+.review-stars { color: #e02424; letter-spacing: 2px; font-size: 18px; margin-top: 6px; white-space: nowrap; }
+.review-stars.small { font-size: 14px; margin-top: 0; }
+.review-score-count { color: var(--lum-muted); font-size: 13px; margin-top: 6px; white-space: nowrap; }
+.review-filters { display: flex; flex-wrap: wrap; gap: 10px; flex: 1; }
+.review-filter { border: 1px solid #e5e9e5; background: #fff; border-radius: 4px; padding: 8px 16px; font-size: 14px; color: var(--lum-text); text-decoration: none; white-space: nowrap; transition: border-color .2s ease, color .2s ease; }
+.review-filter:hover { border-color: var(--lum-red); color: var(--lum-red); }
+.review-filter.active { border-color: var(--lum-red); color: var(--lum-red); }
+.review-list { margin-top: 8px; }
+.review-item { display: flex; gap: 14px; padding: 20px 0; border-bottom: 1px solid #eee; }
+.review-avatar { width: 44px; height: 44px; min-width: 44px; border-radius: 50%; background: #f1f1f1; display: flex; align-items: center; justify-content: center; font-size: 22px; color: #999; }
+.review-head { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.review-name { font-weight: 700; font-size: 14px; }
+.review-date { color: var(--lum-muted); font-size: 13px; margin-top: 2px; }
+.review-comment { font-size: 15px; line-height: 1.7; margin: 10px 0 0; }
+.review-pagination { display: flex; gap: 8px; justify-content: center; margin-top: 22px; }
+.review-pagination a { min-width: 36px; height: 36px; display: inline-flex; align-items: center; justify-content: center; border: 1px solid #e5e9e5; border-radius: 6px; background: #fff; color: var(--lum-text); text-decoration: none; font-size: 14px; font-weight: 600; padding: 0 10px; }
+.review-pagination a.active { background: var(--lum-green); border-color: var(--lum-green); color: #fff; }
+.review-pagination a:hover { border-color: var(--lum-green); color: var(--lum-green-dark); }
+
+/* ---------- Mo ta rich text (HTML tu TinyMCE): anh, bang, danh sach ---------- */
+.description-content img { max-width: 100%; height: auto; border-radius: 8px; }
+.description-content table { width: 100%; border-collapse: collapse; margin: 12px 0; }
+.description-content table th, .description-content table td { border: 1px solid #e5e9e5; padding: 8px 10px; text-align: left; }
+.description-content ul, .description-content ol { padding-left: 22px; }
+
+/* ---------- Bang thong so san pham ---------- */
+.product-specs { margin-top: 28px; }
+.product-specs > h2, .detail-usage > h2 { font-size: 16px; font-weight: 800; letter-spacing: .5px; margin-bottom: 14px; }
+.specs-table { width: 100%; border-collapse: separate; border-spacing: 0; border: 1px solid #e5e9e5; border-radius: 12px; overflow: hidden; font-size: 14px; }
+.specs-table th { width: 200px; background: #f7f8f7; color: var(--lum-text); font-weight: 600; text-align: left; padding: 12px 16px; border-bottom: 1px solid #e5e9e5; }
+.specs-table td { background: #fff; padding: 12px 16px; border-bottom: 1px solid #e5e9e5; }
+.specs-table tr:last-child th, .specs-table tr:last-child td { border-bottom: 0; }
+
+/* ---------- Huong dan su dung ---------- */
+.detail-usage { margin-top: 28px; }
+.detail-usage p { white-space: pre-line; line-height: 1.8; margin: 0; }

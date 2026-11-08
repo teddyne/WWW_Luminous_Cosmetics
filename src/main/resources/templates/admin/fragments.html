@@ -147,5 +147,10 @@
   <script th:src="@{/js/admin.js}"></script>
 </th:block>
 
+<!-- Nhan the voucher (HTML + CSS, khong dung anh): mau theo loai.
+     kind: shipping (xanh) / percent (do) / fixed (cam) / special (vang). -->
+<span th:fragment="voucherBadge(kind, label)" class="voucher-badge"
+      th:classappend="' voucher-badge--' + ${kind}" th:text="${label}">GIẢM 10%</span>
+
 </body>
 </html>

@@ -24,11 +24,6 @@ public class Review {
     @JoinColumn(name = "orderDetailID", nullable = false)
     private OrderDetail orderDetail;
 
-    // DB: rating TINYINT (1..5, co CHECK). Java phai dung Byte (8-bit, khop TINYINT),
-    // neu de Integer thi Hibernate doi INTEGER va validate se bao:
-    // "wrong column type ... found [tinyint], but expecting [integer]".
-    // Khong co code nao khac dung truc tiep truong nay (chi co AVG(rating) trong
-    // ReviewRepository, van tra Double binh thuong) nen doi kieu o day la du.
     @Column(name = "rating", nullable = false, columnDefinition = "TINYINT")
     private Byte rating; // 1..5, DB co CHECK
 

@@ -7,11 +7,6 @@ import org.springframework.web.bind.annotation.GetMapping;
 @Controller
 public class PlaceholderController {
 
-    @GetMapping("/blog")
-    public String blog() {
-        return "blog/blog";
-    }
-
     @GetMapping("/forgot-password")
     public String forgotPassword(Model model) {
         model.addAttribute("title", "Quên mật khẩu");

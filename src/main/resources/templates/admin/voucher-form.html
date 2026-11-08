@@ -15,7 +15,7 @@
 
     <div th:if="${formError}" class="alert alert-danger rounded-3" th:text="${formError}"></div>
 
-    <form th:action="${formAction}" th:object="${voucherForm}" method="post" enctype="multipart/form-data">
+    <form th:action="${formAction}" th:object="${voucherForm}" method="post">
       <input type="hidden" th:if="${_csrf != null}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
       <div class="row g-3">
         <div class="col-lg-7">
@@ -49,9 +49,18 @@
             </div>
           </div>
 
-          <div class="form-card mb-3">
+          <div class="form-card">
             <h2><span class="step-num">2</span> Hình thức &amp; Mức giảm</h2>
             <div class="row g-3">
+              <div class="col-12">
+                <label class="form-label" for="voucherType">Loại voucher</label>
+                <select id="voucherType" name="voucherType" class="form-select">
+                  <option value="Miễn phí vận chuyển" th:selected="${voucherForm.voucherType == 'Miễn phí vận chuyển'}">Miễn phí vận chuyển</option>
+                  <option value="Giảm giá theo phần trăm" th:selected="${voucherForm.voucherType == 'Giảm giá theo phần trăm'}">Giảm theo phần trăm</option>
+                  <option value="Giảm giá cố định" th:selected="${voucherForm.voucherType == 'Giảm giá cố định'}">Giảm số tiền cố định</option>
+                  <option value="Voucher đặc biệt" th:selected="${voucherForm.voucherType == 'Voucher đặc biệt'}">Voucher đặc biệt</option>
+                </select>
+              </div>
               <div class="col-12">
                 <div class="form-check form-check-inline">
                   <input class="form-check-input" type="radio" id="discountPercent" th:field="*{discountType}" value="PERCENTAGE"/>
@@ -77,6 +86,9 @@
             </div>
           </div>
 
+        </div>
+
+        <div class="col-lg-5">
           <div class="form-card mb-3">
             <h2><span class="step-num">3</span> Điều kiện &amp; Giới hạn</h2>
             <div class="row g-3">
@@ -93,7 +105,7 @@
             </div>
           </div>
 
-          <div class="form-card">
+          <div class="form-card mb-3">
             <h2><span class="step-num">4</span> Khung thời gian hiệu lực</h2>
             <div class="row g-3">
               <div class="col-md-6">
@@ -108,9 +120,7 @@
               </div>
             </div>
           </div>
-        </div>
 
-        <div class="col-lg-5">
           <div class="form-card mb-3">
             <h2><span class="step-num">5</span> Phạm vi</h2>
             <div class="mb-3">
@@ -146,16 +156,23 @@
               </div>
             </div>
             <div class="mt-3">
-              <label class="form-label" for="voucherImage">Ảnh voucher</label>
-              <label class="upload-box" for="voucherImage">
-                <i class="bi bi-cloud-arrow-up"></i>
-                <span>Tải lên ảnh voucher</span>
-                <input type="file" id="voucherImage" name="image" accept="image/*" class="d-none" data-preview="voucherImagePreview"/>
-              </label>
-              <img id="voucherImagePreview" alt="Ảnh voucher"
-                   th:src="${voucherForm.imgUrl}" th:class="${voucherForm.imgUrl != null and voucherForm.imgUrl != ''} ? 'upload-preview' : 'upload-preview d-none'"
-                   onerror="this.onerror=null;this.src='/images/placeholder.svg'"/>
-              <input type="url" class="form-control mt-2" th:field="*{imgUrl}" placeholder="Hoặc dán đường dẫn ảnh" maxlength="500"/>
+              <label class="form-label">Xem trước voucher</label>
+              <!-- The voucher (HTML + CSS, khong dung anh): mau + nhan doi theo
+                   loai da chon; JS cap nhat truc tiep khi admin doi loai/muc giam. -->
+              <div class="voucher-card" id="voucherPreview"
+                   th:classappend="' voucher-card--' + ${voucherForm.previewKind()}">
+                <div class="voucher-card__badge">
+                  <span class="voucher-card__label" id="previewLabel" th:text="${voucherForm.previewLabel()}">GIẢM 10%</span>
+                  <span class="voucher-card__brand" id="previewBrand"
+                        th:style="${voucherForm.previewKind() == 'special'} ? '' : 'display: none;'">LUMINOUS</span>
+                </div>
+                <div class="voucher-card__body">
+                  <div class="voucher-card__name" id="previewName" th:text="${voucherForm.voucherName != null and voucherForm.voucherName != ''} ? ${voucherForm.voucherName} : 'Tên chương trình'">Tên chương trình</div>
+                  <div class="voucher-card__code">Mã: <span id="previewCode" th:text="${voucherForm.voucherCode != null and voucherForm.voucherCode != ''} ? ${voucherForm.voucherCode} : '—'">—</span></div>
+                  <div class="voucher-card__meta">HSD: <span id="previewEnd" th:text="${voucherForm.endDate != null} ? ${#temporals.format(voucherForm.endDate, 'dd/MM/yyyy')} : '—'">—</span></div>
+                  <div class="voucher-card__meta">Đơn tối thiểu: <span id="previewMin" th:text="${voucherForm.minOrderValue != null} ? ${#numbers.formatDecimal(voucherForm.minOrderValue, 0, 'POINT', 0, 'COMMA')} + 'đ' : '—'">—</span></div>
+                </div>
+              </div>
             </div>
           </div>
 

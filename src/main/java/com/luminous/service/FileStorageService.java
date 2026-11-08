@@ -1,5 +1,6 @@
 package com.luminous.service;
 
+import com.luminous.model.Category;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -14,15 +15,54 @@ import java.util.Set;
 public class FileStorageService {
 
     private static final Set<String> ALLOWED_EXTENSIONS = Set.of("jpg", "jpeg", "png", "webp", "gif");
+    private static final Set<String> VIDEO_EXTENSIONS = Set.of("mp4", "webm", "mov");
     private static final long MAX_SIZE = 5L * 1024 * 1024;
+    private static final long MAX_VIDEO_SIZE = 50L * 1024 * 1024;
 
     private final String uploadDir;
     private final String productImageDir;
+    private final String productMediaDir;
 
     public FileStorageService(@Value("${app.upload-dir:uploads}") String uploadDir,
-                              @Value("${app.product-image-dir:src/main/resources/static/images/products}") String productImageDir) {
+                              @Value("${app.product-image-dir:src/main/resources/static/images/products}") String productImageDir,
+                              @Value("${app.product-media-dir:src/main/resources/static/products}") String productMediaDir) {
         this.uploadDir = uploadDir;
         this.productImageDir = productImageDir;
+        this.productMediaDir = productMediaDir;
+    }
+
+    /**
+     * Luu 1 file media cua san pham theo cau truc moi:
+     * static/products/{categoryId}-{slug-ten-loai}/{productId}/images/image_{n}.jpg
+     * static/products/{categoryId}-{slug-ten-loai}/{productId}/videos/video_{n}.mp4
+     * Tra ve duong dan URL (vi du /products/1-skincare/101/images/image_1.jpg).
+     * kind = "images" hoac "videos".
+     */
+    public String storeProductMedia(MultipartFile file, Category category, Integer productId,
+                                    String kind, int index) {
+        if (file == null || file.isEmpty()) {
+            return null;
+        }
+        boolean video = "videos".equals(kind);
+        String extension = checkedExtension(file, video);
+        String fileName = (video ? "video_" : "image_") + index + "." + extension;
+        String folder = productMediaFolder(category, productId) + "/" + kind;
+        try {
+            Path dir = Paths.get(productMediaDir, folder);
+            Files.createDirectories(dir);
+            Path target = dir.resolve(fileName);
+            file.transferTo(target);
+            return "/products/" + folder + "/" + fileName;
+        } catch (IOException e) {
+            throw new IllegalStateException("Không lưu được " + (video ? "video" : "ảnh"), e);
+        }
+    }
+
+    /** Thu muc goc cua 1 san pham, vi du "1-skincare/101". */
+    public static String productMediaFolder(Category category, Integer productId) {
+        int categoryId = category == null ? 0 : category.getId();
+        String categorySlug = category == null ? "khac" : slug(category.getName());
+        return categoryId + "-" + categorySlug + "/" + productId;
     }
 
     public String store(MultipartFile file, String folder, String baseName) {
@@ -77,13 +117,21 @@ public class FileStorageService {
     }
 
     private String checkedExtension(MultipartFile file) {
-        if (file.getSize() > MAX_SIZE) {
-            throw new IllegalArgumentException("Ảnh vượt quá 5MB");
+        return checkedExtension(file, false);
+    }
+
+    private String checkedExtension(MultipartFile file, boolean video) {
+        long maxSize = video ? MAX_VIDEO_SIZE : MAX_SIZE;
+        if (file.getSize() > maxSize) {
+            throw new IllegalArgumentException(video ? "Video vượt quá 50MB" : "Ảnh vượt quá 5MB");
         }
         String original = file.getOriginalFilename() == null ? "" : file.getOriginalFilename();
         String extension = extensionOf(original);
-        if (!ALLOWED_EXTENSIONS.contains(extension)) {
-            throw new IllegalArgumentException("Chỉ nhận ảnh jpg, jpeg, png, webp, gif");
+        Set<String> allowed = video ? VIDEO_EXTENSIONS : ALLOWED_EXTENSIONS;
+        if (!allowed.contains(extension)) {
+            throw new IllegalArgumentException(video
+                    ? "Chỉ nhận video mp4, webm, mov"
+                    : "Chỉ nhận ảnh jpg, jpeg, png, webp, gif");
         }
         return extension;
     }

@@ -12,7 +12,6 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import java.time.LocalDateTime;
 
@@ -60,14 +59,13 @@ public class AdminVoucherController {
     @PostMapping
     public String create(@Valid @ModelAttribute("voucherForm") VoucherForm form,
                          BindingResult result,
-                         @RequestParam(value = "image", required = false) MultipartFile image,
                          Model model,
                          RedirectAttributes redirect) {
         if (result.hasErrors()) {
             return createForm(model);
         }
         try {
-            service.create(form, image);
+            service.create(form);
         } catch (IllegalArgumentException e) {
             model.addAttribute("formError", e.getMessage());
             return createForm(model);
@@ -94,14 +92,13 @@ public class AdminVoucherController {
     public String update(@PathVariable Integer id,
                          @Valid @ModelAttribute("voucherForm") VoucherForm form,
                          BindingResult result,
-                         @RequestParam(value = "image", required = false) MultipartFile image,
                          Model model,
                          RedirectAttributes redirect) {
         if (result.hasErrors()) {
             return editForm(id, model);
         }
         try {
-            service.update(id, form, image);
+            service.update(id, form);
         } catch (IllegalArgumentException e) {
             model.addAttribute("formError", e.getMessage());
             return editForm(id, model);

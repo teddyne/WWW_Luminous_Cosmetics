@@ -76,6 +76,25 @@ document.addEventListener('DOMContentLoaded', function () {
       }, 250);
     });
   }
+
+  // Hieu ung xuat hien muot khi cuon trang: gan .reveal cho cac section
+  // trong <main> (ap dung cho moi trang dung layout chung), hien dan khi
+  // vao tam nhin. Ton trong tuy chon giam chuyen dong cua trinh duyet.
+  if ('IntersectionObserver' in window) {
+    var revealEls = document.querySelectorAll('main section, main .product-card, main .blog-card');
+    var observer = new IntersectionObserver(function (entries) {
+      entries.forEach(function (entry) {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('visible');
+          observer.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.08, rootMargin: '0px 0px -40px 0px' });
+    revealEls.forEach(function (el) {
+      el.classList.add('reveal');
+      observer.observe(el);
+    });
+  }
   document.querySelectorAll('.menu-page .menu-item, .menu-page-filter a').forEach(function (item) {
     item.addEventListener('click', function () {
       document.querySelectorAll('.menu-page .menu-item, .menu-page-filter a').forEach(function (el) {
@@ -84,6 +103,39 @@ document.addEventListener('DOMContentLoaded', function () {
       item.classList.add('active');
     });
   });
+
+  // Dem so thong ke (count-up): chay khi cuon toi, chi chay 1 lan.
+  // Doc muc tieu + hau to tu data-target / data-decimals / data-suffix.
+  var countEls = document.querySelectorAll('.count-up');
+  if (countEls.length && 'IntersectionObserver' in window) {
+    var countObserver = new IntersectionObserver(function (entries) {
+      entries.forEach(function (entry) {
+        if (!entry.isIntersecting) return;
+        var el = entry.target;
+        countObserver.unobserve(el);
+        var target = parseFloat(el.getAttribute('data-target') || '0');
+        var decimals = parseInt(el.getAttribute('data-decimals') || '0', 10);
+        var suffix = el.getAttribute('data-suffix') || '';
+        var prefix = el.getAttribute('data-prefix') || '';
+        var format = function (v) { return decimals > 0 ? v.toFixed(decimals) : String(Math.round(v)); };
+        if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+          el.textContent = prefix + format(target) + suffix;
+          return;
+        }
+        var start = null;
+        var duration = 1200;
+        var frame = function (ts) {
+          if (start === null) start = ts;
+          var p = Math.min((ts - start) / duration, 1);
+          var eased = 1 - Math.pow(1 - p, 3);
+          el.textContent = prefix + format(target * eased) + suffix;
+          if (p < 1) requestAnimationFrame(frame);
+        };
+        requestAnimationFrame(frame);
+      });
+    }, { threshold: 0.4 });
+    countEls.forEach(function (el) { countObserver.observe(el); });
+  }
 });
 
 function toggleProductFilter() {

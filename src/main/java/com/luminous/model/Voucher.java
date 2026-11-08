@@ -88,6 +88,60 @@ public class Voucher {
         return discountType == DiscountType.PERCENTAGE;
     }
 
+    /** Loai hien thi cua the voucher (dung cho mau + nhan HTML/CSS):
+     *  shipping = mien phi van chuyen (xanh), percent = giam % (do),
+     *  fixed = giam so tien co dinh (cam), special = uu dai dac biet (vang).
+     *  "Voucher dac biet" la lua chon hien thi rieng; 3 loai con lai suy ra
+     *  tu co che giam that (applicableScope/discountType) de khong lech nhau. */
+    public static String badgeKind(String typeName, VoucherApplicableScope scope, DiscountType type) {
+        if ("Voucher đặc biệt".equals(typeName)) {
+            return "special";
+        }
+        if (scope == VoucherApplicableScope.SHIPPING) {
+            return "shipping";
+        }
+        return type == DiscountType.PERCENTAGE ? "percent" : "fixed";
+    }
+
+    /** Nhan in tren the voucher theo loai: "MIEN PHI VAN CHUYEN",
+     *  "GIAM 20%", "GIAM 50K", "UU DAI DAC BIET". */
+    public static String badgeLabel(String typeName, VoucherApplicableScope scope,
+                                    DiscountType type, BigDecimal value) {
+        String kind = badgeKind(typeName, scope, type);
+        if ("shipping".equals(kind)) {
+            return "MIỄN PHÍ VẬN CHUYỂN";
+        }
+        if ("percent".equals(kind)) {
+            return "GIẢM " + (value == null ? "" : value.stripTrailingZeros().toPlainString()) + "%";
+        }
+        if ("fixed".equals(kind)) {
+            return "GIẢM " + formatShortAmount(value);
+        }
+        return "ƯU ĐÃI ĐẶC BIỆT";
+    }
+
+    /** Rut gon so tien de in len the: 50000 -> "50K", 2500 -> "2.5K", 500 -> "500đ". */
+    public static String formatShortAmount(BigDecimal value) {
+        if (value == null) {
+            return "";
+        }
+        BigDecimal v = value.stripTrailingZeros();
+        if (v.compareTo(BigDecimal.valueOf(1000)) >= 0) {
+            return v.divide(BigDecimal.valueOf(1000)).stripTrailingZeros().toPlainString() + "K";
+        }
+        return v.toPlainString() + "đ";
+    }
+
+    public String badgeKind() {
+        return badgeKind(voucherType == null ? null : voucherType.getTypeName(),
+                applicableScope, discountType);
+    }
+
+    public String badgeLabel() {
+        return badgeLabel(voucherType == null ? null : voucherType.getTypeName(),
+                applicableScope, discountType, discountValue);
+    }
+
     public String displayStatus(LocalDateTime now) {
         if (!Boolean.TRUE.equals(isActive)) {
             return "Tạm dừng";

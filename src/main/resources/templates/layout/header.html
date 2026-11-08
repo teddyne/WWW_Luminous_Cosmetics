@@ -10,21 +10,11 @@
   <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
   <!-- CSS CHUNG cho toan he thong (header/footer/nut/bien mau). -->
   <link rel="stylesheet" th:href="@{/css/style.css}"/>
-  <!-- CSS RIENG theo trang: trang nao dat th:with="pageCss='ten.css'" tren the
-       <html> thi nap them file do, trang khong dat thi chi dung CSS chung.
-       Vi du: trang chu pageCss='home.css', trang menu pageCss='menu.css',
-       dang nhap/dang ky pageCss='auth.css'. Khong con 1 file style.css chua
-       het moi trang nhu truoc. -->
+
   <link th:if="${pageCss != null}" rel="stylesheet" th:href="@{/css/{f}(f=${pageCss})}"/>
 </head>
 <body>
 
-<!-- ================= HEADER (dung chung cho moi trang) ================= -->
-<!-- Hamburger khong mo drawer nua: no dan sang trang menu rieng /menu
-     (templates/menu/menu.html). Drawer cu trong file nay da duoc xoa. -->
-<!-- Thu tu: hamburger trai - logo giua - icon phai (tai khoan, gio hang).
-     Thanh tim kiem o header DA BO theo yeu cau moi; tim kiem chi con o
-     banner trang chu (hero-search), van gui ve "/" voi tham so q. -->
 <header th:fragment="header" class="site-header">
   <div class="container">
     <div class="header-row">
@@ -69,6 +59,33 @@
       </div>
     </div>
   </div>
+
+  <!-- Thong bao them vao gio hang: giua man hinh, nen mo, tu tat sau 2-3 giay,
+       bam vao dau cung tat. -->
+  <div class="cart-overlay" id="cartOverlay" th:if="${cartAdded != null or cartAddError != null}" role="alert">
+    <div class="cart-overlay-card">
+      <div class="cart-overlay-icon" th:classappend="${cartAdded != null ? ' cart-overlay-icon-ok' : ' cart-overlay-icon-err'}">
+        <i th:class="${cartAdded != null ? 'bi bi-check-lg' : 'bi bi-x-lg'}"></i>
+      </div>
+      <div class="cart-overlay-text" th:text="${cartAdded != null ? cartAdded : cartAddError}">Đã thêm sản phẩm vào giỏ hàng thành công.</div>
+    </div>
+  </div>
+  <script th:if="${cartAdded != null or cartAddError != null}">
+    (function () {
+      var overlay = document.getElementById('cartOverlay');
+      if (!overlay) return;
+      var closed = false;
+      var close = function () {
+        if (closed) return;
+        closed = true;
+        overlay.style.transition = 'opacity .3s ease';
+        overlay.style.opacity = '0';
+        setTimeout(function () { overlay.remove(); }, 200);
+      };
+      overlay.addEventListener('click', close);
+      setTimeout(close, 300);
+    })();
+  </script>
 
 </header>
 

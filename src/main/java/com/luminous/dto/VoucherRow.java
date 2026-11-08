@@ -19,7 +19,9 @@ public record VoucherRow(
         LocalDateTime endDate,
         VoucherScope scopeType,
         boolean active,
-        String displayStatus) {
+        String displayStatus,
+        String badgeKind,
+        String badgeLabel) {
 
     public String discountText() {
         if (discountValue == null) {

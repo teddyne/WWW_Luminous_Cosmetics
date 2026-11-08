@@ -1,11 +1,13 @@
 package com.luminous.controller.skinquiz;
 
+import com.luminous.dto.GuestRoutineSession;
 import com.luminous.dto.RoutineStep;
 import com.luminous.model.SkinRoutine;
 import com.luminous.model.User;
 import com.luminous.repository.UserRepository;
 import com.luminous.repository.skinquiz.SkinRoutineRepository;
 import com.luminous.security.CustomUserDetails;
+import com.luminous.service.shop.CartService;
 import com.luminous.service.skinquiz.SkinQuizDataLoader;
 import com.luminous.service.skinquiz.SkinQuizService;
 import jakarta.servlet.http.HttpServletRequest;
@@ -20,37 +22,33 @@ import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 
-/**
- * Luong trac nghiem da + chu trinh:
- *   Dang nhap lan dau -> /skin-quiz/welcome (hoi co lam khong)
- *     -> Co -> /skin-quiz (buoc 1 muc tieu, buoc 2 ngan sach,
- *        buoc 3-7 la 5 cau DB ve da)
- *     -> Nop -> /my-routine/building (man hinh "dang thiet lap...")
- *     -> /my-routine (lich sang/toi, lich tuan, chi tiet, doi san pham)
- *     -> De sau -> / (khong hoi lai o lan dang nhap sau, van vao lai
- *        duoc bang /skin-quiz hoac /my-routine).
- * Server kiem tra lai moi dieu kien ma JS da kiem tra: du dap an
- * (so cau lay tu DB, hien la 5), 1-3 muc tieu, ngan sach hop le,
- * doi san pham cung danh muc.
- * SUA LOI BAN CU: dap an moi cau co name rieng answer1..answerN
- * (xem quiz.html). Ban cu dung chung name="answers" cho ca 5 cau nen
- * trinh duyet coi la 1 nhom radio, chon cau sau tu bo chon cau truoc.
- */
 @Controller
 public class SkinQuizController {
     private final SkinQuizDataLoader quizLoader;
     private final SkinQuizService skinService;
     private final SkinRoutineRepository routines;
     private final UserRepository users;
+    private final CartService cartService;
 
     public SkinQuizController(SkinQuizDataLoader quizLoader,
                               SkinQuizService skinService,
                               SkinRoutineRepository routines,
-                              UserRepository users) {
+                              UserRepository users,
+                              CartService cartService) {
         this.quizLoader = quizLoader;
         this.skinService = skinService;
         this.routines = routines;
         this.users = users;
+        this.cartService = cartService;
+    }
+
+    /** Ket qua trac nghiem tam cua khach trong session (null neu chua lam). */
+    private GuestRoutineSession guestSession(HttpServletRequest request) {
+        if (request.getSession(false) == null) {
+            return null;
+        }
+        Object value = request.getSession(false).getAttribute(GuestRoutineSession.SESSION_KEY);
+        return value instanceof GuestRoutineSession guest ? guest : null;
     }
 
     private User currentUser(Authentication auth) {
@@ -60,13 +58,48 @@ public class SkinQuizController {
         return null;
     }
 
+    /** Chu trinh hien tai de hien (dung chung cho building, routine, buy-all).
+     *  Ket qua vua lam luc con la khach luon thang: dang nhap xong phai thay
+     *  dung ket qua do, ke ca tai khoan da co chu trinh cu truoc do (ket qua
+     *  tam trong session duoc chuyen xuong DB va xoa khoi session ngay).
+     *  Tra ve null khi chua co ket qua nao (khach chua lam / tai khoan chua co). */
+    private record ResolvedRoutine(SkinRoutine routine, boolean isGuest) {
+    }
+
+    private ResolvedRoutine resolveRoutine(Authentication auth, HttpServletRequest request) {
+        User user = currentUser(auth);
+        GuestRoutineSession guest = guestSession(request);
+        if (guest != null) {
+            if (user != null) {
+                SkinRoutine routine = skinService.migrateGuestRoutine(user, guest);
+                request.getSession().removeAttribute(GuestRoutineSession.SESSION_KEY);
+                return new ResolvedRoutine(routine, false);
+            }
+            return new ResolvedRoutine(skinService.transientRoutineFromSession(guest), true);
+        }
+        if (user == null) {
+            return null;
+        }
+        return routines.findByUserId(user.getId())
+                .map(routine -> new ResolvedRoutine(routine, false))
+                .orElse(null);
+    }
+
     // ---------- Trang hoi lan dau ----------
 
     @GetMapping("/skin-quiz/welcome")
-    public String welcome(Authentication auth, Model model) {
+    public String welcome(Authentication auth, HttpServletRequest request, Model model) {
         User user = currentUser(auth);
         if (user == null) {
             return "redirect:/login";
+        }
+        // Vua dang nhap sau khi lam trac nghiem luc con la khach: hien thang
+        // ket qua vua lam, khong hoi lam lai trac nghiem khac.
+        GuestRoutineSession guest = guestSession(request);
+        if (guest != null) {
+            skinService.migrateGuestRoutine(user, guest);
+            request.getSession().removeAttribute(GuestRoutineSession.SESSION_KEY);
+            return "redirect:/my-routine";
         }
         model.addAttribute("hasRoutine", routines.findByUserId(user.getId()).isPresent());
         model.addAttribute("fullName", user.getFullName());
@@ -75,6 +108,7 @@ public class SkinQuizController {
 
     @PostMapping("/skin-quiz/welcome")
     public String welcomeSubmit(Authentication auth,
+                                HttpServletRequest request,
                                 @RequestParam String action,
                                 RedirectAttributes redirect) {
         User user = currentUser(auth);
@@ -82,6 +116,13 @@ public class SkinQuizController {
             return "redirect:/login";
         }
         if ("later".equals(action)) {
+            // Dang co ket qua tam cua khach: luu no xuong DB thay vi bo qua.
+            GuestRoutineSession guest = guestSession(request);
+            if (guest != null) {
+                skinService.migrateGuestRoutine(user, guest);
+                request.getSession().removeAttribute(GuestRoutineSession.SESSION_KEY);
+                return "redirect:/my-routine";
+            }
             user.setSkinQuizAsked(true);
             users.save(user);
             redirect.addFlashAttribute("quizSkipped",
@@ -112,10 +153,6 @@ public class SkinQuizController {
                          @RequestParam(required = false) String budget,
                          Model model,
                          RedirectAttributes redirect) {
-        User user = currentUser(auth);
-        if (user == null) {
-            return "redirect:/login";
-        }
         // Doc dap an theo ten rieng tung cau (answer1..answerN, dung thu tu
         // cau hoi trong DB). Tuong thich nguoc: neu form cu gui chung
         // name="answers" thi dung danh sach do.
@@ -150,44 +187,52 @@ public class SkinQuizController {
             model.addAttribute("error", "Bạn chọn 1 mức ngân sách nhé.");
             return quiz(model);
         }
+        // Khach (chua dang nhap): chi luu tam ket qua vao session, khong ghi DB.
+        // Customer/Admin: luu ket qua + chu trinh xuong DB nhu cu.
+        User user = currentUser(auth);
+        if (user == null) {
+            SkinRoutine tmp = skinService.buildTransientRoutine(quizId, answers, goals, budget);
+            request.getSession().setAttribute(GuestRoutineSession.SESSION_KEY,
+                    new GuestRoutineSession(quizId, tmp.getSkinType(), tmp.getGoals(),
+                            tmp.getBudget(), tmp.getRoutineJson()));
+            return "redirect:/my-routine/building";
+        }
         skinService.saveQuizAndRoutine(user, quizId, answers, goals, budget);
+        // Bai moi vua lam khi da dang nhap thang ket qua tam cu trong session
+        // (neu con): neu khong xoa, lan mo /my-routine ke tiep se lay ket qua
+        // cu ghi de len ket qua moi vua luu -> lam lai van khong thay doi.
+        request.getSession().removeAttribute(GuestRoutineSession.SESSION_KEY);
         return "redirect:/my-routine/building";
     }
 
     // ---------- Man hinh "dang thiet lap" ----------
 
     @GetMapping("/my-routine/building")
-    public String building(Authentication auth, Model model) {
-        User user = currentUser(auth);
-        if (user == null) {
-            return "redirect:/login";
-        }
-        Optional<SkinRoutine> routine = routines.findByUserId(user.getId());
-        if (routine.isEmpty()) {
+    public String building(Authentication auth, HttpServletRequest request, Model model) {
+        ResolvedRoutine resolved = resolveRoutine(auth, request);
+        if (resolved == null) {
             return "redirect:/skin-quiz";
         }
-        SkinRoutine r = routine.get();
-        model.addAttribute("skin", skinService.skinInfo(r.getSkinType()));
+        SkinRoutine routine = resolved.routine();
+        model.addAttribute("skin", skinService.skinInfo(routine.getSkinType()));
         model.addAttribute("goalLabels", skinService.goalLabels(
-                r.getGoals() != null && !r.getGoals().isBlank()
-                        ? List.of(r.getGoals().split(",")) : List.of()));
-        model.addAttribute("budgetLabel", skinService.budgetLabel(r.getBudget()));
+                routine.getGoals() != null && !routine.getGoals().isBlank()
+                        ? List.of(routine.getGoals().split(",")) : List.of()));
+        model.addAttribute("budgetLabel", skinService.budgetLabel(routine.getBudget()));
+        model.addAttribute("isGuest", resolved.isGuest());
         return "skin-quiz/building";
     }
 
     // ---------- Trang chu trinh ----------
 
     @GetMapping("/my-routine")
-    public String routine(Authentication auth, Model model) {
-        User user = currentUser(auth);
-        if (user == null) {
-            return "redirect:/login";
+    public String routine(Authentication auth, HttpServletRequest request, Model model) {
+        ResolvedRoutine resolved = resolveRoutine(auth, request);
+        if (resolved == null) {
+            return currentUser(auth) != null ? "redirect:/skin-quiz/welcome" : "redirect:/skin-quiz";
         }
-        Optional<SkinRoutine> routineOpt = routines.findByUserId(user.getId());
-        if (routineOpt.isEmpty()) {
-            return "redirect:/skin-quiz/welcome";
-        }
-        SkinRoutine routine = routineOpt.get();
+        SkinRoutine routine = resolved.routine();
+        boolean isGuest = resolved.isGuest();
         List<RoutineStep> steps = skinService.loadSteps(routine);
         List<RoutineStep> morning = steps.stream()
                 .filter(s -> "MORNING".equals(s.getTime())).toList();
@@ -208,7 +253,29 @@ public class SkinQuizController {
         // Lich day du la 7 buoc (sang 3 + toi 4). Thieu buoc = variant ngung ban.
         model.addAttribute("missingSteps", 7 - steps.size());
         model.addAttribute("days", List.of("Thứ 2", "Thứ 3", "Thứ 4", "Thứ 5", "Thứ 6", "Thứ 7", "Chủ nhật"));
+        model.addAttribute("isGuest", isGuest);
         return "skin-quiz/routine";
+    }
+
+    // ---------- Mua tat ca san pham trong chu trinh ----------
+
+    @PostMapping("/my-routine/buy-all")
+    public String buyAll(Authentication auth, HttpServletRequest request) {
+        ResolvedRoutine resolved = resolveRoutine(auth, request);
+        if (resolved == null) {
+            return "redirect:/skin-quiz";
+        }
+        // Moi san pham chi mua 1 lan du dung ca sang lan toi.
+        List<Integer> variantIds = skinService.loadSteps(resolved.routine()).stream()
+                .map(step -> step.getCard().getVariant().getId())
+                .distinct().toList();
+        User user = currentUser(auth);
+        if (user != null) {
+            variantIds.forEach(id -> cartService.addItem(user, id, 1));
+        } else {
+            variantIds.forEach(id -> cartService.addGuestItem(request.getSession(), id, 1));
+        }
+        return "redirect:/cart";
     }
 
     // ---------- Doi san pham tuong tu ----------

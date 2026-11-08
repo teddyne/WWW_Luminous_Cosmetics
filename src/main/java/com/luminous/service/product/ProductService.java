@@ -1,10 +1,14 @@
 package com.luminous.service.product;
 
 import com.luminous.dto.ProductCard;
+import com.luminous.dto.ReviewView;
 import com.luminous.model.Product;
 import com.luminous.model.ProductMedia;
 import com.luminous.model.ProductVariant;
+import com.luminous.model.Review;
+import com.luminous.repository.UserRepository;
 import com.luminous.repository.order.OrderDetailRepository;
+import com.luminous.repository.product.ProductAttributeRepository;
 import com.luminous.repository.product.ProductRepository;
 import com.luminous.repository.product.ProductVariantRepository;
 import com.luminous.repository.review.ReviewRepository;
@@ -24,26 +28,106 @@ public class ProductService {
     private final OrderDetailRepository orderDetails;
     private final ReviewRepository reviews;
     private final ProductVariantRepository variants;
+    private final ProductAttributeRepository productAttributes;
+    private final UserRepository users;
 
     /** Anh cho san chung khi san pham chua co anh nao (khong do ve anh san pham khac). */
-    private static final String NO_IMAGE = "/images/products/no-image.svg";
+    private static final String NO_IMAGE = "/images/no-image.svg";
+
+    /** Tom tat danh gia: diem trung binh, tong so, so luong theo tung muc sao. */
+    public record ReviewSummary(double average, long total, Map<Integer, Long> byStar) {
+        /** So sao hien thi theo diem trung binh (lam tron: >= 4.5 -> 5 sao...). */
+        public int starCount() {
+            return average >= 4.5 ? 5 : average >= 3.5 ? 4 : average >= 2.5 ? 3
+                    : average >= 1.5 ? 2 : average >= 0.5 ? 1 : 0;
+        }
+
+        /** Chuoi sao hien thi theo diem trung binh. */
+        public String stars() {
+            return "★".repeat(starCount());
+        }
+
+        /** So danh gia cua 1 muc sao (dung o template thay cho byStar[star]:
+         *  SpEL khong hieu chi so bien tren Map<Integer, Long> nen byStar[star]
+         *  bi doc thanh chuoi "star" -> NumberFormatException). */
+        public long countFor(int star) {
+            return byStar == null ? 0L : byStar.getOrDefault(star, 0L);
+        }
+    }
 
     public ProductService(ProductRepository products,
                           OrderDetailRepository orderDetails,
                           ReviewRepository reviews,
-                          ProductVariantRepository variants) {
+                          ProductVariantRepository variants,
+                          ProductAttributeRepository productAttributes,
+                          UserRepository users) {
         this.products = products;
         this.orderDetails = orderDetails;
         this.reviews = reviews;
         this.variants = variants;
+        this.productAttributes = productAttributes;
+        this.users = users;
+    }
+
+    /** Trang danh gia cua 1 san pham, loc theo sao (rating null = tat ca). */
+    public Page<ReviewView> reviewPage(Integer productId, Integer rating, int page, int size) {
+        PageRequest pageable = PageRequest.of(Math.max(0, page), size <= 0 ? 6 : size);
+        Page<Review> result = (rating != null && rating >= 1 && rating <= 5)
+                ? reviews.findVisibleByProductAndRating(productId, rating.byteValue(), pageable)
+                : reviews.findVisibleByProduct(productId, pageable);
+        List<ReviewView> views = result.getContent().stream().map(r -> new ReviewView(
+                r.getRating() == null ? 0 : r.getRating().intValue(),
+                r.getComment(), r.getCreatedAt(), reviewerName(r))).toList();
+        return new PageImpl<>(views, pageable, result.getTotalElements());
+    }
+
+    public ReviewSummary reviewSummary(Integer productId) {
+        Double avg = reviews.averageRating(productId);
+        Map<Integer, Long> byStar = new HashMap<>();
+        for (int star = 1; star <= 5; star++) {
+            byStar.put(star, 0L);
+        }
+        for (Object[] row : reviews.countByRating(productId)) {
+            byStar.put(((Number) row[0]).intValue(), ((Number) row[1]).longValue());
+        }
+        return new ReviewSummary(avg != null ? avg : 0, reviews.reviewCount(productId), byStar);
+    }
+
+    /** Ten nguoi danh gia: an danh thi an ten, neu khong thi che 1 phan (c*****a). */
+    private String reviewerName(Review review) {
+        if (Boolean.TRUE.equals(review.getIsAnonymous())) {
+            return "Khách hàng ẩn danh";
+        }
+        String name = users.findById(review.getUserId())
+                .map(u -> u.getFullName()).orElse(null);
+        if (name == null || name.isBlank()) {
+            return "Khách hàng";
+        }
+        String trimmed = name.trim();
+        if (trimmed.length() < 2) {
+            return trimmed;
+        }
+        return trimmed.charAt(0) + "*****" + trimmed.charAt(trimmed.length() - 1);
+    }
+
+    /** URL video dau tien cua san pham (ProductMedia VIDEO), null neu khong co. */
+    public String productVideoUrl(ProductCard card) {
+        if (card == null || card.getProduct() == null) {
+            return null;
+        }
+        return card.getProduct().getMedia().stream()
+                .filter(m -> "VIDEO".equals(m.getMediaType()))
+                .map(ProductMedia::getMediaUrl)
+                .filter(url -> url != null && !url.isBlank())
+                .findFirst().orElse(null);
     }
 
     public List<ProductCard> deals(int limit) {
-        return toCards(products.findDeals(), limit);
+        return inStockCards(products.findDeals(), limit);
     }
 
     public List<ProductCard> newest(int limit) {
-        return toCards(products.findByIsActiveTrueOrderByCreatedAtDesc(), limit);
+        return inStockCards(products.findByIsActiveTrueOrderByCreatedAtDesc(), limit);
     }
 
     /**
@@ -58,7 +142,7 @@ public class ProductService {
         List<Product> rest = products.findByIsActiveTrueOrderByCreatedAtDesc().stream()
                 .filter(pr -> pr.getId() == null || !excludedProductIds.contains(pr.getId()))
                 .toList();
-        return toCards(rest, limit);
+        return inStockCards(rest, limit);
     }
 
     public List<ProductCard> bestSellers(int limit) {
@@ -68,11 +152,11 @@ public class ProductService {
         if (best.isEmpty()) {
             return newest(limit);
         }
-        return toCards(best.stream().filter(p -> Boolean.TRUE.equals(p.getIsActive())).toList(), limit);
+        return inStockCards(best.stream().filter(p -> Boolean.TRUE.equals(p.getIsActive())).toList(), limit);
     }
 
     public List<ProductCard> allActiveCards() {
-        return toCards(products.findByIsActiveTrueOrderByCreatedAtDesc(), Integer.MAX_VALUE);
+        return inStockCards(products.findByIsActiveTrueOrderByCreatedAtDesc(), Integer.MAX_VALUE);
     }
 
     /**
@@ -176,10 +260,11 @@ public class ProductService {
                 .toList();
     }
 
-    /** San pham lien quan: cung danh muc, con hoat dong, khong lap san pham hien tai. */
+    /** San pham lien quan: cung danh muc, con hoat dong, con hang, khong lap san pham hien tai. */
     public List<ProductCard> relatedCards(Integer categoryId, Integer excludeProductId, int limit) {
         return products.findByIsActiveTrueAndCategoryIdOrderByCreatedAtDesc(categoryId).stream()
                 .filter(p -> !Objects.equals(p.getId(), excludeProductId))
+                .filter(this::hasStock)
                 .filter(p -> firstVariant(p) != null)
                 .map(p -> toCards(List.of(p), 1).get(0))
                 .limit(limit)
@@ -214,6 +299,25 @@ public class ProductService {
                             orderDetails.soldCount(p.getId()));
                 })
                 .collect(Collectors.toList());
+    }
+
+    /** San pham con hang: co it nhat 1 bien the dang ban con ton kho > 0.
+     *  San pham het hang khong hien o trang chu / danh sach / lien quan
+     *  (trang chi tiet van mo duoc, hien "Tam het hang" va khoa nut them). */
+    private boolean hasStock(Product p) {
+        return p.getVariants().stream()
+                .anyMatch(v -> Boolean.TRUE.equals(v.getIsActive())
+                        && v.getStockQuantity() != null && v.getStockQuantity() > 0);
+    }
+
+    /** The san pham chi tu san pham con hang (dung cho trang chu / tim kiem / lien quan). */
+    private List<ProductCard> inStockCards(List<Product> list, int limit) {
+        return toCards(list.stream().filter(this::hasStock).toList(), limit);
+    }
+
+    /** Thong so san pham (bang o trang chi tiet), theo thu tu admin nhap. */
+    public List<com.luminous.model.ProductAttribute> productAttributes(Integer productId) {
+        return productAttributes.findByProductIdOrderByDisplayOrderAsc(productId);
     }
 
     /** Variant hien thi o trang chu: variant dang giam gia truoc, roi den gia thap nhat. */

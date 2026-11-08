@@ -4,39 +4,22 @@
 <body>
 <div th:replace="~{layout/header :: header}"></div>
 
-<!-- 1. BANNER CHINH (HERO): CHI 1 ANH, KHONG anh dong nua.
-     Khong con carousel 3 anh hero-01/02/03 nhu ban cu. Anh duy nhat:
-     static/images/banner/hero-01-ke-my-pham.jpg (anh that cua ban gui,
-     da chuyen sang JPEG that). Muon doi anh banner: ghi de dung file nay.
-     Khong con anh dong Ken Burns nhu ban truoc: anh dung yen
-     (da bo animation trong home.css theo yeu cau moi).
-     Bo cuc theo anh mau ban gui: tieu de lon trang o giua, dong phu
-     cach chu, thanh tim kiem trong suot + nut Tim xanh la, duoi la goi y.
-     LUU Y CHU: anh mau goc la cua shop cay ("Khong gian xanh / Cho cuoc
-     song hien dai", goi y Sen Da / Cay De Ban / Xuong Rong) nen KHONG
-     copy nguyen chu do sang shop my pham. Chu o day da doi sang my pham:
-     tieu de "Ve dep tu thien nhien", phu "CHO LAN DA RANG RO", goi y la
-     4 danh muc that trong DB. Muon doi chu khac: sua 2 dong h1/p va 4 link
-     goi y ngay duoi day, khong can sua CSS hay Java.
-     Tim kiem THAT, khong phai gia: form GET ve "/" voi tham so q, dung
-     luong tim kiem san co cua HomeController (loc theo ten/thuong hieu).
-     Cac link goi y dan ve /?categoryId=... (danh muc that trong DB). -->
 <section class="hero-single mb-5" aria-label="Banner chính">
   <img th:src="@{/images/banner/hero-01-ke-my-pham.jpg}" class="hero-single-img" alt="Bộ mỹ phẩm trên kệ gỗ"/>
   <div class="hero-single-overlay"></div>
   <div class="hero-single-content">
     <h1 class="hero-single-title">Vẻ đẹp từ thiên nhiên</h1>
     <p class="hero-single-subtitle">CHO LÀN DA RẠNG RỠ</p>
-    <form th:action="@{/}" method="get" class="hero-search" role="search">
+    <form th:action="@{/products}" method="get" class="hero-search" role="search">
       <i class="bi bi-search hero-search-icon" aria-hidden="true"></i>
       <input class="hero-search-input" type="search" name="q" th:value="${searchQuery}" placeholder="Bạn muốn tìm sản phẩm nào?..." aria-label="Tìm sản phẩm"/>
       <button class="hero-search-btn" type="submit">Tìm</button>
     </form>
     <p class="hero-suggestions">Gợi ý:
-      <a th:href="@{/(categoryId=1)}">#TẩyTrang</a>
-      <a th:href="@{/(categoryId=2)}">#SữaRửaMặt</a>
-      <a th:href="@{/(categoryId=3)}">#Serum</a>
-      <a th:href="@{/(categoryId=4)}">#KemChốngNắng</a>
+      <a th:href="@{/products(categoryId=1)}">#TẩyTrang</a>
+      <a th:href="@{/products(categoryId=2)}">#SữaRửaMặt</a>
+      <a th:href="@{/products(categoryId=3)}">#Serum</a>
+      <a th:href="@{/products(categoryId=4)}">#KemChốngNắng</a>
     </p>
   </div>
 </section>
@@ -94,14 +77,14 @@
     <div class="row g-3">
       <div class="col-lg-8">
         <div class="row row-cols-2 row-cols-sm-4 g-3">
-          <div class="col"><a class="cat-item" th:href="@{/(categoryId=2)}"><img th:src="@{/images/categories/category-sua-rua-mat.jpg}" alt="Sữa rửa mặt"/><div>Sữa rửa mặt</div></a></div>
-          <div class="col"><a class="cat-item" th:href="@{/(categoryName='Son môi')}"><img th:src="@{/images/categories/category-son-moi.jpg}" alt="Son môi"/><div>Son môi</div></a></div>
-          <div class="col"><a class="cat-item" th:href="@{/(categoryId=1)}"><img th:src="@{/images/categories/category-tay-trang.jpg}" alt="Tẩy trang"/><div>Tẩy trang</div></a></div>
-          <div class="col"><a class="cat-item" th:href="@{/(categoryId=4)}"><img th:src="@{/images/categories/category-kem-chong-nang.jpg}" alt="Kem chống nắng"/><div>Kem chống nắng</div></a></div>
-          <div class="col"><a class="cat-item" th:href="@{/(categoryName='Phấn mắt')}"><img th:src="@{/images/categories/category-phan-mat.jpg}" alt="Phấn mắt"/><div>Phấn mắt</div></a></div>
-          <div class="col"><a class="cat-item" th:href="@{/(categoryName='Cushion')}"><img th:src="@{/images/categories/category-cushion.jpg}" alt="Cushion"/><div>Cushion</div></a></div>
-          <div class="col"><a class="cat-item" th:href="@{/(categoryName='Nước hoa hồng')}"><img th:src="@{/images/categories/category-nuoc-hoa-hong.jpg}" alt="Nước hoa hồng"/><div>Nước hoa hồng</div></a></div>
-          <div class="col"><a class="cat-item" th:href="@{/(categoryName='Mặt nạ')}"><img th:src="@{/images/categories/category-mat-na.jpg}" alt="Mặt nạ"/><div>Mặt nạ</div></a></div>
+          <div class="col"><a class="cat-item" th:href="@{/products(categoryId=2)}"><img th:src="@{/images/categories/category-sua-rua-mat.jpg}" alt="Sữa rửa mặt"/><div>Sữa rửa mặt</div></a></div>
+          <div class="col"><a class="cat-item" th:href="@{/products(categoryId=7)}"><img th:src="@{/images/categories/category-son-moi.jpg}" alt="Son môi"/><div>Son môi</div></a></div>
+          <div class="col"><a class="cat-item" th:href="@{/products(categoryId=1)}"><img th:src="@{/images/categories/category-tay-trang.jpg}" alt="Tẩy trang"/><div>Tẩy trang</div></a></div>
+          <div class="col"><a class="cat-item" th:href="@{/products(categoryId=4)}"><img th:src="@{/images/categories/category-kem-chong-nang.jpg}" alt="Kem chống nắng"/><div>Kem chống nắng</div></a></div>
+          <div class="col"><a class="cat-item" th:href="@{/products(categoryName='Phấn mắt')}"><img th:src="@{/images/categories/category-phan-mat.jpg}" alt="Phấn mắt"/><div>Phấn mắt</div></a></div>
+          <div class="col"><a class="cat-item" th:href="@{/products(categoryName='Cushion')}"><img th:src="@{/images/categories/category-cushion.jpg}" alt="Cushion"/><div>Cushion</div></a></div>
+          <div class="col"><a class="cat-item" th:href="@{/products(categoryId=6)}"><img th:src="@{/images/categories/category-nuoc-hoa-hong.jpg}" alt="Nước hoa hồng"/><div>Nước hoa hồng</div></a></div>
+          <div class="col"><a class="cat-item" th:href="@{/products(categoryName='Mặt nạ')}"><img th:src="@{/images/categories/category-mat-na.jpg}" alt="Mặt nạ"/><div>Mặt nạ</div></a></div>
         </div>
       </div>
       <div class="col-lg-4">
@@ -177,47 +160,64 @@
     </div>
   </section>
 
-  <!-- 6. BAI VIET MOI: tieu de can giua, mau #466D41, 4 the. -->
+  <!-- 5c. VE CHUNG TOI: dat truoc phan Bai viet moi. So lieu that tu DB. -->
+  <section class="about-home">
+    <div class="container text-center">
+      <p class="about-home-eyebrow">Về chúng tôi</p>
+      <h2 class="about-home-title">LUMINOUS – Mang vẻ đẹp tự nhiên vào mọi khoảnh khắc</h2>
+      <div class="about-home-divider" aria-hidden="true"></div>
+      <p class="about-home-text">Chúng tôi là cửa hàng mỹ phẩm tại TP.HCM, cam kết cung cấp sản phẩm chính hãng,
+        đa dạng từ chăm sóc da đến trang điểm. Với đội ngũ tư vấn tận tâm và hệ thống
+        mua sắm tiện lợi, chúng tôi giúp bạn dễ dàng chăm sóc làn da mỗi ngày.</p>
+      <div class="about-home-stats">
+        <div class="about-home-stat">
+          <div class="about-home-stat-value"><span class="count-up" th:attr="data-target=${totalProducts}" data-suffix="+" th:text="${totalProducts} + '+'">100+</span></div>
+          <div class="about-home-stat-label">Sản phẩm</div>
+        </div>
+        <div class="about-home-stat">
+          <div class="about-home-stat-value"><span class="count-up" th:attr="data-target=${totalCategories}" data-suffix="+" th:text="${totalCategories} + '+'">7+</span></div>
+          <div class="about-home-stat-label">Loại sản phẩm</div>
+        </div>
+        <div class="about-home-stat">
+          <div class="about-home-stat-value"><span class="count-up" th:attr="data-target=${averageRating}" data-decimals="1" th:text="${#numbers.formatDecimal(averageRating, 1, 1)}">4.9</span>★</div>
+          <div class="about-home-stat-label">Đánh giá</div>
+        </div>
+        <div class="about-home-stat">
+          <div class="about-home-stat-value"><span class="count-up" data-target="24" data-suffix="-48h">24-48h</span></div>
+          <div class="about-home-stat-label">Giao hàng nhanh</div>
+        </div>
+      </div>
+      <a th:href="@{/about}" class="about-home-btn">Xem chi tiết <i class="bi bi-arrow-right"></i></a>
+    </div>
+  </section>
+
+  <!-- 6. BAI VIET MOI: tieu de can giua, mau #466D41, 4 the (du lieu that tu bang Article). -->
   <section class="container mb-3">
     <h2 class="section-title center blog-title">Bài viết mới</h2>
     <div class="row g-3 mt-2">
-      <div class="col-md-3">
+      <div class="col-md-3" th:each="article : ${latestArticles}">
         <div class="card blog-card h-100">
-          <img th:src="@{/images/blog/blog-doi-vo-chai.jpg}" class="card-img-top" alt="Đổi vỏ chai cũ nhận quà xanh"/>
+          <img th:src="${article.coverImage}" class="card-img-top" th:alt="${article.title}"/>
           <div class="card-body d-flex flex-column">
-            <p class="text-muted small mb-1">COCOON • 05-05-2026</p>
-            <h6 class="card-title">Chương trình Đổi vỏ chai cũ nhận quà xanh năm 2024</h6>
-            <a th:href="@{/blog}" class="btn-blog-detail btn-sm mt-auto align-self-end">Xem chi tiết</a>
+            <p class="text-muted small mb-1"><span th:text="${article.categoryLabel()}">Chăm sóc da</span> • <span th:text="${article.publishedAt != null ? #temporals.format(article.publishedAt, 'dd-MM-yyyy') : ''}">05-05-2026</span></p>
+            <h6 class="card-title" th:text="${article.title}">Tiêu đề bài viết</h6>
+            <a th:href="@{/blog/{slug}(slug=${article.slug})}" class="btn-blog-detail btn-sm mt-auto align-self-end">Xem chi tiết</a>
           </div>
         </div>
       </div>
-      <div class="col-md-3">
-        <div class="card blog-card h-100">
-          <img th:src="@{/images/blog/blog-routine-da-dau.jpg}" class="card-img-top" alt="Routine da dầu"/>
-          <div class="card-body d-flex flex-column">
-            <h6 class="card-title">Routine chăm sóc da dầu mùa hè, ít bí da</h6>
-            <a th:href="@{/blog}" class="btn-blog-detail btn-sm mt-auto align-self-end">Xem chi tiết</a>
-          </div>
-        </div>
-      </div>
-      <div class="col-md-3">
-        <div class="card blog-card h-100">
-          <img th:src="@{/images/blog/blog-kem-chong-nang.jpg}" class="card-img-top" alt="Chọn kem chống nắng"/>
-          <div class="card-body d-flex flex-column">
-            <h6 class="card-title">Cách chọn kem chống nắng đúng SPF cho da nhạy cảm</h6>
-            <a th:href="@{/blog}" class="btn-blog-detail btn-sm mt-auto align-self-end">Xem chi tiết</a>
-          </div>
-        </div>
-      </div>
-      <div class="col-md-3">
-        <div class="card blog-card h-100">
-          <img th:src="@{/images/blog/blog-tay-trang-bi-dao.jpg}" class="card-img-top" alt="Nước tẩy trang bí đao"/>
-          <div class="card-body d-flex flex-column">
-            <h6 class="card-title">Vì sao nước tẩy trang bí đao được yêu thích?</h6>
-            <a th:href="@{/blog}" class="btn-blog-detail btn-sm mt-auto align-self-end">Xem chi tiết</a>
-          </div>
-        </div>
-      </div>
+      <p th:if="${#lists.isEmpty(latestArticles)}" class="text-muted text-center">Chưa có bài viết nào.</p>
+    </div>
+  </section>
+
+  <!-- 7. TRAC NGHIEM DA: CTA dan toi trang lam trac nghiem (mo cho ca khach). -->
+  <section class="skin-home">
+    <div class="container text-center">
+      <p class="skin-quiz-cta-eyebrow">✦ Trắc nghiệm da</p>
+      <h2 class="skin-quiz-cta-title">LÀN DA CỦA BẠN ĐANG CẦN GÌ?</h2>
+      <p class="skin-quiz-cta-sub">Thấu hiểu làn da – Bắt đầu hành trình chăm sóc đúng cách!</p>
+      <p class="skin-quiz-cta-text">Bạn đã biết làn da của mình thuộc loại nào? Đang băn khoăn lựa chọn sản phẩm hay chưa biết bắt đầu chu trình skincare từ đâu?</p>
+      <p class="skin-quiz-cta-text">Hãy dành vài phút thực hiện bài trắc nghiệm da cùng Luminous. Khám phá đặc điểm làn da, nhận gợi ý chăm sóc và tìm ra những sản phẩm phù hợp với nhu cầu của bạn.</p>
+      <a th:href="@{/skin-quiz}" class="skin-quiz-cta-btn">Khám phá làn da ngay <i class="bi bi-arrow-right"></i></a>
     </div>
   </section>
 </main>

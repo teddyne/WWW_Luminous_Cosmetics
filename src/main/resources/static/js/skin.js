@@ -1,11 +1,3 @@
-// Luminous - JS RIENG cho trac nghiem da + chu trinh. Vanilla JS, khong framework.
-// Server van kiem tra lai moi dieu kien (du dap an, 1-3 muc tieu, ngan sach),
-// JS o day chi giup chuyen buoc muot va bao loi ngay, tat JS thi form van nop duoc.
-// SUA LOI BAN CU: dap an moi cau da co name rieng answer1..answerN nen moi
-// cau la 1 nhom radio doc lap. Ban cu dung chung name="answers" cho ca 5 cau
-// nen trinh duyet coi la 1 nhom: chon cau sau tu bo chon cau truoc, luc nop
-// chi con 1 dap an va alert chung chung hien len du ban da tra loi tung cau.
-
 var skinQuizStep = 0;
 
 // --- Quiz: chuyen buoc, chi cho qua khi buoc hien tai da chon xong ---

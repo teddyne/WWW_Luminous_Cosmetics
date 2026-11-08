@@ -22,15 +22,10 @@
           <div class="form-card mb-3">
             <h2><span class="step-num">1</span> Thông tin sản phẩm</h2>
             <div class="row g-3">
-              <div class="col-md-6">
+              <div class="col-12">
                 <label class="form-label" for="productName">Tên sản phẩm</label>
                 <input type="text" id="productName" class="form-control" th:field="*{name}" placeholder="Ví dụ: Sữa rửa mặt CeraVe" required maxlength="200"/>
                 <div class="text-danger small mt-1" th:if="${#fields.hasErrors('name')}" th:errors="*{name}"></div>
-              </div>
-              <div class="col-md-6">
-                <label class="form-label" for="productSku">Mã sản phẩm</label>
-                <input type="text" id="productSku" class="form-control" th:field="*{sku}" placeholder="Để trống để tự tạo mã" maxlength="50"/>
-                <div class="text-danger small mt-1" th:if="${#fields.hasErrors('sku')}" th:errors="*{sku}"></div>
               </div>
               <div class="col-md-6">
                 <label class="form-label" for="productCategory">Loại sản phẩm</label>
@@ -46,49 +41,143 @@
               </div>
               <div class="col-12">
                 <label class="form-label" for="productDescription">Mô tả chi tiết</label>
-                <textarea id="productDescription" class="form-control" rows="4" th:field="*{description}" placeholder="Mô tả công dụng, cách dùng, lưu ý..."></textarea>
+                <textarea id="productDescription" class="form-control" rows="6" th:field="*{description}" placeholder="Mô tả công dụng, thành phần, ưu điểm... (soạn văn bản, chèn ảnh như bài viết)"></textarea>
+                <div class="form-text">Soạn như bài viết: in đậm, danh sách, bảng, chèn ảnh (tải lên hoặc dán link) — hiển thị đầy đủ ở trang chi tiết sản phẩm.</div>
+              </div>
+              <div class="col-12">
+                <label class="form-label" for="productUsage">Hướng dẫn sử dụng</label>
+                <textarea id="productUsage" class="form-control" rows="3" th:field="*{usageInstructions}" placeholder="Ví dụ: Lấy một lượng vừa đủ, tạo bọt với nước rồi massage nhẹ nhàng lên mặt, rửa sạch với nước. Dùng 2 lần mỗi ngày."></textarea>
               </div>
             </div>
+          </div>
+
+          <div class="form-card mb-3">
+            <h2><span class="step-num">2</span> Biến thể (dung tích / màu sắc)</h2>
+            <p class="text-muted small mb-2">Một sản phẩm có thể có nhiều biến thể, ví dụ son có nhiều mã màu, sữa rửa mặt có nhiều dung tích. Mỗi biến thể có giá, khuyến mãi và tồn kho riêng; để trống mã SKU thì hệ thống tự tạo.</p>
+            <div id="variantRows">
+              <div class="variant-row" th:each="v, stat : ${productForm.variants}">
+                <input type="hidden" th:field="*{variants[__${stat.index}__].id}"/>
+                <div class="row g-2">
+                  <div class="col-md-3">
+                    <label class="form-label">Mã SKU</label>
+                    <input type="text" class="form-control" th:field="*{variants[__${stat.index}__].sku}" placeholder="Để trống để tự tạo" maxlength="50"/>
+                  </div>
+                  <div class="col-md-3">
+                    <label class="form-label">Dung tích</label>
+                    <input type="text" class="form-control" th:field="*{variants[__${stat.index}__].size}" placeholder="Ví dụ: 473ml" maxlength="50"/>
+                  </div>
+                  <div class="col-md-3">
+                    <label class="form-label">Tên màu</label>
+                    <input type="text" class="form-control" th:field="*{variants[__${stat.index}__].shadeName}" placeholder="Dành cho son, phấn..." maxlength="100"/>
+                  </div>
+                  <div class="col-md-3">
+                    <label class="form-label">Mã màu</label>
+                    <div class="input-group">
+                      <input type="text" class="form-control variant-hex" th:field="*{variants[__${stat.index}__].hexCode}" placeholder="#FF0000" maxlength="10"/>
+                      <input type="color" class="form-control form-control-color variant-hex-picker" value="#FF0000" title="Chọn màu"/>
+                    </div>
+                  </div>
+                  <div class="col-md-4">
+                    <label class="form-label">Giá bán (đ)</label>
+                    <input type="text" inputmode="numeric" class="form-control money-input" th:field="*{variants[__${stat.index}__].price}" placeholder="Ví dụ: 300,000" required/>
+                    <div class="text-danger small mt-1" th:if="${#fields.hasErrors('variants[' + stat.index + '].price')}" th:errors="*{variants[__${stat.index}__].price}"></div>
+                  </div>
+                  <div class="col-md-4">
+                    <label class="form-label">Giá khuyến mãi (đ)</label>
+                    <input type="text" inputmode="numeric" class="form-control money-input" th:field="*{variants[__${stat.index}__].salePrice}" placeholder="Để trống nếu không giảm"/>
+                  </div>
+                  <div class="col-md-3">
+                    <label class="form-label">Tồn kho</label>
+                    <input type="number" class="form-control" th:field="*{variants[__${stat.index}__].stockQuantity}" min="0" step="1" required/>
+                  </div>
+                  <div class="col-md-1 d-flex align-items-end">
+                    <button type="button" class="btn btn-outline-danger w-100 variant-remove" title="Xóa biến thể này"><i class="bi bi-trash"></i></button>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <button type="button" class="btn btn-soft mt-2" id="addVariantBtn"><i class="bi bi-plus-lg"></i> Thêm biến thể</button>
+            <template id="variantRowTemplate">
+              <div class="variant-row">
+                <input type="hidden" name="variants[__INDEX__].id" value=""/>
+                <div class="row g-2">
+                  <div class="col-md-3">
+                    <label class="form-label">Mã SKU</label>
+                    <input type="text" class="form-control" name="variants[__INDEX__].sku" placeholder="Để trống để tự tạo" maxlength="50"/>
+                  </div>
+                  <div class="col-md-3">
+                    <label class="form-label">Dung tích</label>
+                    <input type="text" class="form-control" name="variants[__INDEX__].size" placeholder="Ví dụ: 473ml" maxlength="50"/>
+                  </div>
+                  <div class="col-md-3">
+                    <label class="form-label">Tên màu</label>
+                    <input type="text" class="form-control" name="variants[__INDEX__].shadeName" placeholder="Dành cho son, phấn..." maxlength="100"/>
+                  </div>
+                  <div class="col-md-3">
+                    <label class="form-label">Mã màu</label>
+                    <div class="input-group">
+                      <input type="text" class="form-control variant-hex" name="variants[__INDEX__].hexCode" placeholder="#FF0000" maxlength="10"/>
+                      <input type="color" class="form-control form-control-color variant-hex-picker" value="#FF0000" title="Chọn màu"/>
+                    </div>
+                  </div>
+                  <div class="col-md-4">
+                    <label class="form-label">Giá bán (đ)</label>
+                    <input type="text" inputmode="numeric" class="form-control money-input" name="variants[__INDEX__].price" placeholder="Ví dụ: 300,000" required/>
+                  </div>
+                  <div class="col-md-4">
+                    <label class="form-label">Giá khuyến mãi (đ)</label>
+                    <input type="text" inputmode="numeric" class="form-control money-input" name="variants[__INDEX__].salePrice" placeholder="Để trống nếu không giảm"/>
+                  </div>
+                  <div class="col-md-3">
+                    <label class="form-label">Tồn kho</label>
+                    <input type="number" class="form-control" name="variants[__INDEX__].stockQuantity" min="0" step="1" value="0" required/>
+                  </div>
+                  <div class="col-md-1 d-flex align-items-end">
+                    <button type="button" class="btn btn-outline-danger w-100 variant-remove" title="Xóa biến thể này"><i class="bi bi-trash"></i></button>
+                  </div>
+                </div>
+              </div>
+            </template>
+          </div>
+
+          <div class="form-card mb-3">
+            <h2><span class="step-num">3</span> Thông số sản phẩm</h2>
+            <p class="text-muted small mb-2">Các dòng thông số hiển thị dạng bảng ở trang chi tiết (như Barcode, Xuất xứ, Nơi sản xuất...). Dòng nào để trống tên hoặc giá trị thì không lưu.</p>
+            <div id="attributeRows">
+              <div class="attribute-row" th:each="a, stat : ${productForm.attributes}">
+                <div class="row g-2">
+                  <div class="col-md-5">
+                    <input type="text" class="form-control" th:field="*{attributes[__${stat.index}__].name}" placeholder="Tên thông số (ví dụ: Barcode)" maxlength="100"/>
+                  </div>
+                  <div class="col-md-6">
+                    <input type="text" class="form-control" th:field="*{attributes[__${stat.index}__].value}" maxlength="500"/>
+                  </div>
+                  <div class="col-md-1 d-flex align-items-end">
+                    <button type="button" class="btn btn-outline-danger w-100 attribute-remove" title="Xóa thông số"><i class="bi bi-trash"></i></button>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <button type="button" class="btn btn-soft mt-2" id="addAttributeBtn"><i class="bi bi-plus-lg"></i> Thêm thông số</button>
+            <template id="attributeRowTemplate">
+              <div class="attribute-row">
+                <div class="row g-2">
+                  <div class="col-md-5">
+                    <input type="text" class="form-control" name="attributes[__INDEX__].name" placeholder="Tên thông số (ví dụ: Barcode)" maxlength="100"/>
+                  </div>
+                  <div class="col-md-6">
+                    <input type="text" class="form-control" name="attributes[__INDEX__].value" placeholder="Giá trị (ví dụ: 3337875597357)" maxlength="500"/>
+                  </div>
+                  <div class="col-md-1 d-flex align-items-end">
+                    <button type="button" class="btn btn-outline-danger w-100 attribute-remove" title="Xóa thông số"><i class="bi bi-trash"></i></button>
+                  </div>
+                </div>
+              </div>
+            </template>
           </div>
 
           <div class="form-card">
-            <h2><span class="step-num">2</span> Giá và số lượng</h2>
-            <div class="row g-3">
-              <div class="col-md-4">
-                <label class="form-label" for="productPrice">Giá bán (đ)</label>
-                <input type="text" inputmode="numeric" id="productPrice" class="form-control money-input" th:field="*{price}" placeholder="Ví dụ: 300,000" required/>
-                <div class="text-danger small mt-1" th:if="${#fields.hasErrors('price')}" th:errors="*{price}"></div>
-              </div>
-              <div class="col-md-4">
-                <label class="form-label" for="productSalePrice">Giá khuyến mãi (đ)</label>
-                <input type="text" inputmode="numeric" id="productSalePrice" class="form-control money-input" th:field="*{salePrice}" placeholder="Để trống nếu không giảm"/>
-                <div class="text-danger small mt-1" th:if="${#fields.hasErrors('salePrice')}" th:errors="*{salePrice}"></div>
-              </div>
-              <div class="col-md-4">
-                <label class="form-label" for="productStock">Số lượng</label>
-                <input type="number" id="productStock" class="form-control" th:field="*{stockQuantity}" min="0" step="1" required/>
-                <div class="text-danger small mt-1" th:if="${#fields.hasErrors('stockQuantity')}" th:errors="*{stockQuantity}"></div>
-              </div>
-              <div class="col-md-4">
-                <label class="form-label" for="productSize">Dung tích</label>
-                <input type="text" id="productSize" class="form-control" th:field="*{size}" placeholder="Ví dụ: 500ml" maxlength="50"/>
-              </div>
-              <div class="col-md-4">
-                <label class="form-label" for="productShade">Tên màu</label>
-                <input type="text" id="productShade" class="form-control" th:field="*{shadeName}" placeholder="Dành cho son, phấn..." maxlength="100"/>
-              </div>
-              <div class="col-md-4">
-                <label class="form-label" for="productHex">Mã màu (không bắt buộc)</label>
-                <input type="text" id="productHex" class="form-control" th:field="*{hexCode}" placeholder="#FF0000" maxlength="10"/>
-                <div class="text-danger small mt-1" th:if="${#fields.hasErrors('hexCode')}" th:errors="*{hexCode}"></div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div class="col-lg-5">
-          <div class="form-card mb-3">
-            <h2><span class="step-num">3</span> Thành phần và da phù hợp</h2>
+            <h2><span class="step-num">4</span> Thành phần và da phù hợp</h2>
             <div class="mb-3">
               <label class="form-label" for="productIngredients">Thành phần</label>
               <textarea id="productIngredients" class="form-control" rows="3" th:field="*{ingredients}" placeholder="Liệt kê thành phần chính, cách nhau bằng dấu phẩy"></textarea>
@@ -101,9 +190,11 @@
               </div>
             </div>
           </div>
+        </div>
 
+        <div class="col-lg-5">
           <div class="form-card">
-            <h2><span class="step-num">4</span> Hình ảnh và video sản phẩm</h2>
+            <h2><span class="step-num">5</span> Hình ảnh và video sản phẩm</h2>
             <label class="upload-box" for="productImage">
               <i class="bi bi-cloud-arrow-up"></i>
               <span>Tải lên ảnh chính</span>
@@ -114,15 +205,19 @@
                  onerror="this.onerror=null;this.src='/images/placeholder.svg'"/>
             <div class="mt-3">
               <label class="form-label" for="productImageUrl">Hoặc dán đường dẫn ảnh</label>
-              <input type="url" id="productImageUrl" class="form-control" th:field="*{imageUrl}" placeholder="https://..." maxlength="500"/>
+              <input type="text" id="productImageUrl" class="form-control" th:field="*{imageUrl}" placeholder="https://... hoặc /products/..." maxlength="500"/>
             </div>
             <div class="mt-3">
-              <label class="form-label" for="productGallery">Ảnh phụ (chọn nhiều ảnh)</label>
-              <input type="file" id="productGallery" name="gallery" accept="image/*" class="form-control" multiple/>
+              <label class="form-label" for="productImages">Thêm nhiều ảnh sản phẩm (chọn nhiều ảnh cùng lúc)</label>
+              <input type="file" id="productImages" name="images" accept="image/*" class="form-control" multiple/>
             </div>
             <div class="mt-3">
-              <label class="form-label" for="productVideo">Đường dẫn video</label>
-              <input type="url" id="productVideo" class="form-control" th:field="*{videoUrl}" placeholder="https://..." maxlength="500"/>
+              <label class="form-label" for="productVideoFile">Video sản phẩm (mp4, webm hoặc mov, tối đa 50MB)</label>
+              <input type="file" id="productVideoFile" name="video" accept="video/mp4,video/webm,video/quicktime,.mp4,.webm,.mov" class="form-control"/>
+            </div>
+            <div class="mt-3">
+              <label class="form-label" for="productVideo">Hoặc dán đường dẫn video</label>
+              <input type="text" id="productVideo" class="form-control" th:field="*{videoUrl}" placeholder="https://... hoặc /products/..." maxlength="500"/>
             </div>
           </div>
         </div>
@@ -137,5 +232,107 @@
   </main>
 </div>
 <div th:replace="~{admin/fragments :: scripts}"></div>
+<script src="https://cdn.jsdelivr.net/npm/tinymce@6.8.4/tinymce.min.js"></script>
+<script>
+  // Mo ta san pham dang rich text (TinyMCE): in dam, danh sach, bang, chen anh.
+  // Anh chen trong mo ta tai len qua /admin/products/upload-image, luu o /uploads/editor/.
+  (function () {
+    var editor = document.getElementById('productDescription');
+    if (!editor || typeof tinymce === 'undefined') return;
+    tinymce.init({
+      selector: '#productDescription',
+      height: 380,
+      menubar: false,
+      plugins: 'lists link image table code',
+      toolbar: 'undo redo | bold italic underline | bullist numlist | link image table | removeformat code',
+      images_upload_handler: function (blobInfo) {
+        return new Promise(function (resolve, reject) {
+          var formData = new FormData();
+          formData.append('file', blobInfo.blob(), blobInfo.filename());
+          var token = document.querySelector('input[name="_csrf"]');
+          if (token) formData.append('_csrf', token.value);
+          fetch('/admin/products/upload-image', { method: 'POST', body: formData })
+            .then(function (r) {
+              return r.json().then(function (data) {
+                if (!r.ok) throw new Error(data.error || 'Tải ảnh thất bại');
+                resolve(data.location);
+              });
+            })
+            .catch(function (e) { reject(e.message || 'Tải ảnh thất bại'); });
+        });
+      },
+      content_style: 'img { max-width: 100%; height: auto; } body { font-family: "Be Vietnam Pro", sans-serif; font-size: 14px; line-height: 1.7; }'
+    });
+  })();
+
+  // Bien the dong: them/xoa dong, dong bo o chon mau, danh lai chi so sau khi xoa.
+  (function () {
+    var list = document.getElementById('variantRows');
+    var template = document.getElementById('variantRowTemplate');
+    if (!list || !template) return;
+    var reindexVariants = function () {
+      list.querySelectorAll('.variant-row').forEach(function (row, i) {
+        row.querySelectorAll('input, select, textarea').forEach(function (input) {
+          if (input.name) input.name = input.name.replace(/variants\[\d+\]/, 'variants[' + i + ']');
+        });
+      });
+    };
+    var refreshRemoveButtons = function () {
+      var rows = list.querySelectorAll('.variant-row');
+      rows.forEach(function (row) {
+        var btn = row.querySelector('.variant-remove');
+        if (btn) btn.style.display = rows.length > 1 ? '' : 'none';
+      });
+    };
+    var bindHexPicker = function (row) {
+      var picker = row.querySelector('.variant-hex-picker');
+      var text = row.querySelector('.variant-hex');
+      if (!picker || !text) return;
+      picker.addEventListener('input', function () { text.value = picker.value.toUpperCase(); });
+      if (text.value && /^#[0-9A-Fa-f]{6}$/.test(text.value)) picker.value = text.value;
+    };
+    document.getElementById('addVariantBtn')?.addEventListener('click', function () {
+      var html = template.innerHTML.replaceAll('__INDEX__', String(list.querySelectorAll('.variant-row').length));
+      var wrapper = document.createElement('div');
+      wrapper.innerHTML = html.trim();
+      var row = wrapper.firstElementChild;
+      list.appendChild(row);
+      bindHexPicker(row);
+      row.querySelectorAll('.money-input').forEach(function (input) {
+        if (typeof attachMoneyInput === 'function') attachMoneyInput(input);
+      });
+      reindexVariants();
+      refreshRemoveButtons();
+    });
+    list.addEventListener('click', function (event) {
+      var btn = event.target.closest('.variant-remove');
+      if (!btn) return;
+      if (list.querySelectorAll('.variant-row').length <= 1) return;
+      btn.closest('.variant-row').remove();
+      reindexVariants();
+      refreshRemoveButtons();
+    });
+    list.querySelectorAll('.variant-row').forEach(bindHexPicker);
+    refreshRemoveButtons();
+  })();
+
+  // Thong so san pham dong: them/xoa dong.
+  (function () {
+    var list = document.getElementById('attributeRows');
+    var template = document.getElementById('attributeRowTemplate');
+    if (!list || !template) return;
+    document.getElementById('addAttributeBtn')?.addEventListener('click', function () {
+      var html = template.innerHTML.replaceAll('__INDEX__', String(list.querySelectorAll('.attribute-row').length));
+      var wrapper = document.createElement('div');
+      wrapper.innerHTML = html.trim();
+      list.appendChild(wrapper.firstElementChild);
+    });
+    list.addEventListener('click', function (event) {
+      var btn = event.target.closest('.attribute-remove');
+      if (!btn) return;
+      btn.closest('.attribute-row').remove();
+    });
+  })();
+</script>
 </body>
 </html>

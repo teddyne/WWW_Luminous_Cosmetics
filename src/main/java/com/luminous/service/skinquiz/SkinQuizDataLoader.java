@@ -6,12 +6,6 @@ import org.springframework.stereotype.Service;
 import tools.jackson.databind.ObjectMapper;
 import java.util.List;
 
-/**
- * Doc bo trac nghiem that tu bang SkinQuiz, KHONG map thanh entity.
- * Ly do: cot questions kieu JSON cua MariaDB (thuc chat LONGTEXT).
- * Neu map entity, Hibernate validate schema de bao sai kieu cot.
- * Day chi doc 1 ban ghi dang hoat dong, khong sua bang goc.
- */
 @Service
 public class SkinQuizDataLoader {
     private final JdbcTemplate jdbc;

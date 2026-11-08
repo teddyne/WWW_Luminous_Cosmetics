@@ -25,6 +25,8 @@ public interface ProductVariantRepository extends JpaRepository<ProductVariant, 
 
     Optional<ProductVariant> findFirstByProductIdOrderByPriceAsc(Integer productId);
 
+    Optional<ProductVariant> findBySkuIgnoreCase(String sku);
+
     boolean existsBySkuIgnoreCase(String sku);
 
     void deleteByProductId(Integer productId);

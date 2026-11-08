@@ -41,6 +41,9 @@ public class CartService {
     /** Ten khoa session luu ma giam gia dang ap dung cho gio hang. */
     public static final String SESSION_VOUCHER_CODE = "cartVoucherCode";
 
+    /** Ten khoa session luu gio hang cua khach (variantId -> so luong). */
+    public static final String SESSION_GUEST_CART = "guestCart";
+
     private final CartRepository carts;
     private final CartItemRepository cartItems;
     private final ProductVariantRepository variants;
@@ -102,10 +105,14 @@ public class CartService {
         if (variant == null || !Boolean.TRUE.equals(variant.getIsActive())) {
             return null;
         }
+        return toLine(variant, item.getQuantity());
+    }
+
+    private CartLine toLine(ProductVariant variant, int quantity) {
         ProductCard card = productService.cardForVariant(variant);
         BigDecimal unit = card.displayPrice() != null ? card.displayPrice() : BigDecimal.ZERO;
-        BigDecimal lineTotal = unit.multiply(BigDecimal.valueOf(item.getQuantity()));
-        return new CartLine(card, item.getQuantity(), lineTotal);
+        BigDecimal lineTotal = unit.multiply(BigDecimal.valueOf(quantity));
+        return new CartLine(card, quantity, lineTotal);
     }
 
     /** Them variant vao gio; trung variant thi cong don so luong (toi da = ton kho). */
@@ -194,6 +201,114 @@ public class CartService {
                         .mapToInt(item -> item.getQuantity() == null ? 0 : item.getQuantity())
                         .sum())
                 .orElse(0);
+    }
+
+    // ---------- Gio hang cua khach (luu trong session) ----------
+
+    @SuppressWarnings("unchecked")
+    private java.util.LinkedHashMap<Integer, Integer> guestCartMap(jakarta.servlet.http.HttpSession session) {
+        Object value = session.getAttribute(SESSION_GUEST_CART);
+        if (value instanceof java.util.LinkedHashMap<?, ?> map) {
+            return (java.util.LinkedHashMap<Integer, Integer>) map;
+        }
+        java.util.LinkedHashMap<Integer, Integer> cart = new java.util.LinkedHashMap<>();
+        session.setAttribute(SESSION_GUEST_CART, cart);
+        return cart;
+    }
+
+    /** Cac dong gio hang cua khach, giai tu session (bo variant da ngung ban). */
+    @Transactional(readOnly = true)
+    public List<CartLine> guestLines(jakarta.servlet.http.HttpSession session) {
+        List<CartLine> lines = new ArrayList<>();
+        for (java.util.Map.Entry<Integer, Integer> entry : guestCartMap(session).entrySet()) {
+            Optional<ProductVariant> found = variants.findById(entry.getKey());
+            if (found.isEmpty()) {
+                continue;
+            }
+            ProductVariant variant = found.get();
+            if (!Boolean.TRUE.equals(variant.getIsActive())) {
+                continue;
+            }
+            lines.add(toLine(variant, entry.getValue()));
+        }
+        return lines;
+    }
+
+    /** Them variant vao gio khach; trung variant thi cong don (toi da = ton kho). */
+    public boolean addGuestItem(jakarta.servlet.http.HttpSession session, Integer variantId, int quantity) {
+        Optional<ProductVariant> found = variants.findById(variantId);
+        if (found.isEmpty()) {
+            return false;
+        }
+        ProductVariant variant = found.get();
+        if (!Boolean.TRUE.equals(variant.getIsActive())
+                || variant.getStockQuantity() == null || variant.getStockQuantity() <= 0) {
+            return false;
+        }
+        java.util.LinkedHashMap<Integer, Integer> map = guestCartMap(session);
+        int allowed = Math.min(Math.max(1, quantity), variant.getStockQuantity());
+        map.merge(variantId, allowed,
+                (oldQty, add) -> Math.min(oldQty + add, variant.getStockQuantity()));
+        return true;
+    }
+
+    /** Doi so luong 1 dong cua khach (kep trong [1, ton kho]); het hang thi xoa dong do. */
+    public void updateGuestQuantity(jakarta.servlet.http.HttpSession session, Integer variantId, int quantity) {
+        java.util.LinkedHashMap<Integer, Integer> map = guestCartMap(session);
+        if (!map.containsKey(variantId)) {
+            return;
+        }
+        Optional<ProductVariant> found = variants.findById(variantId);
+        if (found.isEmpty() || found.get().getStockQuantity() == null
+                || found.get().getStockQuantity() <= 0) {
+            map.remove(variantId);
+            return;
+        }
+        map.put(variantId, Math.min(Math.max(1, quantity), found.get().getStockQuantity()));
+    }
+
+    public void removeGuestItem(jakarta.servlet.http.HttpSession session, Integer variantId) {
+        guestCartMap(session).remove(variantId);
+    }
+
+    public void removeGuestItems(jakarta.servlet.http.HttpSession session, List<Integer> variantIds) {
+        if (variantIds == null || variantIds.isEmpty()) {
+            return;
+        }
+        java.util.LinkedHashMap<Integer, Integer> map = guestCartMap(session);
+        variantIds.forEach(map::remove);
+    }
+
+    /** Tong so luong san pham trong gio khach (de hien huy hieu tren icon gio hang). */
+    public int countGuestItems(jakarta.servlet.http.HttpSession session) {
+        if (session == null) {
+            return 0;
+        }
+        Object value = session.getAttribute(SESSION_GUEST_CART);
+        if (!(value instanceof java.util.LinkedHashMap<?, ?> map)) {
+            return 0;
+        }
+        return map.values().stream()
+                .filter(Integer.class::isInstance)
+                .mapToInt(v -> (Integer) v)
+                .sum();
+    }
+
+    /** Khach dang nhap: chuyen gio tam trong session vao gio DB roi xoa session. */
+    public void mergeGuestCart(User user, jakarta.servlet.http.HttpSession session) {
+        if (user == null || session == null) {
+            return;
+        }
+        Object value = session.getAttribute(SESSION_GUEST_CART);
+        if (!(value instanceof java.util.LinkedHashMap<?, ?> map) || map.isEmpty()) {
+            return;
+        }
+        map.forEach((variantId, quantity) -> {
+            if (variantId instanceof Integer id && quantity instanceof Integer qty) {
+                addItem(user, id, qty);
+            }
+        });
+        session.removeAttribute(SESSION_GUEST_CART);
     }
 
 

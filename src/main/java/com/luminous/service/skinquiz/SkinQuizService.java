@@ -1,5 +1,6 @@
 package com.luminous.service.skinquiz;
 
+import com.luminous.dto.GuestRoutineSession;
 import com.luminous.dto.ProductCard;
 import com.luminous.dto.RoutineStep;
 import com.luminous.model.ProductVariant;
@@ -241,17 +242,99 @@ public class SkinQuizService {
 
     // ---------- 3. Luu ket qua + lich ----------
 
-    public SkinRoutine saveQuizAndRoutine(User user, int quizId,
-                                          List<String> answers, List<String> goals, String budget) {
+    /** Dung chu trinh tu dap an (chua luu DB): dung chung cho khach (luu session)
+     *  va cho tai khoan da dang nhap (luu DB o saveQuizAndRoutine). */
+    public SkinRoutine buildTransientRoutine(int quizId, List<String> answers,
+                                            List<String> goals, String budget) {
         String skinType = detectSkinType(answers);
         List<RoutineItem> items = buildRoutine(skinType, goals, budget);
+        SkinRoutine routine = new SkinRoutine();
+        routine.setQuizId(quizId);
+        routine.setSkinType(skinType);
+        routine.setGoals(String.join(",", goals));
+        routine.setBudget(budget);
+        try {
+            routine.setRoutineJson(mapper.writeValueAsString(items));
+        } catch (Exception e) {
+            routine.setRoutineJson("[]");
+        }
+        routine.setCreatedAt(LocalDateTime.now());
+        routine.setUpdatedAt(LocalDateTime.now());
+        return routine;
+    }
+
+    /** Dung lai chu trinh tam tu session cua khach (khong cham DB). */
+    public SkinRoutine transientRoutineFromSession(GuestRoutineSession guest) {
+        SkinRoutine routine = new SkinRoutine();
+        routine.setQuizId(guest.quizId());
+        routine.setSkinType(guest.skinType());
+        routine.setGoals(guest.goals());
+        routine.setBudget(guest.budget());
+        routine.setRoutineJson(guest.routineJson());
+        routine.setCreatedAt(LocalDateTime.now());
+        routine.setUpdatedAt(LocalDateTime.now());
+        return routine;
+    }
+
+    /** Khach lam xong trac nghiem roi moi dang nhap: chuyen ket qua tam trong
+     *  session xuong DB (giong nhu lam trac nghiem khi da dang nhap). */
+    public SkinRoutine migrateGuestRoutine(User user, GuestRoutineSession guest) {
+        List<String> goals = guest.goals() != null && !guest.goals().isBlank()
+                ? Arrays.asList(guest.goals().split(",")) : List.of();
+        List<RoutineJsonItem> items = parseItems(guest.routineJson());
+
+        SkinQuizResult result = new SkinQuizResult();
+        result.setUser(user);
+        result.setQuizId(guest.quizId());
+        result.setSkinType(guest.skinType());
+        result.setSkincareAdvice(adviceFor(guest.skinType(), goals, guest.budget()));
+        String distinctVariants = items.stream().map(RoutineJsonItem::variantId)
+                .distinct().map(String::valueOf).collect(Collectors.joining(",", "[", "]"));
+        result.setSuitableProducts(distinctVariants);
+        result.setCompletedAt(LocalDateTime.now());
+        results.save(result);
+
+        SkinRoutine routine = routines.findByUserId(user.getId()).orElseGet(SkinRoutine::new);
+        boolean isNew = routine.getId() == null;
+        routine.setUser(user);
+        routine.setQuizId(guest.quizId());
+        routine.setSkinType(guest.skinType());
+        routine.setGoals(guest.goals());
+        routine.setBudget(guest.budget());
+        routine.setRoutineJson(guest.routineJson());
+        routine.setUpdatedAt(LocalDateTime.now());
+        if (isNew) {
+            routine.setCreatedAt(LocalDateTime.now());
+        }
+        routines.save(routine);
+
+        user.setSkinQuizAsked(true);
+        users.save(user);
+        return routine;
+    }
+
+    /** Giai routineJson thanh danh sach buoc (loi thi tra ve danh sach rong). */
+    private List<RoutineJsonItem> parseItems(String routineJson) {
+        try {
+            return mapper.readValue(routineJson, new TypeReference<List<RoutineJsonItem>>() {
+            });
+        } catch (Exception e) {
+            return List.of();
+        }
+    }
+
+    public SkinRoutine saveQuizAndRoutine(User user, int quizId,
+                                          List<String> answers, List<String> goals, String budget) {
+        SkinRoutine tmp = buildTransientRoutine(quizId, answers, goals, budget);
+        String skinType = tmp.getSkinType();
+        List<RoutineJsonItem> items = parseItems(tmp.getRoutineJson());
 
         SkinQuizResult result = new SkinQuizResult();
         result.setUser(user);
         result.setQuizId(quizId);
         result.setSkinType(skinType);
         result.setSkincareAdvice(adviceFor(skinType, goals, budget));
-        String distinctVariants = items.stream().map(RoutineItem::variantId)
+        String distinctVariants = items.stream().map(RoutineJsonItem::variantId)
                 .distinct().map(String::valueOf).collect(Collectors.joining(",", "[", "]"));
         result.setSuitableProducts(distinctVariants);
         result.setCompletedAt(LocalDateTime.now());
@@ -264,11 +347,7 @@ public class SkinQuizService {
         routine.setSkinType(skinType);
         routine.setGoals(String.join(",", goals));
         routine.setBudget(budget);
-        try {
-            routine.setRoutineJson(mapper.writeValueAsString(items));
-        } catch (Exception e) {
-            routine.setRoutineJson("[]");
-        }
+        routine.setRoutineJson(tmp.getRoutineJson());
         routine.setUpdatedAt(LocalDateTime.now());
         if (isNew) {
             routine.setCreatedAt(LocalDateTime.now());

@@ -18,7 +18,6 @@ import com.luminous.repository.voucher.VoucherCategoryRepository;
 import com.luminous.repository.voucher.VoucherProductRepository;
 import com.luminous.repository.voucher.VoucherRepository;
 import com.luminous.repository.voucher.VoucherTypeRepository;
-import com.luminous.service.FileStorageService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -26,7 +25,6 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.multipart.MultipartFile;
 import jakarta.persistence.criteria.Predicate;
 import java.math.BigDecimal;
 import java.security.SecureRandom;
@@ -47,22 +45,19 @@ public class AdminVoucherService {
     private final VoucherProductRepository voucherProducts;
     private final CategoryRepository categories;
     private final ProductRepository products;
-    private final FileStorageService files;
 
     public AdminVoucherService(VoucherRepository vouchers,
                                VoucherTypeRepository voucherTypes,
                                VoucherCategoryRepository voucherCategories,
                                VoucherProductRepository voucherProducts,
                                CategoryRepository categories,
-                               ProductRepository products,
-                               FileStorageService files) {
+                               ProductRepository products) {
         this.vouchers = vouchers;
         this.voucherTypes = voucherTypes;
         this.voucherCategories = voucherCategories;
         this.voucherProducts = voucherProducts;
         this.categories = categories;
         this.products = products;
-        this.files = files;
     }
 
     public Page<VoucherRow> page(String q, Boolean active, int page, int size) {
@@ -135,7 +130,8 @@ public class AdminVoucherService {
         form.setEndDate(voucher.getEndDate());
         form.setApplicableScope(voucher.getApplicableScope().name());
         form.setScopeType(voucher.getScopeType().name());
-        form.setImgUrl(voucher.getImgUrl());
+        form.setVoucherType(voucher.getVoucherType() == null
+                ? null : voucher.getVoucherType().getTypeName());
         form.setActive(voucher.getIsActive());
         form.setCategoryIds(voucherCategories.findByVoucherId(id).stream()
                 .map(link -> link.getCategory().getId()).toList());
@@ -153,10 +149,10 @@ public class AdminVoucherService {
     }
 
     @Transactional
-    public Integer create(VoucherForm form, MultipartFile image) {
+    public Integer create(VoucherForm form) {
         validate(form, null);
         Voucher voucher = new Voucher();
-        apply(voucher, form, image);
+        apply(voucher, form);
         voucher.setUsedCount(0);
         vouchers.save(voucher);
         saveLinks(voucher, form);
@@ -164,11 +160,11 @@ public class AdminVoucherService {
     }
 
     @Transactional
-    public void update(Integer id, VoucherForm form, MultipartFile image) {
+    public void update(Integer id, VoucherForm form) {
         Voucher voucher = vouchers.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy khuyến mãi"));
         validate(form, id);
-        apply(voucher, form, image);
+        apply(voucher, form);
         vouchers.save(voucher);
         voucherCategories.deleteByVoucherId(id);
         voucherProducts.deleteByVoucherId(id);
@@ -227,7 +223,7 @@ public class AdminVoucherService {
         }
     }
 
-    private void apply(Voucher voucher, VoucherForm form, MultipartFile image) {
+    private void apply(Voucher voucher, VoucherForm form) {
         String code = form.getVoucherCode() == null ? "" : form.getVoucherCode().trim().toUpperCase();
         if (code.isBlank()) {
             code = generateCode();
@@ -244,10 +240,15 @@ public class AdminVoucherService {
         if (applicable == null) {
             applicable = VoucherApplicableScope.ALL;
         }
-        String typeName = applicable == VoucherApplicableScope.SHIPPING
-                ? "Miễn phí vận chuyển"
-                : discountType == DiscountType.PERCENTAGE
-                        ? "Giảm giá theo phần trăm" : "Giảm giá cố định";
+        // Loai voucher: "Voucher dac biet" la lua chon hien thi rieng cua admin
+        // (nhan vang); 3 loai con lai suy ra tu co che giam that de loai luon
+        // khop voi muc giam ap dung.
+        String typeName = "Voucher đặc biệt".equals(form.getVoucherType())
+                ? "Voucher đặc biệt"
+                : applicable == VoucherApplicableScope.SHIPPING
+                        ? "Miễn phí vận chuyển"
+                        : discountType == DiscountType.PERCENTAGE
+                                ? "Giảm giá theo phần trăm" : "Giảm giá cố định";
         VoucherType type = voucherTypes.findByTypeName(typeName)
                 .orElseThrow(() -> new IllegalArgumentException("Loại voucher chưa có trong dữ liệu mẫu"));
         voucher.setVoucherType(type);
@@ -268,12 +269,6 @@ public class AdminVoucherService {
         voucher.setApplicableScope(applicable);
         voucher.setScopeType(scope);
         voucher.setIsActive(Boolean.TRUE.equals(form.getActive()));
-        String storedImage = files.store(image, "vouchers", form.getVoucherName());
-        if (storedImage != null) {
-            voucher.setImgUrl(storedImage);
-        } else if (form.getImgUrl() != null && !form.getImgUrl().isBlank()) {
-            voucher.setImgUrl(form.getImgUrl().trim());
-        }
     }
 
     private void saveLinks(Voucher voucher, VoucherForm form) {
@@ -334,6 +329,8 @@ public class AdminVoucherService {
                 voucher.getEndDate(),
                 voucher.getScopeType(),
                 Boolean.TRUE.equals(voucher.getIsActive()),
-                voucher.displayStatus(now));
+                voucher.displayStatus(now),
+                voucher.badgeKind(),
+                voucher.badgeLabel());
     }
 }

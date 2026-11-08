@@ -245,3 +245,58 @@ a:hover { color: var(--green-dark); }
   .admin-page-title { font-size: 20px; }
   .stat-card .stat-value { font-size: 22px; }
 }
+
+/* ============ THE VOUCHER (HTML + CSS, khong dung anh) ============ */
+/* Nhan gon dung o danh sach khuyen mai. Mau theo loai:
+   shipping = mien phi van chuyen (xanh), percent = giam % (do),
+   fixed = giam so tien co dinh (cam), special = uu dai dac biet (vang). */
+.voucher-badge {
+  display: inline-flex; align-items: center; padding: 5px 12px;
+  border-radius: 999px; color: #fff; font-weight: 700; font-size: 12px;
+  letter-spacing: .4px; text-transform: uppercase; white-space: nowrap;
+}
+.voucher-badge--shipping { background: green; }
+.voucher-badge--percent { background: #d81d1d; }
+.voucher-badge--fixed { background: #d81d1d; }
+.voucher-badge--special { background: #eded12; color: #422006; }
+
+/* The voucher day du dung xem truoc o form them/sua khuyen mai:
+   khoi mau ben trai + thong tin ben phai, ngan cach bang duong dut. */
+.voucher-card {
+  display: flex; border-radius: 16px; overflow: hidden;
+  background: #fff; border: 1px solid var(--line);
+  box-shadow: 0 6px 18px rgba(31, 42, 36, .08);
+}
+.voucher-card__badge {
+  flex: 0 0 132px; display: flex; flex-direction: column;
+  align-items: center; justify-content: center; gap: 6px;
+  padding: 18px 10px; color: #fff; text-align: center; position: relative;
+}
+.voucher-card__badge::after {
+  content: ""; position: absolute; right: -1px; top: 12px; bottom: 12px;
+  border-right: 2px dashed rgba(255, 255, 255, .75);
+}
+.voucher-card__label {
+  font-weight: 800; font-size: 15px; line-height: 1.3;
+  letter-spacing: .5px; text-transform: uppercase;
+}
+.voucher-card__brand { font-size: 11px; font-weight: 700; letter-spacing: 3px; opacity: .9; }
+.voucher-card__body { flex: 1; min-width: 0; padding: 14px 16px; }
+.voucher-card__name {
+  font-weight: 700; font-size: 15px; margin-bottom: 4px;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.voucher-card__code { font-size: 13px; color: var(--muted); }
+.voucher-card__meta { font-size: 13px; color: #374151; margin-top: 2px; }
+.voucher-card--shipping .voucher-card__badge { background: green; }
+.voucher-card--percent .voucher-card__badge { background: #d81d1d;}
+.voucher-card--fixed .voucher-card__badge { background: #d81d1d; }
+.voucher-card--special .voucher-card__badge { background: #eded12; color: #422006; }
+
+/* ---------- Bien the + thong so san pham (form admin, them/xoa dong) ---------- */
+.variant-row, .attribute-row {
+  border: 1px solid #e5e9e5; border-radius: 10px; background: #fbfdfb;
+  padding: 14px; margin-bottom: 10px;
+}
+.variant-row .form-label, .attribute-row .form-label { font-size: 12px; font-weight: 600; margin-bottom: 4px; }
+.variant-row .form-control-color { width: 44px; padding: 2px; }

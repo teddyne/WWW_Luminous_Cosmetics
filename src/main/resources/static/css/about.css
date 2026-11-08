@@ -1,5 +1,3 @@
-@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:wght@400;500;600;700&display=swap');
-
 :root {
     --green: #245b32;
     --green-dark: #173f25;
@@ -10,14 +8,14 @@
     --muted: #77796f;
 }
 
-* {margin: 0; padding: 0; box-sizing: border-box; }
+* {box-sizing: border-box; }
 
 html {
     scroll-behavior: smooth;
 }
 
 body {
-    font-family: 'DM Sans', sans-serif;
+    font-family: 'Be Vietnam Pro', system-ui, -apple-system, 'Segoe UI', Arial, sans-serif;
     color: var(--text);
     background: #fffefa;
 }
@@ -75,7 +73,7 @@ img {
 }
 
 .hero-text h1 {
-    font-family: 'Playfair Display', serif;
+    font-family: 'Be Vietnam Pro', system-ui, -apple-system, 'Segoe UI', Arial, sans-serif;
     font-size: clamp(38px, 5vw, 65px);
     line-height: 1.2;
     font-weight: 500;
@@ -133,7 +131,7 @@ img {
 }
 
 .hero-label strong {
-    font-family: 'Playfair Display', serif;
+    font-family: 'Be Vietnam Pro', system-ui, -apple-system, 'Segoe UI', Arial, sans-serif;
     font-size: 26px;
     line-height: 1.2;
     margin: 8px 0;
@@ -174,7 +172,7 @@ img {
 }
 
 .story-placeholder > span {
-    font-family: 'Playfair Display', serif;
+    font-family: 'Be Vietnam Pro', system-ui, -apple-system, 'Segoe UI', Arial, sans-serif;
     font-size: 38px;
     letter-spacing: 4px;
 }
@@ -200,7 +198,7 @@ img {
 .story-content h2,
 .section-title h2,
 .commitment-section h2 {
-    font-family: 'Playfair Display', serif;
+    font-family: 'Be Vietnam Pro', system-ui, -apple-system, 'Segoe UI', Arial, sans-serif;
     font-size: clamp(34px, 4vw, 48px);
     line-height: 1.2;
     font-weight: 500;
@@ -231,7 +229,7 @@ img {
 }
 
 .story-signature span {
-    font-family: 'Playfair Display', serif;
+    font-family: 'Be Vietnam Pro', system-ui, -apple-system, 'Segoe UI', Arial, sans-serif;
     font-size: 19px;
     font-style: italic;
 }
@@ -247,7 +245,7 @@ img {
 }
 
 .brand-message h2 {
-    font-family: 'Playfair Display', serif;
+    font-family: 'Be Vietnam Pro', system-ui, -apple-system, 'Segoe UI', Arial, sans-serif;
     font-size: clamp(27px, 4vw, 43px);
     line-height: 1.5;
     font-weight: 400;
@@ -321,7 +319,7 @@ img {
 }
 
 .direction-card h3 {
-    font-family: 'Playfair Display', serif;
+    font-family: 'Be Vietnam Pro', system-ui, -apple-system, 'Segoe UI', Arial, sans-serif;
     font-size: 29px;
     margin: 12px 0;
 }
@@ -374,7 +372,7 @@ img {
 }
 
 .value-card h3 {
-    font-family: 'Playfair Display', serif;
+    font-family: 'Be Vietnam Pro', system-ui, -apple-system, 'Segoe UI', Arial, sans-serif;
     font-size: 22px;
     margin-bottom: 13px;
 }
@@ -435,7 +433,7 @@ img {
 }
 
 .commitment-item h3 {
-    font-family: 'Playfair Display', serif;
+    font-family: 'Be Vietnam Pro', system-ui, -apple-system, 'Segoe UI', Arial, sans-serif;
     font-size: 21px;
     margin-bottom: 7px;
 }
@@ -459,7 +457,7 @@ img {
 }
 
 .about-cta h2 {
-    font-family: 'Playfair Display', serif;
+    font-family: 'Be Vietnam Pro', system-ui, -apple-system, 'Segoe UI', Arial, sans-serif;
     font-size: clamp(32px, 4vw, 48px);
     font-weight: 500;
     line-height: 1.3;
@@ -577,3 +575,9 @@ img {
     }
 
 }
+
+/* --- Dong bo font/co chu voi cac trang khac (Be Vietnam Pro, co chu hop ly) --- */
+.about-hero .hero-text h1 { font-size: clamp(32px, 4vw, 48px); line-height: 1.25; }
+.story-content h2, .section-title h2, .commitment-section h2, .brand-message h2, .about-cta h2 { font-size: clamp(26px, 3vw, 36px); line-height: 1.3; }
+.eyebrow { white-space: nowrap; }
+.story-content p, .direction-card p, .value-card p, .commitment-item p { font-size: 15px; line-height: 1.7; }

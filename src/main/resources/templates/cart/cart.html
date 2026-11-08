@@ -148,11 +148,31 @@
       <p class="summary-vat">(Đã bao gồm VAT)</p>
       <form th:action="@{/checkout}" method="get" id="checkout-form">
         <span id="checkout-selected"></span>
-        <button type="submit" class="btn-cart-primary btn-checkout" id="checkout-btn">Tiến hành đặt hàng</button>
+        <button th:if="${!isGuest}" type="submit" class="btn-cart-primary btn-checkout" id="checkout-btn">Tiến hành đặt hàng</button>
+        <button th:if="${isGuest}" type="button" class="btn-cart-primary btn-checkout" id="checkout-btn" data-bs-toggle="modal" data-bs-target="#loginRequiredModal">Tiến hành đặt hàng</button>
       </form>
     </aside>
   </div>
 </main>
+
+<!-- Khach bam thanh toan: bao phai dang nhap. Huy thi o lai gio hang, Dang nhap thi qua trang dang nhap. -->
+<div class="modal fade" id="loginRequiredModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2 class="modal-title h5 fw-bold">Bạn cần đăng nhập để thanh toán</h2>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng"></button>
+      </div>
+      <div class="modal-body">
+        <p class="mb-0">Bạn phải đăng nhập mới có thể tiến hành đặt hàng. Giỏ hàng của bạn vẫn được giữ lại.</p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-outline-lum" data-bs-dismiss="modal">Hủy</button>
+        <a th:href="@{/login}" class="btn btn-lum">Đăng nhập</a>
+      </div>
+    </div>
+  </div>
+</div>
 
 <div th:replace="~{layout/footer :: footer}"></div>
 <script>

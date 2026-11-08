@@ -32,6 +32,10 @@ public class Product {
     @Column(name = "description", columnDefinition = "TEXT")
     private String description;
 
+    /** Huong dan su dung (hien o trang chi tiet san pham, giu xuong dong). */
+    @Column(name = "usageInstructions", columnDefinition = "TEXT")
+    private String usageInstructions;
+
     @Column(name = "isActive", nullable = false)
     private Boolean isActive = true;
 

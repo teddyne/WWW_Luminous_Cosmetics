@@ -1,5 +1,6 @@
 package com.luminous.dto;
 
+import com.luminous.model.Voucher;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
@@ -60,12 +61,29 @@ public class VoucherForm {
 
     private String scopeType = "ALL";
 
+    /** Loai voucher hien thi (ten trong bang VoucherType): "Mien phi van chuyen",
+     *  "Giam gia theo phan tram", "Giam gia co dinh" hoac "Voucher dac biet".
+     *  Mac dinh theo co che giam dang chon; rieng "Voucher dac biet" la lua
+     *  chon hien thi rieng (nhan vang) du co che giam van la % hoac so tien. */
+    private String voucherType = "Giảm giá theo phần trăm";
+
     private List<Integer> categoryIds = new ArrayList<>();
 
     private List<Integer> productIds = new ArrayList<>();
 
-    @Size(max = 500, message = "Đường dẫn ảnh tối đa 500 ký tự")
-    private String imgUrl;
-
     private Boolean active = true;
+
+    /** Loai the xem truoc (shipping/percent/fixed/special) tu du lieu form. */
+    public String previewKind() {
+        return Voucher.badgeKind(voucherType,
+                com.luminous.model.enums.VoucherApplicableScope.from(applicableScope),
+                com.luminous.model.enums.DiscountType.from(discountType));
+    }
+
+    /** Nhan in tren the xem truoc tu du lieu form. */
+    public String previewLabel() {
+        return Voucher.badgeLabel(voucherType,
+                com.luminous.model.enums.VoucherApplicableScope.from(applicableScope),
+                com.luminous.model.enums.DiscountType.from(discountType), discountValue);
+    }
 }

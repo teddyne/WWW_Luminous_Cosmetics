@@ -93,14 +93,24 @@ public class ProductController {
     }
 
     @GetMapping("/products/{id}")
-    public String detail(@PathVariable Integer id, Model model) {
+    public String detail(@PathVariable Integer id,
+                         @RequestParam(required = false) Integer rating,
+                         @RequestParam(defaultValue = "1") int reviewPage,
+                         Model model) {
         ProductCard card = productService.detailCard(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
         model.addAttribute("card", card);
         model.addAttribute("variants", productService.activeVariantCards(id));
         model.addAttribute("galleryImages", productService.galleryImages(card));
+        model.addAttribute("productVideoUrl", productService.productVideoUrl(card));
+        model.addAttribute("attributes", productService.productAttributes(id));
         model.addAttribute("relatedProducts", productService.relatedCards(
                 card.getProduct().getCategory().getId(), id, 4));
+        // Danh gia: 6 bai/trang, loc theo sao, phan trang giu nguyen bo loc.
+        model.addAttribute("reviewSummary", productService.reviewSummary(id));
+        model.addAttribute("reviews", productService.reviewPage(id, rating, reviewPage - 1, 6));
+        model.addAttribute("selectedRating", rating);
+        model.addAttribute("currentReviewPage", reviewPage);
         return "product/detail";
     }
 

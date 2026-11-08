@@ -1,8 +1,10 @@
 package com.luminous.controller.admin;
 
 import com.luminous.dto.ProductForm;
+import com.luminous.service.FileStorageService;
 import com.luminous.service.admin.AdminProductService;
 import jakarta.validation.Valid;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -12,17 +14,22 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import java.util.List;
+import java.util.Map;
 
 @Controller
 @RequestMapping("/admin/products")
 public class AdminProductController {
 
     private final AdminProductService service;
+    private final FileStorageService files;
 
-    public AdminProductController(AdminProductService service) {
+    public AdminProductController(AdminProductService service, FileStorageService files) {
         this.service = service;
+        this.files = files;
     }
 
     @GetMapping
@@ -49,7 +56,13 @@ public class AdminProductController {
     @GetMapping("/new")
     public String createForm(Model model) {
         if (!model.containsAttribute("productForm")) {
-            model.addAttribute("productForm", new ProductForm());
+            ProductForm form = new ProductForm();
+            // Goi y san cac thong so hay dung (de trong gia tri thi khong luu).
+            form.setAttributes(List.of(
+                    new ProductForm.AttributeForm("Barcode", ""),
+                    new ProductForm.AttributeForm("Xuất xứ thương hiệu", ""),
+                    new ProductForm.AttributeForm("Nơi sản xuất", "")));
+            model.addAttribute("productForm", form);
         }
         model.addAttribute("categories", service.categories());
         model.addAttribute("skinTypes", AdminProductService.SKIN_TYPES);
@@ -59,12 +72,29 @@ public class AdminProductController {
         return "admin/product-form";
     }
 
+    /** Upload anh chen trong mo ta (TinyMCE): tra ve {"location": "/uploads/editor/..."} */
+    @PostMapping("/upload-image")
+    @ResponseBody
+    public ResponseEntity<Map<String, String>> uploadEditorImage(
+            @RequestParam("file") MultipartFile file) {
+        try {
+            String url = files.store(file, "editor", file.getOriginalFilename());
+            if (url == null) {
+                return ResponseEntity.badRequest().body(Map.of("error", "Không lưu được ảnh"));
+            }
+            return ResponseEntity.ok(Map.of("location", url));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
+    }
+
     @PostMapping
     public String create(@Valid @ModelAttribute("productForm") ProductForm form,
                          BindingResult result,
                          @RequestParam(defaultValue = "publish") String action,
                          @RequestParam(value = "image", required = false) MultipartFile image,
-                         @RequestParam(value = "gallery", required = false) MultipartFile[] gallery,
+                         @RequestParam(value = "images", required = false) MultipartFile[] images,
+                         @RequestParam(value = "video", required = false) MultipartFile video,
                          Model model,
                          RedirectAttributes redirect) {
         form.setActive(!"draft".equals(action));
@@ -72,7 +102,7 @@ public class AdminProductController {
             return createForm(model);
         }
         try {
-            Integer id = service.create(form, image, gallery);
+            Integer id = service.create(form, image, images, video);
             redirect.addFlashAttribute("toast", "Đã thêm sản phẩm mới");
             redirect.addFlashAttribute("toastType", "success");
             return "redirect:/admin/products/" + id + "/edit";
@@ -101,7 +131,8 @@ public class AdminProductController {
                          BindingResult result,
                          @RequestParam(defaultValue = "publish") String action,
                          @RequestParam(value = "image", required = false) MultipartFile image,
-                         @RequestParam(value = "gallery", required = false) MultipartFile[] gallery,
+                         @RequestParam(value = "images", required = false) MultipartFile[] images,
+                         @RequestParam(value = "video", required = false) MultipartFile video,
                          Model model,
                          RedirectAttributes redirect) {
         form.setActive(!"draft".equals(action));
@@ -109,7 +140,7 @@ public class AdminProductController {
             return editForm(id, model);
         }
         try {
-            service.update(id, form, image, gallery);
+            service.update(id, form, image, images, video);
         } catch (IllegalArgumentException e) {
             model.addAttribute("formError", e.getMessage());
             return editForm(id, model);
@@ -120,7 +151,7 @@ public class AdminProductController {
     }
 
     @PostMapping("/bulk")
-    public String bulk(@RequestParam(required = false) java.util.List<Integer> ids,
+    public String bulk(@RequestParam(required = false) List<Integer> ids,
                        @RequestParam String bulkAction,
                        RedirectAttributes redirect) {
         if (ids == null || ids.isEmpty()) {

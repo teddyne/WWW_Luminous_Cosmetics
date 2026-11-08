@@ -5,6 +5,7 @@ import com.luminous.model.User;
 import com.luminous.model.Voucher;
 import com.luminous.security.CustomUserDetails;
 import com.luminous.service.shop.CartService;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
@@ -19,12 +20,7 @@ import java.util.List;
 import java.math.BigDecimal;
 import java.util.stream.Collectors;
 
-/**
- * Gio hang (DB Cart/CartItem, chi cho CUSTOMER/ADMIN da dang nhap).
- * Trang gio mac dinh chon het dong con hang; bo chon chi doi tong tien
- * tren trinh duyet (JS), nut "Tien hanh dat hang" gui cac dong duoc chon
- * sang /checkout (buoc tiep theo).
- */
+
 @Controller
 public class CartController {
 
@@ -42,10 +38,19 @@ public class CartController {
         return null;
     }
 
+    /** Cac dong gio theo dung loai tai khoan (DB cho da dang nhap, session cho khach). */
+    private List<CartLine> linesFor(User user, HttpSession session) {
+        return user != null ? cartService.lines(user) : cartService.guestLines(session);
+    }
+
     @GetMapping("/cart")
     public String view(Authentication auth, HttpSession session, Model model) {
         User user = currentUser(auth);
-        List<CartLine> lines = cartService.lines(user);
+        // Vua dang nhap: chuyen gio tam luc con la khach vao gio DB.
+        if (user != null) {
+            cartService.mergeGuestCart(user, session);
+        }
+        List<CartLine> lines = linesFor(user, session);
 
         // Ma giam gia dang ap dung (luu o session) phai hop le voi gio hien tai
         // moi duoc tru tien; het han/do don khong du thi bo qua va bao ly do.
@@ -66,6 +71,7 @@ public class CartController {
 
         CartService.Totals totals = cartService.totals(lines, applied);
         model.addAttribute("lines", lines);
+        model.addAttribute("isGuest", user == null);
         model.addAttribute("totalLines", lines.size());
         model.addAttribute("selectedCount", lines.stream().filter(CartLine::available).count());
         model.addAttribute("subtotalText", CartLine.formatVnd(totals.subtotal()));
@@ -89,33 +95,84 @@ public class CartController {
     }
 
     @PostMapping("/cart/add")
-    public String add(Authentication auth,
+    public String add(Authentication auth, HttpSession session, HttpServletRequest request,
                       @RequestParam Integer variantId,
                       @RequestParam(defaultValue = "1") int quantity,
-                      @RequestParam(defaultValue = "false") boolean buyNow) {
-        cartService.addItem(currentUser(auth), variantId, quantity);
-        // buyNow se dan sang /checkout khi buoc thanh toan xong; tam thoi ve lai gio hang.
-        return "redirect:/cart";
+                      @RequestParam(defaultValue = "false") boolean buyNow,
+                      RedirectAttributes redirect) {
+        User user = currentUser(auth);
+        boolean ok = user != null
+                ? cartService.addItem(user, variantId, quantity)
+                : cartService.addGuestItem(session, variantId, quantity);
+        // Mua ngay thi ve gio hang nhu cu; them thuong thi o lai trang hien
+        // tai, chi hien thong bao (toast o header) la da them thanh cong.
+        if (buyNow) {
+            return "redirect:/cart";
+        }
+        if (ok) {
+            redirect.addFlashAttribute("cartAdded", "Đã thêm sản phẩm vào giỏ hàng thành công.");
+        } else {
+            redirect.addFlashAttribute("cartAddError", "Không thêm được sản phẩm (đã hết hàng hoặc ngừng bán).");
+        }
+        return "redirect:" + backUrl(request);
+    }
+
+    /** Trang vua dung de quay lai sau khi them vao gio; chi chap nhan URL
+     *  cung ung dung (chong open redirect), mac dinh ve trang chu. */
+    private String backUrl(HttpServletRequest request) {
+        String referer = request.getHeader("Referer");
+        if (referer == null || referer.isBlank()) {
+            return "/";
+        }
+        try {
+            java.net.URI uri = new java.net.URI(referer);
+            if (uri.getHost() != null && !uri.getHost().equalsIgnoreCase(request.getServerName())) {
+                return "/";
+            }
+            String path = uri.getRawPath();
+            if (path == null || path.isBlank()) {
+                return "/";
+            }
+            String query = uri.getRawQuery();
+            return query == null || query.isBlank() ? path : path + "?" + query;
+        } catch (Exception e) {
+            return "/";
+        }
     }
 
     @PostMapping("/cart/update")
-    public String update(Authentication auth,
+    public String update(Authentication auth, HttpSession session,
                          @RequestParam Integer variantId,
                          @RequestParam int quantity) {
-        cartService.updateQuantity(currentUser(auth), variantId, quantity);
+        User user = currentUser(auth);
+        if (user != null) {
+            cartService.updateQuantity(user, variantId, quantity);
+        } else {
+            cartService.updateGuestQuantity(session, variantId, quantity);
+        }
         return "redirect:/cart";
     }
 
     @PostMapping("/cart/remove")
-    public String remove(Authentication auth, @RequestParam Integer variantId) {
-        cartService.removeItem(currentUser(auth), variantId);
+    public String remove(Authentication auth, HttpSession session, @RequestParam Integer variantId) {
+        User user = currentUser(auth);
+        if (user != null) {
+            cartService.removeItem(user, variantId);
+        } else {
+            cartService.removeGuestItem(session, variantId);
+        }
         return "redirect:/cart";
     }
 
     @PostMapping("/cart/remove-selected")
-    public String removeSelected(Authentication auth,
+    public String removeSelected(Authentication auth, HttpSession session,
                                  @RequestParam(required = false) List<Integer> selectedVariantIds) {
-        cartService.removeItems(currentUser(auth), selectedVariantIds);
+        User user = currentUser(auth);
+        if (user != null) {
+            cartService.removeItems(user, selectedVariantIds);
+        } else {
+            cartService.removeGuestItems(session, selectedVariantIds);
+        }
         return "redirect:/cart";
     }
 
@@ -123,7 +180,7 @@ public class CartController {
     public String applyVoucher(Authentication auth, HttpSession session,
                                @RequestParam String code,
                                RedirectAttributes redirect) {
-        List<CartLine> lines = cartService.lines(currentUser(auth));
+        List<CartLine> lines = linesFor(currentUser(auth), session);
         String clean = code == null ? "" : code.trim();
         Voucher voucher = cartService.findVoucherByCode(clean).orElse(null);
         String error = voucher == null

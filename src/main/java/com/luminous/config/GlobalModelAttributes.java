@@ -2,6 +2,7 @@ package com.luminous.config;
 
 import com.luminous.security.CustomUserDetails;
 import com.luminous.service.shop.CartService;
+import jakarta.servlet.http.HttpSession;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ModelAttribute;
@@ -24,10 +25,10 @@ public class GlobalModelAttributes {
     }
 
     @ModelAttribute("cartCount")
-    public int cartCount(Authentication authentication) {
+    public int cartCount(Authentication authentication, HttpSession session) {
         if (authentication != null && authentication.getPrincipal() instanceof CustomUserDetails details) {
             return cartService.countItems(details.getUser());
         }
-        return 0;
+        return cartService.countGuestItems(session);
     }
 }

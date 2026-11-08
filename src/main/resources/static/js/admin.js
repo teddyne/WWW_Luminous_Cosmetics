@@ -145,6 +145,106 @@ function bindDiscountType() {
   apply();
 }
 
+/* Xem truoc the voucher o form them/sua khuyen mai: mau + nhan doi theo
+   loai da chon, cap nhat truc tiep khi admin doi loai / muc giam / ten / ma /
+   han su dung / don toi thieu. Chon loai se tu dat dung hinh thuc giam
+   (mien phi van chuyen -> phi ship, giam % -> theo %, giam co dinh -> so tien);
+   rieng "Voucher dac biet" chi doi mau nhan sang vang, giu nguyen muc giam. */
+function bindVoucherPreview() {
+  var card = document.getElementById("voucherPreview");
+  if (!card) return;
+  var typeSelect = document.getElementById("voucherType");
+  var scopeSelect = document.getElementById("voucherScope");
+  var valueInput = document.getElementById("discountValue");
+  var nameInput = document.getElementById("voucherName");
+  var codeInput = document.getElementById("voucherCode");
+  var endInput = document.getElementById("endDate");
+  var minInput = document.getElementById("minOrder");
+
+  var trimNum = function (n) {
+    return String(n).replace(/\.0+$/, "").replace(/(\.\d*?)0+$/, "$1");
+  };
+  var formatK = function (n) {
+    if (isNaN(n)) return "0đ";
+    if (n >= 1000) return trimNum(n / 1000) + "K";
+    return trimNum(n) + "đ";
+  };
+  var readValue = function () {
+    if (!valueInput || !valueInput.value) return NaN;
+    return parseFloat(valueInput.value.replace(/,/g, "").replace(/\s/g, ""));
+  };
+  var setDiscountType = function (type) {
+    var radio = document.querySelector("input[name='discountType'][value='" + type + "']");
+    if (radio && !radio.checked) radio.click();
+  };
+
+  var update = function () {
+    var type = typeSelect ? typeSelect.value : "";
+    var isSpecial = type === "Voucher đặc biệt";
+    var scope = scopeSelect ? scopeSelect.value : "ALL";
+    var checked = document.querySelector("input[name='discountType']:checked");
+    var isPercent = checked && checked.value === "PERCENTAGE";
+    var kind = isSpecial ? "special"
+      : (scope === "SHIPPING" ? "shipping" : (isPercent ? "percent" : "fixed"));
+    card.className = "voucher-card voucher-card--" + kind;
+
+    var label = document.getElementById("previewLabel");
+    if (label) {
+      var num = readValue();
+      if (kind === "shipping") label.textContent = "MIỄN PHÍ VẬN CHUYỂN";
+      else if (kind === "percent") label.textContent = "GIẢM " + (isNaN(num) ? "0" : trimNum(num)) + "%";
+      else if (kind === "fixed") label.textContent = "GIẢM " + formatK(num);
+      else label.textContent = "ƯU ĐÃI ĐẶC BIỆT";
+    }
+    var brand = document.getElementById("previewBrand");
+    if (brand) brand.style.display = kind === "special" ? "" : "none";
+
+    var name = document.getElementById("previewName");
+    if (name) name.textContent = nameInput && nameInput.value.trim() ? nameInput.value.trim() : "Tên chương trình";
+    var code = document.getElementById("previewCode");
+    if (code) code.textContent = codeInput && codeInput.value.trim() ? codeInput.value.trim() : "—";
+    var end = document.getElementById("previewEnd");
+    if (end) {
+      var raw = endInput ? endInput.value : "";
+      if (raw && raw.length >= 10) {
+        var parts = raw.slice(0, 10).split("-");
+        end.textContent = parts.length === 3 ? parts[2] + "/" + parts[1] + "/" + parts[0] : raw;
+      } else {
+        end.textContent = "—";
+      }
+    }
+    var min = document.getElementById("previewMin");
+    if (min) min.textContent = minInput && minInput.value.trim() ? minInput.value.trim() + "đ" : "—";
+  };
+
+  if (typeSelect) {
+    typeSelect.addEventListener("change", function () {
+      var t = typeSelect.value;
+      if (t === "Miễn phí vận chuyển") {
+        if (scopeSelect) scopeSelect.value = "SHIPPING";
+        setDiscountType("FIXED_AMOUNT");
+      } else if (t === "Giảm giá theo phần trăm") {
+        if (scopeSelect) scopeSelect.value = "ALL";
+        setDiscountType("PERCENTAGE");
+      } else if (t === "Giảm số tiền cố định") {
+        if (scopeSelect) scopeSelect.value = "ALL";
+        setDiscountType("FIXED_AMOUNT");
+      } else if (scopeSelect) {
+        scopeSelect.value = "ALL";
+      }
+      update();
+    });
+  }
+  [valueInput, nameInput, codeInput, endInput, minInput].forEach(function (el) {
+    if (el) el.addEventListener("input", update);
+  });
+  document.querySelectorAll("input[name='discountType']").forEach(function (r) {
+    r.addEventListener("change", update);
+  });
+  if (scopeSelect) scopeSelect.addEventListener("change", update);
+  update();
+}
+
 function generateVoucherCode() {
   var chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
   var code = "";
@@ -224,22 +324,28 @@ function formatMoneyText(value) {
   return formatted;
 }
 
-function bindMoneyInputs() {
-  document.querySelectorAll(".money-input").forEach(function (input) {
-    if (input.value) {
-      input.value = formatMoneyText(input.value.replace(/\.00$/, ""));
+// Gan dinh dang tien (dau phay hang nghin) cho 1 o nhap; dung cho ca o them dong
+// bang JS o form san pham (cac o bien the them sau khi trang tai xong).
+function attachMoneyInput(input) {
+  if (!input || input.dataset.moneyBound) return;
+  input.dataset.moneyBound = "1";
+  if (input.value) {
+    input.value = formatMoneyText(input.value.replace(/\.00$/, ""));
+  }
+  input.addEventListener("input", function () {
+    var start = input.selectionStart == null ? input.value.length : input.selectionStart;
+    var before = input.value.length;
+    input.value = formatMoneyText(input.value);
+    var pos = Math.max(0, start + (input.value.length - before));
+    try {
+      input.setSelectionRange(pos, pos);
+    } catch (e) {
     }
-    input.addEventListener("input", function () {
-      var start = input.selectionStart == null ? input.value.length : input.selectionStart;
-      var before = input.value.length;
-      input.value = formatMoneyText(input.value);
-      var pos = Math.max(0, start + (input.value.length - before));
-      try {
-        input.setSelectionRange(pos, pos);
-      } catch (e) {
-      }
-    });
   });
+}
+
+function bindMoneyInputs() {
+  document.querySelectorAll(".money-input").forEach(attachMoneyInput);
   document.querySelectorAll("form").forEach(function (form) {
     form.addEventListener("submit", function () {
       form.querySelectorAll(".money-input").forEach(function (input) {
@@ -252,6 +358,7 @@ function bindMoneyInputs() {
 document.addEventListener("DOMContentLoaded", function () {
   bindVoucherScope();
   bindDiscountType();
+  bindVoucherPreview();
   bindImagePreview();
   updateBulkBar();
   toggleCancelReason();

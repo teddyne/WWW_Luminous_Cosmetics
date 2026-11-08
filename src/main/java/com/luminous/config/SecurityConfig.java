@@ -19,16 +19,6 @@ import org.springframework.security.web.savedrequest.HttpSessionRequestCache;
 import org.springframework.security.web.savedrequest.SavedRequest;
 import java.io.IOException;
 
-/**
- * Phan quyen ro rang, dung theo yeu cau 3 loai nguoi dung:
- * - GUEST (chua dang nhap): xem trang chu, tim kiem, dang nhap, dang ky.
- * - CUSTOMER: them quyen gio hang, don hang, tai khoan (giai doan sau).
- * - ADMIN: toan bo quyen CUSTOMER + /admin/**.
- * Luu y: hasRole("ADMIN") tuong ung roleName ROLE_ADMIN trong DB.
- * MOI: /skin-quiz/** va /my-routine/** chi danh cho CUSTOMER + ADMIN,
- * giong /cart, /orders, /account. GUEST bam vao se duoc dua ve /login
- * roi quay lai dung trang do (saved request).
- */
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
@@ -46,12 +36,16 @@ public class SecurityConfig {
         http
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers(
-                        "/", "/menu", "/login", "/register", "/captcha.png", "/blog",
+                        "/", "/menu", "/login", "/register", "/captcha.png", "/blog", "/blog/**",
+                        "/about", "/contact", "/support",
                         "/forgot-password", "/error", "/favicon.ico",
-                        "/css/**", "/js/**", "/images/**", "/products/**"
+                        "/css/**", "/js/**", "/images/**", "/products/**",
+                        "/skin-quiz", "/skin-quiz/submit", "/my-routine", "/my-routine/building",
+                        "/my-routine/buy-all",
+                        "/cart", "/cart/**"
                 ).permitAll()
                 .requestMatchers("/admin/**").hasRole("ADMIN")
-                .requestMatchers("/cart", "/cart/**", "/orders", "/orders/**",
+                .requestMatchers("/orders", "/orders/**",
                         "/account", "/account/**", "/checkout", "/checkout/**",
                         "/skin-quiz", "/skin-quiz/**", "/my-routine", "/my-routine/**")
                     .hasAnyRole("CUSTOMER", "ADMIN")
@@ -83,8 +77,13 @@ public class SecurityConfig {
 
     /**
      * Sau khi dang nhap:
-     * - Neu truoc do bi chan o 1 trang can quyen (vi du /cart) thi quay lai trang do.
      * - ADMIN -> /admin.
+     * - Khach vua lam trac nghiem xong roi dang nhap de luu ket qua: dua thang
+     *   ve /my-routine de hien ket qua vua lam. Buoc nay PHAI dung truoc
+     *   saved request: neu truoc do nguoi dung bam nham vao 1 trang can quyen
+     *   (vi du /account) thi yeu cau do da luu san se dua ho di cho khac
+     *   (vi du trang chao hoi /skin-quiz/welcome) thay vi thay ket qua vua lam.
+     * - Neu truoc do bi chan o 1 trang can quyen (vi du /cart) thi quay lai trang do.
      * - CUSTOMER lan dau (chua duoc hoi trac nghiem, chua co chu trinh)
      *   -> /skin-quiz/welcome de hoi "co muon lam trac nghiem da khong?".
      *   Co o day KHONG danh dau asked ngay: neu user tat trinh duyet o trang
@@ -98,16 +97,25 @@ public class SecurityConfig {
     private AuthenticationSuccessHandler loginSuccessHandler(
             UserRepository userRepository, SkinRoutineRepository routines) {
         return (HttpServletRequest request, HttpServletResponse response, Authentication auth) -> {
+            boolean admin = auth.getPrincipal() instanceof CustomUserDetails details && details.isAdmin();
+            if (admin) {
+                response.sendRedirect("/admin");
+                return;
+            }
+            // Khach vua lam trac nghiem xong roi dang nhap de luu ket qua:
+            // dua thang ve /my-routine, ket qua tam trong session se duoc
+            // chuyen xuong DB o do (xem SkinQuizController).
+            if (request.getSession(false) != null
+                    && request.getSession(false).getAttribute(
+                            com.luminous.dto.GuestRoutineSession.SESSION_KEY) != null) {
+                response.sendRedirect("/my-routine");
+                return;
+            }
             HttpSessionRequestCache cache = new HttpSessionRequestCache();
             SavedRequest saved = cache.getRequest(request, response);
             if (saved != null) {
                 cache.removeRequest(request, response);
                 response.sendRedirect(saved.getRedirectUrl());
-                return;
-            }
-            boolean admin = auth.getPrincipal() instanceof CustomUserDetails details && details.isAdmin();
-            if (admin) {
-                response.sendRedirect("/admin");
                 return;
             }
             String email = auth.getName();

@@ -22,6 +22,8 @@ public interface OrderDetailRepository extends JpaRepository<OrderDetail, Intege
 
     boolean existsByVariant_Product_Id(Integer productId);
 
+    boolean existsByVariantId(Integer variantId);
+
     @Query("SELECT od.variant.product.id, SUM(od.quantity) FROM OrderDetail od"
             + " JOIN Orders o ON o.id = od.orderId WHERE o.status <> :status"
             + " GROUP BY od.variant.product.id ORDER BY SUM(od.quantity) DESC")

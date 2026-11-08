@@ -53,7 +53,7 @@
                 <div class="admin-name" th:text="${item.voucherName}">Tên chương trình</div>
                 <div class="admin-sub" th:text="'Đã dùng ' + ${item.usedCount} + '/' + ${item.usageLimit}">Đã dùng 0/100</div>
               </td>
-              <td class="fw-semibold" th:text="${item.discountText()}">10%</td>
+              <td><span th:replace="~{admin/fragments :: voucherBadge(${item.badgeKind}, ${item.badgeLabel})}"></span></td>
               <td th:text="${#numbers.formatDecimal(item.minOrderValue, 0, 'POINT', 0, 'COMMA')} + 'đ'">0đ</td>
               <td th:text="${#temporals.format(item.startDate, 'dd/MM/yyyy')}">01/01/2026</td>
               <td th:text="${#temporals.format(item.endDate, 'dd/MM/yyyy')}">01/01/2026</td>
