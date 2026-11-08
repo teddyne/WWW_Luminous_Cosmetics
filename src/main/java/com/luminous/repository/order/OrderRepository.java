@@ -9,8 +9,12 @@ import org.springframework.data.repository.query.Param;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 public interface OrderRepository extends JpaRepository<Orders, Integer>, JpaSpecificationExecutor<Orders> {
+
+    /** Tim don theo ma don (ma duy nhat cua don). */
+    Optional<Orders> findByOrderCode(String orderCode);
 
     long countByStatus(OrderStatus status);
 

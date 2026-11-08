@@ -69,7 +69,12 @@
               <p class="mb-2" th:text="${step.usage}">Cách dùng</p>
               <div class="d-flex flex-wrap gap-2">
                 <button type="button" class="btn btn-lum btn-sm" data-bs-toggle="modal" th:attr="data-bs-target='#detailModal-' + ${step.stepIndex}">Xem chi tiết</button>
-                <a th:href="@{/cart}" class="btn btn-outline-lum btn-sm">Thêm vào giỏ</a>
+                <form th:action="@{/cart/add}" method="post" class="m-0">
+                  <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                  <input type="hidden" name="variantId" th:value="${step.card.variant.id}"/>
+                  <input type="hidden" name="quantity" value="1"/>
+                  <button type="submit" class="btn btn-outline-lum btn-sm">Thêm vào giỏ</button>
+                </form>
               </div>
             </div>
           </li>
@@ -101,7 +106,12 @@
               <p class="mb-2" th:text="${step.usage}">Cách dùng</p>
               <div class="d-flex flex-wrap gap-2">
                 <button type="button" class="btn btn-lum btn-sm" data-bs-toggle="modal" th:attr="data-bs-target='#detailModal-' + ${step.stepIndex}">Xem chi tiết</button>
-                <a th:href="@{/cart}" class="btn btn-outline-lum btn-sm">Thêm vào giỏ</a>
+                <form th:action="@{/cart/add}" method="post" class="m-0">
+                  <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                  <input type="hidden" name="variantId" th:value="${step.card.variant.id}"/>
+                  <input type="hidden" name="quantity" value="1"/>
+                  <button type="submit" class="btn btn-outline-lum btn-sm">Thêm vào giỏ</button>
+                </form>
               </div>
             </div>
           </li>
@@ -174,7 +184,12 @@
           </div>
         </div>
         <div class="modal-footer">
-          <a th:href="@{/cart}" class="btn btn-lum">Thêm vào giỏ</a>
+          <form th:action="@{/cart/add}" method="post" class="m-0">
+            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+            <input type="hidden" name="variantId" th:value="${step.card.variant.id}"/>
+            <input type="hidden" name="quantity" value="1"/>
+            <button type="submit" class="btn btn-lum">Thêm vào giỏ</button>
+          </form>
           <button type="button" class="btn btn-outline-lum" data-bs-dismiss="modal">Đóng</button>
         </div>
       </div>

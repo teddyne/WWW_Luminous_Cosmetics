@@ -63,7 +63,8 @@
         </div>
         <a th:href="@{/cart}" class="header-icon text-decoration-none position-relative" title="Giỏ hàng" aria-label="Giỏ hàng">
           <i class="bi bi-cart3"></i>
-          <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-success">0</span>
+          <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-success"
+                th:if="${cartCount > 0}" th:text="${cartCount > 99 ? '99+' : cartCount}">0</span>
         </a>
       </div>
     </div>
@@ -79,10 +80,12 @@
      Sao: so thap phan (vd 4.7) + icon sao + so luong danh gia, lay tu Review that.
      Hover: nen xanh la nhat (xem home.css .product-card:hover; the nay chi dung o trang chu, trang chu nap home.css). -->
 <article th:fragment="productCard(card, showSale)" class="product-card">
-  <img th:src="${card.getImageUrl()}" th:alt="${card.name()}" loading="lazy"/>
+  <a class="product-card-link product-card-image-link" th:href="@{/products/{id}(id=${card.product.id})}">
+    <img th:src="${card.getImageUrl()}" th:alt="${card.name()}" loading="lazy"/>
+  </a>
   <div class="p-3 d-flex flex-column flex-grow-1">
     <div class="product-brand" th:text="${card.brand()}">THƯƠNG HIỆU</div>
-    <div class="product-name" th:text="${card.name()}">Tên sản phẩm</div>
+    <a class="product-card-link product-name" th:href="@{/products/{id}(id=${card.product.id})}" th:text="${card.name()}">Tên sản phẩm</a>
     <div class="mt-1">
       <span th:if="${card.getReviewCount() > 0}">
         <span class="rating-number" th:text="${#numbers.formatDecimal(card.getRating(), 1, 1)}">4.7</span>
@@ -97,9 +100,13 @@
         <div th:class="${showSale and card.onSale() ? 'price-sale' : 'price-normal'}"
              th:text="${showSale and card.onSale() ? card.displayPriceText() : card.priceText()}">245.000đ</div>
       </div>
-      <!-- Giai doan nay: nut dan ve /cart (Guest se duoc Security chuyen ve /login).
-           Khi lam gio that se doi thanh POST them vao gio, khong doi khung the. -->
-      <a th:href="@{/cart}" class="btn-add-cart" title="Thêm vào giỏ hàng" aria-label="Thêm vào giỏ hàng"><i class="bi bi-cart-plus"></i></a>
+
+      <form th:action="@{/cart/add}" method="post">
+        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+        <input type="hidden" name="variantId" th:value="${card.variant.id}"/>
+        <input type="hidden" name="quantity" value="1"/>
+        <button type="submit" class="btn-add-cart" title="Thêm vào giỏ hàng" aria-label="Thêm vào giỏ hàng"><i class="bi bi-cart-plus"></i></button>
+      </form>
     </div>
   </div>
 </article>

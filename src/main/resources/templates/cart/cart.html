@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="vi" th:with="pageCss='cart.css'">
+<head th:replace="~{layout/header :: head('Giỏ hàng')}"></head>
+<body>
+<div th:replace="~{layout/header :: header}"></div>
+
+<main class="container cart-page">
+  <nav class="cart-breadcrumb" aria-label="Breadcrumb">
+    <a th:href="@{/}">Trang chủ</a><span>/</span>
+    <span>Giỏ hàng</span>
+  </nav>
+
+  <!-- Gio trong -->
+  <section class="cart-empty" th:if="${lines.isEmpty()}">
+    <i class="bi bi-cart3"></i>
+    <h1>Giỏ hàng của bạn đang trống</h1>
+    <p>Hãy chọn những sản phẩm yêu thích để bắt đầu mua sắm.</p>
+    <a class="btn-cart-primary" th:href="@{/products}">Tiếp tục mua hàng</a>
+  </section>
+
+  <div class="cart-layout" th:unless="${lines.isEmpty()}">
+    <section class="cart-main">
+      <div class="cart-table-head">
+        <input type="checkbox" id="select-all-top" class="cart-select-all" checked aria-label="Chọn tất cả"/>
+        <span>Sản phẩm</span>
+        <div class="cart-head-side">
+          <span>Giá tiền</span>
+          <span>Số lượng</span>
+          <span>Thành tiền</span>
+          <span>Hành động</span>
+        </div>
+      </div>
+
+      <article class="cart-row" th:each="line : ${lines}" th:classappend="${!line.available()} ? ' out-of-stock' : ''">
+        <input type="checkbox" class="cart-select"
+               th:value="${line.card.variant.id}"
+               th:checked="${line.available()}"
+               th:disabled="${!line.available()}"
+               th:data-line-total="${line.lineTotal}"
+               th:data-category-id="${line.card.product.category.id}"
+               th:data-product-id="${line.card.product.id}"
+               aria-label="Chọn sản phẩm"/>
+        <div class="cart-product">
+          <a th:href="@{/products/{id}(id=${line.card.product.id})}" class="cart-thumb">
+            <img th:src="${line.card.imageUrl}" th:alt="${line.card.name()}" loading="lazy"/>
+          </a>
+          <div class="cart-product-info">
+            <div class="cart-brand" th:text="${line.card.brand()}">THƯƠNG HIỆU</div>
+            <a class="cart-name" th:href="@{/products/{id}(id=${line.card.product.id})}" th:text="${line.card.name()}">Tên sản phẩm</a>
+            <div class="cart-variant"
+                 th:if="${!line.card.sizeLabel().isBlank() or (line.card.variant.shadeName != null and !line.card.variant.shadeName.isBlank())}"
+                 th:text="${!line.card.sizeLabel().isBlank() ? line.card.sizeLabel() : line.card.variant.shadeName}"></div>
+            <div class="cart-stock-low" th:if="${line.available() and line.card.variant.stockQuantity <= 5}"
+                 th:text="'Chỉ còn ' + ${line.card.variant.stockQuantity}">Chỉ còn 5</div>
+            <div class="cart-stock-out" th:if="${!line.available()}">Tạm hết hàng</div>
+          </div>
+        </div>
+        <div class="cart-row-side">
+          <div class="cart-price">
+            <span class="cart-price-now" th:text="${line.card.displayPriceText()}">245.000đ</span>
+            <span class="cart-price-old" th:if="${line.card.onSale()}" th:text="${line.card.priceText()}">690.000đ</span>
+          </div>
+          <div class="cart-qty">
+            <form th:action="@{/cart/update}" method="post" class="quantity-form">
+              <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+              <input type="hidden" name="variantId" th:value="${line.card.variant.id}"/>
+              <div class="quantity-control">
+                <button type="button" data-quantity-minus th:disabled="${!line.available()}" aria-label="Giảm số lượng">−</button>
+                <input type="number" name="quantity" th:value="${line.quantity}" min="1"
+                       th:max="${line.card.variant.stockQuantity}" th:disabled="${!line.available()}" aria-label="Số lượng"/>
+                <button type="button" data-quantity-plus th:disabled="${!line.available()}" aria-label="Tăng số lượng">+</button>
+              </div>
+            </form>
+          </div>
+          <div class="cart-line-total" th:text="${line.lineTotalText()}">245.000đ</div>
+          <div class="cart-action">
+            <form th:action="@{/cart/remove}" method="post" class="delete-form" th:data-product-name="${line.card.name()}">
+              <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+              <input type="hidden" name="variantId" th:value="${line.card.variant.id}"/>
+              <button type="submit" class="cart-delete" aria-label="Xóa sản phẩm"><i class="bi bi-trash"></i></button>
+            </form>
+          </div>
+        </div>
+      </article>
+
+      <div class="cart-bottom">
+        <a class="cart-continue" th:href="@{/products}"><i class="bi bi-arrow-left"></i> Tiếp tục mua hàng</a>
+        <div class="cart-bottom-actions">
+          <label class="cart-select-all-label">
+            <input type="checkbox" id="select-all-bottom" class="cart-select-all" checked/>
+            <span th:text="'Chọn tất cả (' + ${totalLines} + ')'">Chọn tất cả (2)</span>
+          </label>
+          <form th:action="@{/cart/remove-selected}" method="post" id="remove-selected-form">
+            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+            <span id="remove-selected-inputs"></span>
+            <button type="submit" class="cart-link-danger">Xóa</button>
+          </form>
+        </div>
+      </div>
+    </section>
+
+    <aside class="cart-summary"
+           th:data-voucher-type="${appliedVoucher != null ? appliedVoucher.discountType : ''}"
+           th:data-voucher-value="${appliedVoucher != null ? appliedVoucher.discountValue : ''}"
+           th:data-voucher-max="${appliedVoucher != null and appliedVoucher.maxDiscountAmount != null ? appliedVoucher.maxDiscountAmount : ''}"
+           th:data-voucher-min="${appliedVoucher != null ? appliedVoucher.minOrderValue : ''}"
+           th:data-voucher-scope="${appliedVoucher != null ? appliedVoucher.scopeType : ''}"
+           th:data-voucher-scope-categories="${voucherScopeCategories}"
+           th:data-voucher-scope-products="${voucherScopeProducts}">
+      <h2>Hóa đơn của bạn</h2>
+      <div class="summary-row">
+        <span id="summary-subtotal-label" th:text="'Tạm tính (' + ${selectedCount} + ' sản phẩm):'">Tạm tính (1 sản phẩm):</span>
+        <strong id="summary-subtotal" th:text="${subtotalText}">245.000đ</strong>
+      </div>
+      <div class="summary-row" id="summary-discount-row" th:style="${hasDiscount} ? '' : 'display:none'">
+        <span>Giảm giá:</span>
+        <strong class="text-discount" id="summary-discount" th:text="'-' + ${discountText}">-20.000đ</strong>
+      </div>
+
+      <div class="summary-voucher" th:if="${appliedVoucher == null}">
+        <form th:action="@{/cart/apply-voucher}" method="post" class="voucher-form">
+          <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+          <input type="text" name="code" placeholder="Nhập mã giảm giá" th:value="${voucherCode}" aria-label="Mã giảm giá"/>
+          <button type="submit">Áp dụng</button>
+        </form>
+        <p class="voucher-error" th:if="${voucherError != null}" th:text="${voucherError}"></p>
+        <p class="voucher-error" th:if="${voucherApplyError != null}" th:text="${voucherApplyError}"></p>
+      </div>
+      <div class="summary-voucher-applied" th:if="${appliedVoucher != null}">
+        <div class="voucher-chip">
+          <div>
+            <strong th:text="${appliedVoucher.voucherCode}">SUMMER2026</strong>
+            <span th:text="${appliedVoucher.voucherName}">Ưu đãi mùa hè 2026</span>
+          </div>
+          <form th:action="@{/cart/remove-voucher}" method="post" class="remove-voucher-form" th:data-voucher-code="${appliedVoucher.voucherCode}">
+            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+            <button type="submit" aria-label="Bỏ mã giảm giá"><i class="bi bi-x-lg"></i></button>
+          </form>
+        </div>
+        <p class="voucher-desc" th:text="${appliedVoucher.description}"></p>
+        <p class="voucher-error" th:if="${voucherError != null}" th:text="${voucherError}"></p>
+      </div>
+
+      <div class="summary-total">
+        <span>Tổng cộng:</span>
+        <strong id="summary-total" th:text="${totalText}">225.000đ</strong>
+      </div>
+      <p class="summary-vat">(Đã bao gồm VAT)</p>
+      <form th:action="@{/checkout}" method="get" id="checkout-form">
+        <span id="checkout-selected"></span>
+        <button type="submit" class="btn-cart-primary btn-checkout" id="checkout-btn">Tiến hành đặt hàng</button>
+      </form>
+    </aside>
+  </div>
+</main>
+
+<div th:replace="~{layout/footer :: footer}"></div>
+<script>
+  // Chi chay khi co gio hang (khong chay o trang thai gio trong).
+  if (document.querySelector('.cart-layout')) {
+    const money = n => new Intl.NumberFormat('vi-VN').format(Math.round(n)) + 'đ';
+    const summary = document.querySelector('.cart-summary');
+    const voucherType = summary.dataset.voucherType || '';
+    const voucherValue = Number.parseFloat(summary.dataset.voucherValue || '0');
+    const voucherMax = summary.dataset.voucherMax ? Number.parseFloat(summary.dataset.voucherMax) : null;
+    const voucherMin = Number.parseFloat(summary.dataset.voucherMin || '0');
+    const voucherScope = summary.dataset.voucherScope || '';
+    const scopeCategories = new Set((summary.dataset.voucherScopeCategories || '').split(',').filter(Boolean));
+    const scopeProducts = new Set((summary.dataset.voucherScopeProducts || '').split(',').filter(Boolean));
+
+    function eligible(box) {
+      if (voucherScope === 'CATEGORY') return scopeCategories.has(box.dataset.categoryId);
+      if (voucherScope === 'PRODUCT') return scopeProducts.has(box.dataset.productId);
+      return true;
+    }
+
+    function syncSelection() {
+      const checked = [...document.querySelectorAll('.cart-select:checked')];
+      let subtotal = 0, base = 0;
+      checked.forEach(box => {
+        const total = Number.parseFloat(box.dataset.lineTotal || '0');
+        subtotal += total;
+        if (voucherType && eligible(box)) base += total;
+      });
+      let discount = 0;
+      if (voucherType && base > 0 && base >= voucherMin) {
+        discount = voucherType === 'PERCENTAGE' ? base * voucherValue / 100 : voucherValue;
+        if (voucherMax !== null) discount = Math.min(discount, voucherMax);
+        discount = Math.min(discount, base);
+      }
+      document.querySelector('#summary-subtotal').textContent = money(subtotal);
+      document.querySelector('#summary-subtotal-label').textContent = `Tạm tính (${checked.length} sản phẩm):`;
+      const discountRow = document.querySelector('#summary-discount-row');
+      if (discountRow) discountRow.style.display = discount > 0 ? '' : 'none';
+      const discountEl = document.querySelector('#summary-discount');
+      if (discountEl) discountEl.textContent = '-' + money(discount);
+      document.querySelector('#summary-total').textContent = money(subtotal - discount);
+      document.querySelector('#checkout-btn').disabled = checked.length === 0;
+
+      // Dong bo cac id duoc chon vao 2 form: dat hang + xoa cac dong da chon.
+      const hidden = checked.map(box =>
+        `<input type="hidden" name="selectedVariantIds" value="${box.value}"/>`).join('');
+      document.querySelector('#checkout-selected').innerHTML = hidden;
+      document.querySelector('#remove-selected-inputs').innerHTML = hidden;
+
+      // Trang thai "Chon tat ca".
+      const enabled = [...document.querySelectorAll('.cart-select:not(:disabled)')];
+      const allChecked = enabled.length > 0 && enabled.every(box => box.checked);
+      document.querySelectorAll('.cart-select-all').forEach(box => {
+        box.checked = allChecked;
+        box.disabled = enabled.length === 0;
+      });
+    }
+    document.querySelectorAll('.cart-select').forEach(box => box.addEventListener('change', syncSelection));
+    document.querySelectorAll('.cart-select-all').forEach(box => box.addEventListener('change', () => {
+      document.querySelectorAll('.cart-select:not(:disabled)').forEach(item => item.checked = box.checked);
+      syncSelection();
+    }));
+    document.querySelectorAll('.quantity-form').forEach(form => {
+      const input = form.querySelector('input[name="quantity"]');
+      form.querySelector('[data-quantity-minus]')?.addEventListener('click', () => {
+        if (input.disabled) return;
+        input.value = Math.max(1, Number(input.value) - 1);
+        form.requestSubmit();
+      });
+      form.querySelector('[data-quantity-plus]')?.addEventListener('click', () => {
+        if (input.disabled) return;
+        input.value = Math.min(Number(input.max || 99), Number(input.value) + 1);
+        form.requestSubmit();
+      });
+      input?.addEventListener('change', () => form.requestSubmit());
+    });
+
+    // Hoi lai truoc moi hanh dong xoa
+    document.querySelectorAll('.delete-form').forEach(form => form.addEventListener('submit', event => {
+      if (!confirm(`Bạn có muốn xóa "${form.dataset.productName}" khỏi giỏ hàng không?`)) event.preventDefault();
+    }));
+    document.querySelector('#remove-selected-form')?.addEventListener('submit', event => {
+      const count = document.querySelectorAll('.cart-select:checked').length;
+      if (count === 0) {
+        event.preventDefault();
+        alert('Bạn chưa chọn sản phẩm nào để xóa.');
+        return;
+      }
+      if (!confirm(`Bạn có muốn xóa ${count} sản phẩm đã chọn khỏi giỏ hàng không?`)) event.preventDefault();
+    });
+    document.querySelector('.remove-voucher-form')?.addEventListener('submit', event => {
+      if (!confirm(`Bạn có muốn bỏ mã giảm giá ${event.target.dataset.voucherCode} không?`)) event.preventDefault();
+    });
+    syncSelection();
+  }
+</script>
+</body>
+</html>

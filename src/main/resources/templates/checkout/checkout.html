@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="vi" th:with="pageCss='checkout.css'">
+<head th:replace="~{layout/header :: head('Đặt hàng')}"></head>
+<body>
+<div th:replace="~{layout/header :: header}"></div>
+
+<main class="container checkout-page">
+  <nav class="checkout-breadcrumb" aria-label="Breadcrumb">
+    <a th:href="@{/}">Trang chủ</a><span>/</span>
+    <a th:href="@{/cart}">Giỏ hàng</a><span>/</span>
+    <span>Đặt hàng</span>
+  </nav>
+
+  <h1 class="checkout-title">Tiến hành đặt hàng</h1>
+
+  <div class="checkout-error" th:if="${checkoutError != null}" th:text="${checkoutError}"></div>
+
+  <form th:action="@{/checkout/submit}" method="post" id="place-form">
+    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+    <span th:each="id : ${selectedVariantIds}">
+      <input type="hidden" name="selectedVariantIds" th:value="${id}"/>
+    </span>
+
+    <div class="checkout-layout">
+      <div class="checkout-main">
+        <!-- Dia chi giao hang. -->
+        <section class="checkout-box">
+          <h2>Địa chỉ giao hàng</h2>
+          <p class="checkout-note" th:if="${addresses.isEmpty()}">Bạn chưa có địa chỉ nào. Hãy thêm địa chỉ đầu tiên bên dưới.</p>
+          <div class="address-row" th:each="a : ${addresses}">
+            <label class="address-option">
+              <input type="radio" name="addressId" th:value="${a.id}" th:checked="${a.id == selectedAddressId}"/>
+              <span>
+                <strong th:text="${a.recipientName} + ' • ' + ${a.phone}"></strong>
+                <span th:text="${a.fullAddress()}"></span>
+                <em th:if="${a.isDefault}">Mặc định</em>
+              </span>
+            </label>
+            <div class="address-row-actions">
+              <button type="button" class="address-edit"
+                      th:data-id="${a.id}"
+                      th:data-name="${a.recipientName}"
+                      th:data-phone="${a.phone}"
+                      th:data-province="${a.province}"
+                      th:data-ward="${a.ward}"
+                      th:data-detail="${a.detailAddress}"
+                      th:data-is-default="${a.isDefault}" title="Sửa địa chỉ" aria-label="Sửa địa chỉ"><i class="bi bi-pencil"></i></button>
+              <button type="button" class="address-delete"
+                      th:data-id="${a.id}"
+                      th:data-label="${a.recipientName} + ' • ' + ${a.phone}" title="Xóa địa chỉ" aria-label="Xóa địa chỉ"><i class="bi bi-trash"></i></button>
+            </div>
+          </div>
+          <details class="address-add" id="address-details">
+            <summary>＋ Thêm địa chỉ mới</summary>
+            <div class="address-add-grid">
+              <input id="addr-name" name="recipientName" form="address-form" placeholder="Họ tên người nhận" aria-label="Họ tên người nhận"/>
+              <input id="addr-phone" name="phone" form="address-form" placeholder="Số điện thoại" aria-label="Số điện thoại"/>
+              <select id="addr-province" name="province" form="address-form" required aria-label="Tỉnh/thành">
+                <option value="">— Chọn tỉnh/thành —</option>
+              </select>
+              <select id="addr-ward" name="ward" form="address-form" required disabled aria-label="Xã/phường">
+                <option value="">— Chọn xã/phường —</option>
+              </select>
+              <input id="addr-detail" name="detailAddress" form="address-form" placeholder="Số nhà, tên đường" aria-label="Số nhà, tên đường"/>
+              <label class="address-default-check">
+                <input type="checkbox" name="isDefault" value="true" form="address-form"/> Đặt làm mặc định
+              </label>
+            </div>
+            <button type="submit" name="action" value="add-address" form="address-form" id="address-submit-btn" class="btn-checkout-secondary">Lưu địa chỉ</button>
+            <button type="button" id="address-cancel-btn" class="btn-checkout-secondary" hidden>Hủy</button>
+          </details>
+        </section>
+
+        <!-- Thoi gian giao + ghi chu. -->
+        <section class="checkout-box">
+          <h2>Thời gian giao hàng</h2>
+          <select id="delivery-slot" name="deliverySlot" class="checkout-select" aria-label="Thời gian giao hàng">
+            <option th:each="s : ${deliverySlots}" th:value="${s}" th:text="${s}"></option>
+          </select>
+          <textarea id="order-note" name="note" rows="2" placeholder="Ghi chú cho đơn hàng (không bắt buộc)" aria-label="Ghi chú cho đơn hàng"></textarea>
+        </section>
+
+        <!-- Ma giam gia (mang tu gio sang). -->
+        <section class="checkout-box">
+          <h2>Mã giảm giá</h2>
+          <div class="checkout-error" th:if="${voucherApplyError != null}" th:text="${voucherApplyError}"></div>
+          <div th:if="${appliedVoucher != null}" class="voucher-applied">
+            <span th:text="${appliedVoucher.voucherCode} + ' — ' + ${appliedVoucher.voucherName}"></span>
+            <button type="submit" name="action" value="remove-voucher" form="voucher-form" class="voucher-remove" title="Bỏ mã">×</button>
+          </div>
+          <div th:if="${appliedVoucher == null}" class="voucher-form-row">
+            <input id="voucher-code" name="voucherCode" form="voucher-form" placeholder="Nhập mã giảm giá" th:value="${voucherCode}" aria-label="Mã giảm giá"/>
+            <button type="submit" name="action" value="apply-voucher" form="voucher-form" class="btn-checkout-secondary">Áp dụng</button>
+          </div>
+          <p class="checkout-note" th:if="${voucherError != null}" th:text="${voucherError}"></p>
+        </section>
+
+        <!-- Diem thanh vien. -->
+        <section class="checkout-box">
+          <h2>Điểm thành viên</h2>
+          <p>Bạn đang có <strong th:text="${pointBalance}"></strong> điểm (1 điểm = 1đ).</p>
+          <label class="points-row">
+            <span>Sử dụng</span>
+            <input type="number" name="usePoints" id="use-points" value="0" min="0"
+                   th:max="${pointsMax}" th:data-max="${pointsMax}"/>
+            <span>điểm</span>
+          </label>
+          <p class="checkout-note">Tối đa dùng được <span th:text="${pointsMax}"></span> điểm cho đơn này.</p>
+        </section>
+
+        <!-- Phuong thuc thanh toan. -->
+        <section class="checkout-box">
+          <h2>Phương thức thanh toán</h2>
+          <label class="pay-option">
+            <input type="radio" name="paymentMethod" value="COD" checked/>
+            <span><strong>Thanh toán khi nhận hàng (COD)</strong><small>Trả tiền mặt khi nhận hàng.</small></span>
+          </label>
+          <label class="pay-option pay-disabled">
+            <input type="radio" name="paymentMethod" value="MOMO" disabled/>
+            <span><strong>Ví MoMo</strong><small>Sắp ra mắt.</small></span>
+          </label>
+        </section>
+      </div>
+
+      <!-- Tom tat don hang. -->
+      <aside class="checkout-summary">
+        <h2>Đơn hàng của bạn</h2>
+        <div class="summary-items">
+          <div class="summary-item" th:each="line : ${lines}">
+            <img th:src="${line.card.imageUrl}" th:alt="${line.card.name()}"/>
+            <div>
+              <div class="summary-item-name" th:text="${line.card.name()}"></div>
+              <div class="summary-item-meta" th:text="${line.card.sizeLabel()} + ' × ' + ${line.quantity}"></div>
+            </div>
+            <div th:text="${line.lineTotalText()}"></div>
+          </div>
+        </div>
+        <div class="summary-row"><span th:text="'Tạm tính (' + ${lines.size()} + ' sản phẩm)'"></span><span th:text="${subtotalText}"></span></div>
+        <div class="summary-row"><span>Giảm giá</span><span th:text="'-' + ${discountText}"></span></div>
+        <div class="summary-row"><span>Phí vận chuyển</span><span th:text="${shippingText}"></span></div>
+        <div class="summary-row"><span>Điểm sử dụng</span><span id="points-used-text">−0đ</span></div>
+        <div class="summary-total"><span>Tổng cộng</span><span id="summary-total" th:text="${totalText}" th:data-total="${totalValue}"></span></div>
+        <p class="checkout-note">(Đã bao gồm VAT)</p>
+        <button type="submit" name="action" value="place" class="btn-place">Đặt hàng</button>
+      </aside>
+    </div>
+  </form>
+
+  <!-- Form rieng (rong): chi chua token + id da chon, cac o nhap o tren tro toi
+       form nay qua thuoc tinh form="..." de khong long form trong form. -->
+  <form id="address-form" th:action="@{/checkout/submit}" method="post" hidden>
+    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+    <span th:each="id : ${selectedVariantIds}">
+      <input type="hidden" name="selectedVariantIds" th:value="${id}"/>
+    </span>
+    <input type="hidden" name="addressId" id="edit-address-id" value=""/>
+  </form>
+  <form id="delete-address-form" th:action="@{/checkout/submit}" method="post" hidden>
+    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+    <span th:each="id : ${selectedVariantIds}">
+      <input type="hidden" name="selectedVariantIds" th:value="${id}"/>
+    </span>
+    <input type="hidden" name="addressId" id="delete-address-id" value=""/>
+    <input type="hidden" name="action" value="delete-address"/>
+  </form>
+  <form id="voucher-form" th:action="@{/checkout/submit}" method="post" hidden>
+    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+    <span th:each="id : ${selectedVariantIds}">
+      <input type="hidden" name="selectedVariantIds" th:value="${id}"/>
+    </span>
+  </form>
+</main>
+
+<div th:replace="~{layout/footer :: footer}"></div>
+<script>
+  // Cap nhat tong tien khi doi so diem (chi hien thi, server tinh lai khi dat hang).
+  (function () {
+    var input = document.getElementById('use-points');
+    var totalEl = document.getElementById('summary-total');
+    var pointsEl = document.getElementById('points-used-text');
+    if (!input || !totalEl || !pointsEl) return;
+    var baseTotal = Number.parseFloat(totalEl.dataset.total || '0');
+    var max = Number.parseInt(input.dataset.max || '0', 10);
+    var money = function (n) { return new Intl.NumberFormat('vi-VN').format(Math.round(n)) + 'đ'; };
+    input.addEventListener('input', function () {
+      var used = Number.parseInt(input.value || '0', 10);
+      if (Number.isNaN(used) || used < 0) used = 0;
+      if (used > max) { used = max; input.value = max; }
+      pointsEl.textContent = '−' + money(used);
+      totalEl.textContent = money(baseTotal - used);
+    });
+  })();
+
+  // Dropdown dia chi 2 cap (sau sap nhap 01/07/2025): tinh -> xa/phuong.
+  // API hanh chinh Viet Nam v2, mien phi, khong can khoa. Gia tri gui len
+  // server la TEN (vd "Phường An Nhơn") nen backend nhan nhu cu.
+  // Mat mang thi tu dong doi ve o nhap tay.
+  (function () {
+    var provinceSel = document.getElementById('addr-province');
+    var wardSel = document.getElementById('addr-ward');
+    if (!provinceSel || !wardSel) return;
+    // API v2: du lieu sau sap nhap 01/07/2025 (34 tinh, 2 cap, khong con huyen).
+    var API = 'https://provinces.open-api.vn/api/v2';
+
+    function fill(sel, items, placeholder) {
+      sel.innerHTML = '';
+      var first = document.createElement('option');
+      first.value = '';
+      first.textContent = placeholder;
+      sel.appendChild(first);
+      items.forEach(function (it) {
+        var opt = document.createElement('option');
+        opt.value = it.name;
+        opt.textContent = it.name;
+        opt.dataset.code = it.code;
+        sel.appendChild(opt);
+      });
+    }
+    function reset(sel, placeholder) {
+      fill(sel, [], placeholder);
+      sel.disabled = true;
+    }
+    function selectedCode(sel) {
+      var opt = sel.selectedOptions && sel.selectedOptions[0];
+      return opt ? opt.dataset.code : '';
+    }
+    // Mat mang / API loi: doi 3 o chon ve o nhap tay de form van dung duoc.
+    function fallbackToTextInputs() {
+      var fields = [
+        ['addr-province', 'province', 'Tỉnh/Thành phố'],
+        ['addr-ward', 'ward', 'Xã/Phường']
+      ];
+      fields.forEach(function (f) {
+        var sel = document.getElementById(f[0]);
+        if (!sel) return;
+        var input = document.createElement('input');
+        input.type = 'text';
+        input.name = f[1];
+        input.placeholder = f[2];
+        input.setAttribute('form', 'address-form');
+        input.required = true;
+        sel.replaceWith(input);
+      });
+    }
+
+    fetch(API + '/p/')
+      .then(function (r) { if (!r.ok) throw new Error('khong tai duoc tinh'); return r.json(); })
+      .then(function (provinces) { fill(provinceSel, provinces, '— Chọn tỉnh/thành —'); })
+      .catch(fallbackToTextInputs);
+
+    provinceSel.addEventListener('change', function () {
+      var code = selectedCode(provinceSel);
+      reset(wardSel, '— Chọn xã/phường —');
+      if (!code) return;
+      // depth=2: tinh tra ve kem danh sach xa/phuong truc thuoc (khong qua huyen).
+      fetch(API + '/p/' + code + '?depth=2')
+        .then(function (r) { if (!r.ok) throw new Error('khong tai duoc xa'); return r.json(); })
+        .then(function (p) {
+          fill(wardSel, p.wards || [], '— Chọn xã/phường —');
+          wardSel.disabled = false;
+        })
+        .catch(function () { /* giu nguyen o chon, nguoi dung chon lai tinh */ });
+    });
+  })();
+
+  // Sua / xoa dia chi. Nut Sua dien san du lieu cua dia chi do vao form
+  // "Them dia chi moi" (doi nut thanh "Cap nhat dia chi"); nut Xoa hoi lai
+  // truoc roi moi gui form xoa rieng (khong long form trong form).
+  (function () {
+    var details = document.getElementById('address-details');
+    var summary = details ? details.querySelector('summary') : null;
+    var submitBtn = document.getElementById('address-submit-btn');
+    var cancelBtn = document.getElementById('address-cancel-btn');
+    var editIdInput = document.getElementById('edit-address-id');
+    var deleteForm = document.getElementById('delete-address-form');
+    var deleteIdInput = document.getElementById('delete-address-id');
+    if (!details || !submitBtn) return;
+
+    function field(name) {
+      return document.querySelector('[name="' + name + '"][form="address-form"]');
+    }
+    function resetForm() {
+      ['recipientName', 'phone', 'detailAddress'].forEach(function (n) {
+        var f = field(n);
+        if (f) f.value = '';
+      });
+      var p = document.getElementById('addr-province');
+      var w = document.getElementById('addr-ward');
+      if (p) p.selectedIndex = 0;
+      if (w) {
+        w.innerHTML = '<option value="">— Chọn xã/phường —</option>';
+        w.disabled = true;
+      }
+      var cb = field('isDefault');
+      if (cb) cb.checked = false;
+      if (editIdInput) editIdInput.value = '';
+      submitBtn.value = 'add-address';
+      submitBtn.textContent = 'Lưu địa chỉ';
+      if (summary) summary.textContent = '＋ Thêm địa chỉ mới';
+      if (cancelBtn) cancelBtn.hidden = true;
+    }
+    // Tim lua chon: khop chinh xac truoc, neu khong thi khop theo duoi ten
+    // (dia chi cu luu kieu rut gon "Hồ Chí Minh", "An Nhơn" trong khi API
+    // moi tra ve ten day du "Thành phố Hồ Chí Minh", "Phường An Nhơn").
+    function findOption(sel, name) {
+      if (!name) return -1;
+      for (var i = 0; i < sel.options.length; i++) {
+        if (sel.options[i].value === name) return i;
+      }
+      for (var j = 0; j < sel.options.length; j++) {
+        if (sel.options[j].value.endsWith(name)) return j;
+      }
+      return -1;
+    }
+    // Cho danh sach xa/phuong tai xong roi moi chon dung phuong da luu.
+    function setWardWhenReady(wardName) {
+      var w = document.getElementById('addr-ward');
+      if (!w || !wardName) return;
+      var tries = 0;
+      var timer = setInterval(function () {
+        tries++;
+        var idx = findOption(w, wardName);
+        if (idx >= 0) w.selectedIndex = idx;
+        if (idx >= 0 || tries > 25) clearInterval(timer);
+      }, 200);
+    }
+    function selectProvince(name, wardName, tries) {
+      var p = document.getElementById('addr-province');
+      if (!p) return;
+      var idx = findOption(p, name);
+      if (idx >= 0) {
+        p.selectedIndex = idx;
+        p.dispatchEvent(new Event('change'));
+        setWardWhenReady(wardName);
+        return;
+      }
+      // Tinh chua tai xong (mo trang chua kip): cho 1 chut roi thu lai, toi da 10 lan.
+      tries = tries || 0;
+      if (tries < 10) {
+        setTimeout(function () { selectProvince(name, wardName, tries + 1); }, 800);
+      }
+    }
+
+    document.querySelectorAll('.address-edit').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        var d = btn.dataset;
+        var f;
+        f = field('recipientName'); if (f) f.value = d.name || '';
+        f = field('phone'); if (f) f.value = d.phone || '';
+        f = field('detailAddress'); if (f) f.value = d.detail || '';
+        var cb = field('isDefault');
+        if (cb) cb.checked = d.isDefault === 'true';
+        if (editIdInput) editIdInput.value = d.id || '';
+        selectProvince(d.province || '', d.ward || '');
+        submitBtn.value = 'edit-address';
+        submitBtn.textContent = 'Cập nhật địa chỉ';
+        if (summary) summary.textContent = 'Sửa địa chỉ';
+        if (cancelBtn) cancelBtn.hidden = false;
+        details.open = true;
+        details.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      });
+    });
+
+    if (cancelBtn) {
+      cancelBtn.addEventListener('click', function () {
+        resetForm();
+        details.open = false;
+      });
+    }
+    details.addEventListener('toggle', function () {
+      if (!details.open) resetForm();
+    });
+
+    document.querySelectorAll('.address-delete').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        var label = btn.dataset.label || 'địa chỉ này';
+        if (!confirm('Bạn có chắc muốn xóa địa chỉ ' + label + ' không?')) return;
+        if (deleteIdInput) deleteIdInput.value = btn.dataset.id || '';
+        if (deleteForm) deleteForm.submit();
+      });
+    });
+  })();
+</script>
+</body>
+</html>

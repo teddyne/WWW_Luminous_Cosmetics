@@ -8,6 +8,9 @@ import com.luminous.repository.order.OrderDetailRepository;
 import com.luminous.repository.product.ProductRepository;
 import com.luminous.repository.product.ProductVariantRepository;
 import com.luminous.repository.review.ReviewRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
@@ -113,6 +116,20 @@ public class ProductService {
         return result;
     }
 
+    public Page<ProductCard> searchPage(String q, String brand, List<Integer> categoryIds,
+                                        BigDecimal minPrice, BigDecimal maxPrice,
+                                        Double minRating, String sort, boolean onSaleOnly,
+                                        int page, int size) {
+        int safeSize = size <= 0 ? 12 : size;
+        List<ProductCard> all = search(q, brand, categoryIds, minPrice, maxPrice, minRating, sort, onSaleOnly);
+        int totalPages = (int) Math.ceil((double) all.size() / safeSize);
+        int safePage = Math.max(0, Math.min(page, Math.max(0, totalPages - 1)));
+        int from = safePage * safeSize;
+        int to = Math.min(from + safeSize, all.size());
+        List<ProductCard> content = from >= all.size() ? List.of() : all.subList(from, to);
+        return new PageImpl<>(content, PageRequest.of(safePage, safeSize), all.size());
+    }
+
     private boolean hasVariantInPriceRange(ProductCard card, BigDecimal min, BigDecimal max) {
         return card.getProduct().getVariants().stream()
                 .filter(v -> Boolean.TRUE.equals(v.getIsActive()))
@@ -141,6 +158,46 @@ public class ProductService {
 
     public Optional<ProductVariant> findVariant(Integer variantId) {
         return variants.findById(variantId);
+    }
+
+    /** Du lieu day du cho trang chi tiet, chi cho phep san pham dang ban. */
+    public Optional<ProductCard> detailCard(Integer productId) {
+        return products.findById(productId)
+                .filter(p -> Boolean.TRUE.equals(p.getIsActive()))
+                .map(p -> toCards(List.of(p), 1))
+                .filter(list -> !list.isEmpty())
+                .map(list -> list.get(0));
+    }
+
+    /** Cac bien the dang ban cua san pham, dung cho nut chon dung tich/mau. */
+    public List<ProductCard> activeVariantCards(Integer productId) {
+        return variants.findByProductIdAndIsActiveTrue(productId).stream()
+                .map(this::cardForVariant)
+                .toList();
+    }
+
+    /** San pham lien quan: cung danh muc, con hoat dong, khong lap san pham hien tai. */
+    public List<ProductCard> relatedCards(Integer categoryId, Integer excludeProductId, int limit) {
+        return products.findByIsActiveTrueAndCategoryIdOrderByCreatedAtDesc(categoryId).stream()
+                .filter(p -> !Objects.equals(p.getId(), excludeProductId))
+                .filter(p -> firstVariant(p) != null)
+                .map(p -> toCards(List.of(p), 1).get(0))
+                .limit(limit)
+                .toList();
+    }
+
+    /** Danh sach anh gallery, uu tien anh variant hien tai va anh trong ProductMedia. */
+    public List<String> galleryImages(ProductCard card) {
+        LinkedHashSet<String> urls = new LinkedHashSet<>();
+        urls.add(card.getImageUrl());
+        Product p = card.getProduct();
+        p.getMedia().stream()
+                .filter(m -> "IMAGE".equals(m.getMediaType()))
+                .map(m -> m.getThumbnailUrl() != null ? m.getThumbnailUrl() : m.getMediaUrl())
+                .filter(Objects::nonNull)
+                .filter(url -> !url.contains("example.com") && !url.contains("images.unsplash.com"))
+                .forEach(urls::add);
+        return new ArrayList<>(urls);
     }
 
     private List<ProductCard> toCards(List<Product> list, int limit) {
