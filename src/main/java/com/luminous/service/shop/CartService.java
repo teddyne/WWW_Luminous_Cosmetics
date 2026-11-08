@@ -86,6 +86,9 @@ public class CartService {
      */
     @Transactional(readOnly = true)
     public List<CartLine> lines(User user) {
+        if (user == null) {
+            return new ArrayList<>();
+        }
         return carts.findByUserId(user.getId())
                 .map(cart -> cartItems.findByCartIdOrderByIdAsc(cart.getId()).stream()
                         .map(item -> toLine(item))
@@ -107,6 +110,9 @@ public class CartService {
 
     /** Them variant vao gio; trung variant thi cong don so luong (toi da = ton kho). */
     public boolean addItem(User user, Integer variantId, int quantity) {
+        if (user == null) {
+            return false;
+        }
         Optional<ProductVariant> found = variants.findById(variantId);
         if (found.isEmpty()) {
             return false;
@@ -138,6 +144,9 @@ public class CartService {
 
     /** Doi so luong 1 dong (kep trong [1, ton kho]); het hang thi xoa dong do. */
     public boolean updateQuantity(User user, Integer variantId, int quantity) {
+        if (user == null) {
+            return false;
+        }
         Cart cart = carts.findByUserId(user.getId()).orElse(null);
         if (cart == null) {
             return false;
@@ -159,12 +168,15 @@ public class CartService {
     }
 
     public void removeItem(User user, Integer variantId) {
+        if (user == null) {
+            return;
+        }
         carts.findByUserId(user.getId())
                 .ifPresent(cart -> cartItems.deleteByCartIdAndVariantId(cart.getId(), variantId));
     }
 
     public void removeItems(User user, List<Integer> variantIds) {
-        if (variantIds == null || variantIds.isEmpty()) {
+        if (user == null || variantIds == null || variantIds.isEmpty()) {
             return;
         }
         carts.findByUserId(user.getId()).ifPresent(cart -> variantIds.forEach(

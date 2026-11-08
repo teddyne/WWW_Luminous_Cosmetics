@@ -53,15 +53,15 @@
           <details class="address-add" id="address-details">
             <summary>＋ Thêm địa chỉ mới</summary>
             <div class="address-add-grid">
-              <input name="recipientName" form="address-form" placeholder="Họ tên người nhận"/>
-              <input name="phone" form="address-form" placeholder="Số điện thoại"/>
-              <select id="addr-province" name="province" form="address-form" required>
+              <input id="addr-name" name="recipientName" form="address-form" placeholder="Họ tên người nhận" aria-label="Họ tên người nhận"/>
+              <input id="addr-phone" name="phone" form="address-form" placeholder="Số điện thoại" aria-label="Số điện thoại"/>
+              <select id="addr-province" name="province" form="address-form" required aria-label="Tỉnh/thành">
                 <option value="">— Chọn tỉnh/thành —</option>
               </select>
-              <select id="addr-ward" name="ward" form="address-form" required disabled>
+              <select id="addr-ward" name="ward" form="address-form" required disabled aria-label="Xã/phường">
                 <option value="">— Chọn xã/phường —</option>
               </select>
-              <input name="detailAddress" form="address-form" placeholder="Số nhà, tên đường"/>
+              <input id="addr-detail" name="detailAddress" form="address-form" placeholder="Số nhà, tên đường" aria-label="Số nhà, tên đường"/>
               <label class="address-default-check">
                 <input type="checkbox" name="isDefault" value="true" form="address-form"/> Đặt làm mặc định
               </label>
@@ -74,10 +74,10 @@
         <!-- Thoi gian giao + ghi chu. -->
         <section class="checkout-box">
           <h2>Thời gian giao hàng</h2>
-          <select name="deliverySlot" class="checkout-select">
+          <select id="delivery-slot" name="deliverySlot" class="checkout-select" aria-label="Thời gian giao hàng">
             <option th:each="s : ${deliverySlots}" th:value="${s}" th:text="${s}"></option>
           </select>
-          <textarea name="note" rows="2" placeholder="Ghi chú cho đơn hàng (không bắt buộc)"></textarea>
+          <textarea id="order-note" name="note" rows="2" placeholder="Ghi chú cho đơn hàng (không bắt buộc)" aria-label="Ghi chú cho đơn hàng"></textarea>
         </section>
 
         <!-- Ma giam gia (mang tu gio sang). -->
@@ -89,7 +89,7 @@
             <button type="submit" name="action" value="remove-voucher" form="voucher-form" class="voucher-remove" title="Bỏ mã">×</button>
           </div>
           <div th:if="${appliedVoucher == null}" class="voucher-form-row">
-            <input name="voucherCode" form="voucher-form" placeholder="Nhập mã giảm giá" th:value="${voucherCode}"/>
+            <input id="voucher-code" name="voucherCode" form="voucher-form" placeholder="Nhập mã giảm giá" th:value="${voucherCode}" aria-label="Mã giảm giá"/>
             <button type="submit" name="action" value="apply-voucher" form="voucher-form" class="btn-checkout-secondary">Áp dụng</button>
           </div>
           <p class="checkout-note" th:if="${voucherError != null}" th:text="${voucherError}"></p>
@@ -179,12 +179,12 @@
     var totalEl = document.getElementById('summary-total');
     var pointsEl = document.getElementById('points-used-text');
     if (!input || !totalEl || !pointsEl) return;
-    var baseTotal = parseFloat(totalEl.dataset.total || '0');
-    var max = parseInt(input.dataset.max || '0', 10);
+    var baseTotal = Number.parseFloat(totalEl.dataset.total || '0');
+    var max = Number.parseInt(input.dataset.max || '0', 10);
     var money = function (n) { return new Intl.NumberFormat('vi-VN').format(Math.round(n)) + 'đ'; };
     input.addEventListener('input', function () {
-      var used = parseInt(input.value || '0', 10);
-      if (isNaN(used) || used < 0) used = 0;
+      var used = Number.parseInt(input.value || '0', 10);
+      if (Number.isNaN(used) || used < 0) used = 0;
       if (used > max) { used = max; input.value = max; }
       pointsEl.textContent = '−' + money(used);
       totalEl.textContent = money(baseTotal - used);

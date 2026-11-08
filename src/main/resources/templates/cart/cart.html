@@ -161,9 +161,9 @@
     const money = n => new Intl.NumberFormat('vi-VN').format(Math.round(n)) + 'đ';
     const summary = document.querySelector('.cart-summary');
     const voucherType = summary.dataset.voucherType || '';
-    const voucherValue = parseFloat(summary.dataset.voucherValue || '0');
-    const voucherMax = summary.dataset.voucherMax ? parseFloat(summary.dataset.voucherMax) : null;
-    const voucherMin = parseFloat(summary.dataset.voucherMin || '0');
+    const voucherValue = Number.parseFloat(summary.dataset.voucherValue || '0');
+    const voucherMax = summary.dataset.voucherMax ? Number.parseFloat(summary.dataset.voucherMax) : null;
+    const voucherMin = Number.parseFloat(summary.dataset.voucherMin || '0');
     const voucherScope = summary.dataset.voucherScope || '';
     const scopeCategories = new Set((summary.dataset.voucherScopeCategories || '').split(',').filter(Boolean));
     const scopeProducts = new Set((summary.dataset.voucherScopeProducts || '').split(',').filter(Boolean));
@@ -178,7 +178,7 @@
       const checked = [...document.querySelectorAll('.cart-select:checked')];
       let subtotal = 0, base = 0;
       checked.forEach(box => {
-        const total = parseFloat(box.dataset.lineTotal || '0');
+        const total = Number.parseFloat(box.dataset.lineTotal || '0');
         subtotal += total;
         if (voucherType && eligible(box)) base += total;
       });
