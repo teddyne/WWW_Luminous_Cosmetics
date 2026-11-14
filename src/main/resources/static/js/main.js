@@ -52,7 +52,7 @@ document.addEventListener('DOMContentLoaded', function () {
       if (!href || href.startsWith('#')) return;
       e.preventDefault();
       document.body.classList.add('page-fade-out');
-      setTimeout(function () { window.location.href = href; }, 50);;
+      setTimeout(function () { window.location.href = href; }, 50);
     });
   });
   var menuPage = document.getElementById('menuPage');

@@ -21,6 +21,7 @@ import com.luminous.repository.order.PaymentRepository;
 import com.luminous.repository.order.PointTransactionRepository;
 import com.luminous.repository.product.ProductVariantRepository;
 import com.luminous.service.ProductImage;
+import com.luminous.service.notification.NotificationService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -61,19 +62,22 @@ public class AdminOrderService {
     private final PointTransactionRepository pointTransactions;
     private final ProductVariantRepository variants;
     private final PaymentRepository payments;
+    private final NotificationService notifications;
 
     public AdminOrderService(OrderRepository orders,
                              OrderDetailRepository orderDetails,
                              UserRepository users,
                              PointTransactionRepository pointTransactions,
                              ProductVariantRepository variants,
-                             PaymentRepository payments) {
+                             PaymentRepository payments,
+                             NotificationService notifications) {
         this.orders = orders;
         this.orderDetails = orderDetails;
         this.users = users;
         this.pointTransactions = pointTransactions;
         this.variants = variants;
         this.payments = payments;
+        this.notifications = notifications;
     }
 
     public static String statusLabel(OrderStatus status) {
@@ -92,12 +96,18 @@ public class AdminOrderService {
 
     public static List<StepItem> stepItems(Orders order) {
         int current = STEPS.indexOf(order.getStatus());
+        // Don da hoan thanh: buoc cuoi cung cung da xong nen ve tron xanh dac
+        // (done). Neu de o dang "current" thi no ve vong tron trang vien xanh
+        // (chi dung de danh dau "dang o buoc nay" o don chua xong).
+        boolean allDone = current == STEPS.size() - 1;
         List<LocalDateTime> times = Arrays.asList(
                 order.getOrderDate(), order.getConfirmedAt(), order.getShippedAt(),
                 order.getDeliveredAt(), order.getCompletedAt());
         List<StepItem> items = new ArrayList<>();
         for (int i = 0; i < STEPS.size(); i++) {
-            String state = current < 0 ? "todo" : (i < current ? "done" : (i == current ? "current" : "todo"));
+            String state = current < 0 ? "todo"
+                    : (i < current || (allDone && i == current) ? "done"
+                    : (i == current ? "current" : "todo"));
             items.add(new StepItem(STEPS.get(i).name(), STEPS.get(i).label(), state, times.get(i)));
         }
         return items;
@@ -214,6 +224,9 @@ public class AdminOrderService {
     private Specification<Orders> spec(String status, String q, LocalDateTime from, LocalDateTime to, String channel) {
         return (root, query, cb) -> {
             List<Predicate> and = new ArrayList<>();
+            // Chi hien don chua bi admin an (an chi an khoi man hinh,
+            // don van con trong DB, van mo duoc qua link chi tiet).
+            and.add(cb.or(cb.isFalse(root.get("adminHidden")), cb.isNull(root.get("adminHidden"))));
             OrderStatus filter = OrderStatus.from(status);
             if (filter != null) {
                 and.add(cb.equal(root.get("status"), filter));
@@ -381,6 +394,22 @@ public class AdminOrderService {
         return new int[]{updated, skipped};
     }
 
+    // An hang loat don khoi danh sach admin (khong xoa khoi DB).
+    @Transactional
+    public int bulkHide(List<Integer> ids) {
+        int done = 0;
+        for (Integer id : ids) {
+            Orders order = orders.findById(id).orElse(null);
+            if (order == null || Boolean.TRUE.equals(order.getAdminHidden())) {
+                continue;
+            }
+            order.setAdminHidden(true);
+            orders.save(order);
+            done++;
+        }
+        return done;
+    }
+
     public List<User> customers() {
         return users.findAll(Sort.by("fullName").ascending()).stream()
                 .filter(user -> user.getRole() != null && "ROLE_CUSTOMER".equals(user.getRole().getName()))
@@ -440,6 +469,32 @@ public class AdminOrderService {
         changeStatus(id, newStatus, null);
     }
 
+    /**
+     * Hoan thanh don: CHI dung cho khach xac nhan da nhan hang, job tu dong
+     * hoan thanh sau 3 ngay, va don tai quay tao san o trang thai hoan thanh.
+     * Admin KHONG goi duoc ham nay tu trang chi tiet don (changeStatus da
+     * chan DELIVERED -> COMPLETED). Cong diem 1 diem/1.000d nhu truoc.
+     */
+    @Transactional
+    public void completeOrder(Integer id) {
+        Orders order = orders.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy đơn hàng"));
+        if (order.getStatus() != OrderStatus.DELIVERED) {
+            throw new IllegalArgumentException("Chỉ hoàn thành được đơn đang ở trạng thái đã giao");
+        }
+        order.setStatus(OrderStatus.COMPLETED);
+        order.setCompletedAt(LocalDateTime.now());
+        order.setUpdatedAt(LocalDateTime.now());
+        orders.save(order);
+        awardPoints(order);
+        if (order.getUser() != null) {
+            notifications.notify(order.getUser().getId(), "ORDER",
+                    "Đơn hàng " + order.getOrderCode() + " đã hoàn thành",
+                    "Cảm ơn bạn đã mua sắm tại Luminous. Bạn có 3 ngày để đánh giá sản phẩm.",
+                    "/account/orders");
+        }
+    }
+
     @Transactional
     public void changeStatus(Integer id, String newStatus, String cancelReason) {
         OrderStatus target = OrderStatus.from(newStatus);
@@ -462,6 +517,12 @@ public class AdminOrderService {
                 throw new IllegalArgumentException("Vui lòng nhập lý do hủy đơn hàng");
             }
             order.setCancelReason(cancelReason.trim());
+        } else if (target == OrderStatus.RETURNED) {
+            // Ly do tra hang: khach tra hang nhap o trang Don mua, admin
+            // chuyen tay o trang chi tiet co the de trong.
+            if (cancelReason != null && !cancelReason.isBlank()) {
+                order.setReturnReason(cancelReason.trim());
+            }
         } else if (order.getStatus() == OrderStatus.CANCELLED && target == OrderStatus.PENDING) {
             order.setCancelReason(null);
             order.setCancelledAt(null);
@@ -473,6 +534,7 @@ public class AdminOrderService {
             case DELIVERED -> order.setDeliveredAt(now);
             case COMPLETED -> order.setCompletedAt(now);
             case CANCELLED -> order.setCancelledAt(now);
+            case RETURNED -> order.setReturnedAt(now);
             default -> {
             }
         }
@@ -481,6 +543,20 @@ public class AdminOrderService {
         orders.save(order);
         if (target == OrderStatus.COMPLETED) {
             awardPoints(order);
+        }
+        if (order.getUser() != null) {
+            String message = switch (target) {
+                case CONFIRMED -> "Shop đã xác nhận đơn hàng của bạn.";
+                case SHIPPING -> "Đơn hàng của bạn đang được giao.";
+                case DELIVERED -> "Đơn hàng của bạn đã giao. Bạn có 3 ngày để xác nhận, trả hàng hoặc đánh giá.";
+                case CANCELLED -> "Đơn hàng đã hủy"
+                        + (order.getCancelReason() != null ? " (" + order.getCancelReason() + ")" : "") + ".";
+                case RETURNED -> "Shop đã nhận yêu cầu trả hàng của bạn và sẽ liên hệ để nhận lại hàng, hoàn tiền.";
+                default -> "Trạng thái đơn hàng đã cập nhật.";
+            };
+            notifications.notify(order.getUser().getId(), "ORDER",
+                    "Đơn hàng " + order.getOrderCode() + " — " + statusLabel(target),
+                    message, "/account/orders");
         }
     }
 
@@ -508,6 +584,10 @@ public class AdminOrderService {
         transaction.setBalanceAfter(balance);
         transaction.setDescription("Tích điểm từ đơn hàng " + order.getOrderCode());
         pointTransactions.save(transaction);
+        notifications.notify(user.getId(), "POINTS",
+                "Bạn nhận được " + points + " điểm",
+                "Tích điểm từ đơn hàng " + order.getOrderCode() + ". Số dư hiện tại: " + balance + " điểm.",
+                "/account/points");
     }
 
     private OrderRow toRow(Orders order) {

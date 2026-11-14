@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="vi" th:with="pageCss='account.css'">
+<head th:replace="~{layout/header :: head('Hồ Sơ Của Tôi')}"></head>
+<body>
+<div th:replace="~{layout/header :: header}"></div>
+
+<main class="account-page">
+  <div class="container">
+    <div class="account-layout">
+      <div th:replace="~{account/fragments :: sidebar(active=${accountMenu})}"></div>
+
+      <div>
+        <div th:if="${saved}" class="alert alert-success">Đã cập nhật hồ sơ của bạn.</div>
+        <div th:if="${avatarError}" class="alert alert-danger" th:text="${avatarError}">Lỗi tải ảnh</div>
+        <div th:if="${phoneChanged}" class="alert alert-success" th:text="'Đã đổi số điện thoại thành ' + ${phoneChanged} + '.'">Đã đổi số.</div>
+        <div th:if="${phoneError}" class="alert alert-danger" th:text="${phoneError}">Lỗi đổi số.</div>
+
+        <div class="account-grid-2">
+          <!-- Thong tin tai khoan (giong hinh mau) -->
+          <section class="account-card">
+            <h2>Thông tin tài khoản</h2>
+            <p class="account-subtitle">Quản lý thông tin hồ sơ để bảo mật tài khoản</p>
+
+            <div class="profile-avatar-box">
+              <span class="account-avatar" th:if="${user.avtUrl != null}">
+                <img th:src="${user.avtUrl}" alt="Ảnh đại diện"/>
+              </span>
+              <span class="account-avatar account-avatar-initial" th:if="${user.avtUrl == null}"
+                    th:text="${#strings.substring(user.fullName, 0, 1)}">N</span>
+              <form th:action="@{/account/profile/avatar}" method="post" enctype="multipart/form-data" class="mt-2">
+                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                <label class="form-label small text-muted mb-1" for="avatarInput">Tải ảnh của bạn</label>
+                <div class="d-flex gap-2 justify-content-center">
+                  <input id="avatarInput" class="form-control form-control-sm" style="max-width:220px" type="file" name="avatar" accept="image/*"/>
+                  <button class="btn btn-outline-lum btn-sm" type="submit">Tải lên</button>
+                </div>
+                <div class="form-text">Ảnh jpg, png, webp hoặc gif, tối đa 5MB.</div>
+              </form>
+            </div>
+
+            <form th:action="@{/account/profile}" th:object="${profileForm}" method="post">
+              <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+              <div class="mb-3">
+                <label class="form-label" for="profilePhone">Số điện thoại</label>
+                <input id="profilePhone" class="form-control" type="text" th:field="*{phone}" readonly aria-label="Số điện thoại"/>
+                <div class="form-text">Số điện thoại dùng để đăng nhập.</div>
+                <button class="btn btn-outline-lum btn-sm mt-2" type="button"
+                        onclick="document.getElementById('phoneChangeBox').classList.toggle('d-none')">Đổi số điện thoại</button>
+                <div id="phoneChangeBox" class="phone-change-box d-none">
+                  <label class="form-label mt-2" for="newPhoneInput">Số điện thoại mới</label>
+                  <div class="d-flex gap-2">
+                    <input id="newPhoneInput" class="form-control" type="text" placeholder="Ví dụ: 0987654321" aria-label="Số điện thoại mới"/>
+                    <button id="sendPhoneCodeBtn" class="btn btn-outline-lum" type="button" onclick="sendPhoneChangeCode()">Gửi mã</button>
+                  </div>
+                  <div id="sendPhoneCodeMsg" class="form-text"></div>
+                  <label class="form-label mt-2" for="phoneCodeInput">Mã xác thực 6 chữ số</label>
+                  <input id="phoneCodeInput" class="form-control otp-input" type="text" inputmode="numeric" maxlength="6"
+                         placeholder="Nhập mã gửi tới số mới" aria-label="Mã xác thực"/>
+                  <button class="btn btn-lum mt-2" type="button" onclick="submitPhoneChange()">Xác nhận đổi số</button>
+                </div>
+              </div>
+              <div class="mb-3">
+                <label class="form-label" for="profileName">Họ và tên</label>
+                <input id="profileName" class="form-control" type="text" th:field="*{fullName}" aria-label="Họ và tên"/>
+                <div class="text-danger small" th:if="${#fields.hasErrors('fullName')}" th:errors="*{fullName}"></div>
+              </div>
+              <div class="mb-3">
+                <span class="form-label d-block">Giới tính</span>
+                <label class="form-check form-check-inline">
+                  <input class="form-check-input" type="radio" th:field="*{gender}" value=""/> Không xác định
+                </label>
+                <label class="form-check form-check-inline">
+                  <input class="form-check-input" type="radio" th:field="*{gender}" value="NAM"/> Nam
+                </label>
+                <label class="form-check form-check-inline">
+                  <input class="form-check-input" type="radio" th:field="*{gender}" value="NU"/> Nữ
+                </label>
+                <div class="text-danger small" th:if="${#fields.hasErrors('gender')}" th:errors="*{gender}"></div>
+              </div>
+              <div class="mb-3">
+                <label class="form-label">Ngày sinh <span class="text-muted">(Không bắt buộc)</span></label>
+                <div class="row g-2">
+                  <div class="col-4">
+                    <select class="form-select" th:field="*{birthDay}" aria-label="Ngày">
+                      <option value="">Ngày</option>
+                      <option th:each="d : ${#numbers.sequence(1,31)}" th:value="${d}" th:text="${d}">1</option>
+                    </select>
+                  </div>
+                  <div class="col-4">
+                    <select class="form-select" th:field="*{birthMonth}" aria-label="Tháng">
+                      <option value="">Tháng</option>
+                      <option th:each="m : ${#numbers.sequence(1,12)}" th:value="${m}" th:text="${m}">1</option>
+                    </select>
+                  </div>
+                  <div class="col-4">
+                    <select class="form-select" th:field="*{birthYear}" aria-label="Năm">
+                      <option value="">Năm</option>
+                      <option th:each="y : ${#numbers.sequence(2026,1950,-1)}" th:value="${y}" th:text="${y}">2000</option>
+                    </select>
+                  </div>
+                </div>
+                <div class="text-danger small" th:if="${#fields.hasErrors('birthDay')}" th:errors="*{birthDay}"></div>
+              </div>
+              <div class="form-check mb-3">
+                <input class="form-check-input" type="checkbox" checked disabled id="profilePolicy"/>
+                <label class="form-check-label" for="profilePolicy">Tôi đồng ý với <span class="text-primary">Chính sách xử lý dữ liệu cá nhân</span> của Luminous</label>
+              </div>
+              <button class="btn btn-lum w-100 btn-lg" type="submit">Cập nhật</button>
+            </form>
+          </section>
+
+          <!-- Cot phai: sdt/email, bao mat, lien ket mang xa hoi -->
+          <div>
+            <section class="account-card">
+              <h2>Số điện thoại và Email</h2>
+              <div class="profile-row">
+                <i class="bi bi-telephone"></i>
+                <div class="profile-row-label">
+                  <small>Số điện thoại</small>
+                  <strong th:text="${user.phone != null ? user.phone : 'Chưa cập nhật'}">0972606925</strong>
+                </div>
+              </div>
+              <div class="profile-row">
+                <i class="bi bi-envelope"></i>
+                <div class="profile-row-label">
+                  <small>Email</small>
+                  <strong th:text="${user.email}">email</strong>
+                </div>
+              </div>
+              <div class="profile-row">
+                <i class="bi bi-coin"></i>
+                <div class="profile-row-label">
+                  <small>Điểm thưởng</small>
+                  <strong th:text="${user.pointBalance != null ? user.pointBalance + ' điểm' : '0 điểm'}">0 điểm</strong>
+                </div>
+              </div>
+            </section>
+
+            <section class="account-card">
+              <h2>Bảo mật</h2>
+              <div class="profile-row">
+                <i class="bi bi-lock"></i>
+                <div class="profile-row-label"><strong>Đổi mật khẩu</strong></div>
+                <a th:href="@{/account/change-password}" class="btn btn-outline-lum btn-sm">Cập nhật</a>
+              </div>
+            </section>
+
+            <section class="account-card">
+              <h2>Liên kết Google</h2>
+              <p class="account-subtitle">Liên kết để đăng nhập nhanh bằng Google lần sau.</p>
+              <div class="profile-row">
+                <span class="profile-social-icon google"><i class="bi bi-google"></i></span>
+                <div class="profile-row-label"><strong>Google</strong></div>
+                <span th:if="${user.provider == 'GOOGLE'}" class="profile-link-badge">Đã liên kết</span>
+                <span th:if="${user.provider != 'GOOGLE'}" class="profile-link-badge not-linked">Chưa liên kết</span>
+                <a th:href="${oauthEnabled} ? @{/oauth2/authorization/google} : @{/auth/oauth-chua-cau-hinh}" class="btn btn-outline-lum btn-sm">Cập nhật</a>
+              </div>
+              <p class="text-muted small mb-0 mt-2">Cần cấu hình client-id/secret của Google trong application.properties thì nút liên kết mới chạy thật.</p>
+            </section>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<script>
+  // Doi sdt: gui ma OTP toi so moi, roi submit form an de doi so.
+  function sendPhoneChangeCode() {
+    var phoneInput = document.getElementById('newPhoneInput');
+    var csrfInput = document.querySelector('input[name="_csrf"]');
+    var msg = document.getElementById('sendPhoneCodeMsg');
+    var btn = document.getElementById('sendPhoneCodeBtn');
+    var phone = phoneInput ? phoneInput.value.trim() : '';
+    if (!phone) {
+      msg.textContent = 'Vui lòng nhập số điện thoại mới trước.';
+      msg.style.color = '#dc3545';
+      if (phoneInput) phoneInput.focus();
+      return;
+    }
+    btn.disabled = true;
+    msg.style.color = '';
+    msg.textContent = 'Đang gửi mã...';
+    var params = new URLSearchParams();
+    params.append('newPhone', phone);
+    fetch('/account/profile/phone/send-code', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/x-www-form-urlencoded',
+        'X-CSRF-TOKEN': csrfInput ? csrfInput.value : ''},
+      body: params.toString()
+    })
+      .then(function (r) { return r.json(); })
+      .then(function (data) {
+        if (data.ok) {
+          msg.textContent = data.message || 'Đã gửi mã xác thực 6 chữ số tới số mới (hiệu lực 5 phút).';
+          msg.style.color = '#198754';
+          var remain = 60;
+          btn.textContent = 'Gửi lại (' + remain + 's)';
+          var timer = setInterval(function () {
+            remain--;
+            if (remain <= 0) {
+              clearInterval(timer);
+              btn.disabled = false;
+              btn.textContent = 'Gửi mã';
+            } else {
+              btn.textContent = 'Gửi lại (' + remain + 's)';
+            }
+          }, 1000);
+        } else {
+          msg.textContent = data.error || 'Không gửi được mã, vui lòng thử lại.';
+          msg.style.color = '#dc3545';
+          btn.disabled = false;
+        }
+      })
+      .catch(function () {
+        msg.textContent = 'Không gửi được mã, vui lòng thử lại.';
+        msg.style.color = '#dc3545';
+        btn.disabled = false;
+      });
+  }
+
+  function submitPhoneChange() {
+    var phone = document.getElementById('newPhoneInput').value.trim();
+    var code = document.getElementById('phoneCodeInput').value.trim();
+    var csrfInput = document.querySelector('input[name="_csrf"]');
+    if (!phone || !code) {
+      document.getElementById('sendPhoneCodeMsg').textContent = 'Vui lòng nhập số mới và mã xác thực.';
+      document.getElementById('sendPhoneCodeMsg').style.color = '#dc3545';
+      return;
+    }
+    var form = document.createElement('form');
+    form.method = 'POST';
+    form.action = '/account/profile/phone';
+    var fields = {newPhone: phone, code: code};
+    if (csrfInput) fields[csrfInput.name] = csrfInput.value;
+    Object.keys(fields).forEach(function (key) {
+      var input = document.createElement('input');
+      input.type = 'hidden';
+      input.name = key;
+      input.value = fields[key];
+      form.appendChild(input);
+    });
+    document.body.appendChild(form);
+    form.submit();
+  }
+</script>
+
+<div th:replace="~{layout/footer :: footer}"></div>
+</body>
+</html>

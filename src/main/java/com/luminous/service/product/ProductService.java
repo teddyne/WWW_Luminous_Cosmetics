@@ -11,6 +11,7 @@ import com.luminous.repository.order.OrderDetailRepository;
 import com.luminous.repository.product.ProductAttributeRepository;
 import com.luminous.repository.product.ProductRepository;
 import com.luminous.repository.product.ProductVariantRepository;
+import com.luminous.repository.review.ReviewMediaRepository;
 import com.luminous.repository.review.ReviewRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -27,6 +28,7 @@ public class ProductService {
     private final ProductRepository products;
     private final OrderDetailRepository orderDetails;
     private final ReviewRepository reviews;
+    private final ReviewMediaRepository reviewMedia;
     private final ProductVariantRepository variants;
     private final ProductAttributeRepository productAttributes;
     private final UserRepository users;
@@ -58,12 +60,14 @@ public class ProductService {
     public ProductService(ProductRepository products,
                           OrderDetailRepository orderDetails,
                           ReviewRepository reviews,
+                          ReviewMediaRepository reviewMedia,
                           ProductVariantRepository variants,
                           ProductAttributeRepository productAttributes,
                           UserRepository users) {
         this.products = products;
         this.orderDetails = orderDetails;
         this.reviews = reviews;
+        this.reviewMedia = reviewMedia;
         this.variants = variants;
         this.productAttributes = productAttributes;
         this.users = users;
@@ -75,9 +79,22 @@ public class ProductService {
         Page<Review> result = (rating != null && rating >= 1 && rating <= 5)
                 ? reviews.findVisibleByProductAndRating(productId, rating.byteValue(), pageable)
                 : reviews.findVisibleByProduct(productId, pageable);
-        List<ReviewView> views = result.getContent().stream().map(r -> new ReviewView(
-                r.getRating() == null ? 0 : r.getRating().intValue(),
-                r.getComment(), r.getCreatedAt(), reviewerName(r))).toList();
+        List<Integer> reviewIds = result.getContent().stream().map(Review::getId).toList();
+        Map<Integer, List<com.luminous.model.ReviewMedia>> mediaByReview =
+                reviewIds.isEmpty() ? Map.of()
+                        : reviewMedia.findByReviewIdIn(reviewIds).stream()
+                                .collect(Collectors.groupingBy(
+                                        m -> m.getReview().getId()));
+        List<ReviewView> views = result.getContent().stream().map(r -> {
+            var media = mediaByReview.getOrDefault(r.getId(), List.of());
+            return new ReviewView(
+                    r.getRating() == null ? 0 : r.getRating().intValue(),
+                    r.getComment(), r.getCreatedAt(), reviewerName(r),
+                    media.stream().filter(m -> "IMAGE".equals(m.getMediaType()))
+                            .map(com.luminous.model.ReviewMedia::getMediaUrl).toList(),
+                    media.stream().filter(m -> "VIDEO".equals(m.getMediaType()))
+                            .map(com.luminous.model.ReviewMedia::getMediaUrl).toList());
+        }).toList();
         return new PageImpl<>(views, pageable, result.getTotalElements());
     }
 

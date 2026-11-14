@@ -1,0 +1,13 @@
+use LUMINOUS_DB;
+ALTER TABLE Orders DROP CONSTRAINT chk_orders_status;
+ALTER TABLE Orders ADD CONSTRAINT chk_orders_status
+    CHECK (status IN ('PENDING','CONFIRMED','SHIPPING','DELIVERED','COMPLETED','CANCELLED','RETURNED'));
+
+-- 2. Lam lai phan cot cua 006 (neu 006 chua chay): dang nhap Google/Facebook + tra hang.
+ALTER TABLE `User`
+    ADD COLUMN IF NOT EXISTS provider VARCHAR(20) NOT NULL DEFAULT 'LOCAL' AFTER gender,
+    ADD COLUMN IF NOT EXISTS providerId VARCHAR(255) NULL AFTER provider;
+ALTER TABLE Orders
+    ADD COLUMN IF NOT EXISTS returnedAt DATETIME NULL AFTER completedAt,
+    ADD COLUMN IF NOT EXISTS returnReason VARCHAR(500) NULL AFTER cancelReason;
+ALTER TABLE Orders ADD COLUMN IF NOT EXISTS adminHidden BOOLEAN NOT NULL DEFAULT FALSE;

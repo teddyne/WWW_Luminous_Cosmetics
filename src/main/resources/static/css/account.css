@@ -1,0 +1,190 @@
+/* Luminous - CSS RIENG cho trang ca nhan (Ho so / Trac nghiem / Don mua). */
+/* Chi nap o trang account qua pageCss='account.css' (xem layout/header.html). */
+.account-page { background: #f6f7f6; min-height: calc(100vh - 120px); padding: 28px 0 48px; }
+.account-layout { display: grid; grid-template-columns: 260px 1fr; gap: 24px; align-items: start; }
+
+/* ---------- Sidebar ---------- */
+.account-sidebar { background: #fff; border-radius: 16px; padding: 20px 16px; box-shadow: 0 4px 16px rgba(0,0,0,.05); position: sticky; top: 90px; }
+.account-user { display: flex; gap: 12px; align-items: center; padding-bottom: 16px; border-bottom: 1px solid #eef0ee; margin-bottom: 12px; }
+.account-avatar { width: 52px; height: 52px; min-width: 52px; border-radius: 50%; overflow: hidden; background: #e9ecef; display: inline-flex; align-items: center; justify-content: center; }
+.account-avatar img { width: 100%; height: 100%; object-fit: cover; }
+.account-avatar-initial { font-size: 22px; font-weight: 700; color: var(--lum-green-dark); background: var(--lum-green-soft); }
+.account-user-info { min-width: 0; }
+.account-user-info strong { display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.account-edit-link { font-size: 13px; color: var(--lum-muted); text-decoration: none; }
+.account-edit-link:hover { color: var(--lum-green-dark); }
+.account-menu { display: flex; flex-direction: column; }
+.account-menu-group { font-size: 13px; font-weight: 700; color: var(--lum-text); padding: 12px 10px 4px; }
+.account-menu-item { display: flex; align-items: center; gap: 10px; padding: 9px 10px; border-radius: 10px; color: var(--lum-text); text-decoration: none; font-size: 14px; }
+.account-menu-item i { font-size: 17px; color: var(--lum-green); }
+.account-menu-item:hover { background: var(--lum-green-soft); }
+.account-menu-item.active { color: var(--lum-green-dark); font-weight: 700; background: var(--lum-green-soft); }
+.account-menu-sub { padding-left: 38px; }
+
+/* ---------- The noi dung ---------- */
+.account-card { background: #fff; border-radius: 16px; padding: 24px; box-shadow: 0 4px 16px rgba(0,0,0,.05); margin-bottom: 20px; }
+.account-card h2 { font-size: 19px; font-weight: 700; margin-bottom: 4px; }
+.account-card .account-subtitle { color: var(--lum-muted); font-size: 13px; margin-bottom: 20px; }
+.account-grid-2 { display: grid; grid-template-columns: 1.5fr 1fr; gap: 20px; align-items: start; }
+.profile-avatar-box { text-align: center; margin-bottom: 16px; }
+.profile-avatar-box .account-avatar { width: 96px; height: 96px; min-width: 96px; }
+.profile-avatar-box .account-avatar-initial { font-size: 38px; }
+.profile-row { display: flex; gap: 10px; align-items: center; padding: 12px 0; border-bottom: 1px solid #f0f0f0; }
+.profile-row:last-child { border-bottom: 0; }
+.profile-row .profile-row-label { flex: 1; min-width: 0; }
+.profile-row .profile-row-label small { display: block; color: var(--lum-muted); }
+.profile-link-badge { font-size: 12px; font-weight: 700; padding: 4px 10px; border-radius: 999px; background: var(--lum-green-soft); color: var(--lum-green-dark); white-space: nowrap; }
+.profile-link-badge.not-linked { background: #f1f3f5; color: var(--lum-muted); }
+.profile-social-icon { width: 34px; height: 34px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; color: #fff; font-size: 17px; flex-shrink: 0; }
+.profile-social-icon.facebook { background: #1877f2; }
+.profile-social-icon.google { background: #fff; color: #ea4335; border: 1px solid #dee2e6; }
+
+/* ---------- Don mua: tab loc + the don ---------- */
+.order-tabs { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 20px; }
+.order-tab { padding: 8px 16px; border-radius: 999px; border: 1px solid #dee2e6; background: #fff; color: var(--lum-text); text-decoration: none; font-size: 14px; font-weight: 600; }
+.order-tab:hover { border-color: var(--lum-green); color: var(--lum-green-dark); }
+.order-tab.active { background: var(--lum-green); border-color: var(--lum-green); color: #fff; }
+.order-tab .count-badge { display: inline-block; min-width: 20px; padding: 1px 6px; margin-left: 4px; border-radius: 999px; background: #eef0ee; color: var(--lum-text); font-size: 12px; }
+.order-tab.active .count-badge { background: rgba(255,255,255,.25); color: #fff; }
+.order-card { background: #fff; border-radius: 16px; box-shadow: 0 4px 16px rgba(0,0,0,.05); margin-bottom: 16px; overflow: hidden; }
+.order-card-head { display: flex; flex-wrap: wrap; gap: 8px; justify-content: space-between; align-items: center; padding: 14px 20px; border-bottom: 1px solid #f0f0f0; }
+.order-status-badge { font-size: 13px; font-weight: 700; padding: 4px 12px; border-radius: 999px; background: var(--lum-green-soft); color: var(--lum-green-dark); }
+.order-status-badge.st-PENDING, .order-status-badge.st-CONFIRMED { background: #fff3cd; color: #856404; }
+.order-status-badge.st-SHIPPING, .order-status-badge.st-DELIVERED { background: #cfe2ff; color: #084298; }
+.order-status-badge.st-COMPLETED { background: var(--lum-green-soft); color: var(--lum-green-dark); }
+.order-status-badge.st-CANCELLED { background: #f8d7da; color: #842029; }
+.order-status-badge.st-RETURNED { background: #e2d9f3; color: #4a2b8a; }
+.order-line { display: flex; gap: 12px; padding: 14px 20px; border-bottom: 1px solid #f6f6f6; align-items: center; }
+.order-line:last-of-type { border-bottom: 0; }
+.order-line img { width: 64px; height: 64px; object-fit: cover; border-radius: 10px; border: 1px solid #eee; flex-shrink: 0; }
+.order-line-info { flex: 1; min-width: 0; }
+.order-line-info strong { display: block; }
+.order-line-price { text-align: right; white-space: nowrap; }
+.order-card-foot { display: flex; flex-direction: column; align-items: flex-end; gap: 10px; padding: 14px 20px; background: #fbfdfb; border-top: 1px solid #f0f0f0; text-align: right; }
+.order-actions { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; justify-content: flex-end; }
+.order-reason { display: flex; gap: 8px; align-items: center; }
+.order-reason input { border: 1px solid #dee2e6; border-radius: 999px; padding: 7px 14px; font-size: 13px; width: 220px; max-width: 55vw; }
+.btn-order { border-radius: 999px; padding: 7px 16px; font-weight: 600; font-size: 14px; border: 1px solid var(--lum-green); background: #fff; color: var(--lum-green-dark); cursor: pointer; }
+.btn-order:hover { background: var(--lum-green-soft); }
+.btn-order.primary { background: var(--lum-green); color: #fff; }
+.btn-order.primary:hover { background: var(--lum-green-dark); }
+.btn-order.danger { border-color: #dc3545; color: #dc3545; }
+.btn-order.danger:hover { background: #f8d7da; }
+.order-note { font-size: 13px; color: var(--lum-muted); }
+
+/* ---------- Ket qua trac nghiem ---------- */
+.skin-result-hero { display: flex; flex-wrap: wrap; gap: 16px; justify-content: space-between; align-items: center; }
+.skin-result-hero h2 { margin-bottom: 2px; }
+
+@media (max-width: 900px) {
+  .account-layout { grid-template-columns: 1fr; }
+  .account-sidebar { position: static; }
+  .account-grid-2 { grid-template-columns: 1fr; }
+  .order-line-price { text-align: left; }
+}
+
+/* ---------- Don mua kieu Shopee: han danh gia + nut hanh dong ---------- */
+.order-foot-left { display: flex; flex-direction: column; gap: 2px; min-width: 0; align-items: flex-end; text-align: right; }
+.review-deadline { font-size: 13px; color: var(--lum-muted); }
+.review-deadline u { text-underline-offset: 2px; }
+.review-reward { font-size: 13px; color: #ee4d2d; }
+.review-expired { font-size: 13px; color: var(--lum-muted); }
+.order-actions a.btn-order { display: inline-flex; align-items: center; text-decoration: none; }
+
+/* ---------- Form danh gia / tra hang ---------- */
+.review-item { display: flex; gap: 12px; padding: 14px 0; border-bottom: 1px solid #f0f0f0; align-items: flex-start; }
+.review-item:last-of-type { border-bottom: 0; }
+.review-item img { width: 64px; height: 64px; object-fit: cover; border-radius: 10px; border: 1px solid #eee; flex-shrink: 0; }
+.review-stars { display: flex; gap: 10px; }
+.review-star { cursor: pointer; color: #ccc; font-size: 14px; display: inline-flex; gap: 3px; align-items: center; }
+.review-star input { display: none; }
+.review-star:has(input:checked) { color: #f5a623; }
+
+/* ---------- Thong bao ---------- */
+.notif-badge { display: inline-flex; min-width: 20px; height: 20px; padding: 0 6px; margin-left: auto; border-radius: 999px; background: #ee4d2d; color: #fff; font-size: 12px; font-weight: 700; align-items: center; justify-content: center; }
+.notif-list { display: flex; flex-direction: column; }
+.notif-item { display: flex; gap: 12px; padding: 14px 12px; border-bottom: 1px solid #f0f0f0; color: var(--lum-text); align-items: flex-start; }
+.notif-item:last-child { border-bottom: 0; }
+.notif-item.unread { background: #f4fbf4; }
+.notif-item:hover { background: #f8f8f8; }
+.notif-icon { width: 36px; height: 36px; min-width: 36px; border-radius: 50%; background: var(--lum-green-soft); color: var(--lum-green-dark); display: inline-flex; align-items: center; justify-content: center; font-size: 17px; }
+.notif-body { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.notif-body strong { font-size: 14px; }
+.notif-message { font-size: 13px; color: var(--lum-muted); }
+.notif-dot { width: 9px; height: 9px; min-width: 9px; margin-top: 6px; border-radius: 50%; background: var(--lum-green); }
+
+/* ---------- Kho Voucher ---------- */
+.voucher-list { display: flex; flex-direction: column; gap: 12px; }
+.voucher-card { display: flex; flex-wrap: wrap; gap: 12px; justify-content: space-between; align-items: center; padding: 16px; border: 1px dashed var(--lum-green); border-radius: 14px; background: #fbfdfb; }
+.voucher-left { display: flex; flex-direction: column; gap: 2px; min-width: 0; flex: 1; }
+.voucher-badge { display: inline-block; align-self: flex-start; font-size: 12px; font-weight: 700; padding: 3px 10px; border-radius: 999px; background: var(--lum-green); color: #fff; }
+.voucher-name { font-size: 15px; }
+.voucher-desc { font-size: 13px; color: var(--lum-muted); }
+.voucher-right { display: flex; flex-direction: column; gap: 8px; align-items: flex-end; }
+.voucher-code { font-size: 15px; font-weight: 700; letter-spacing: 1px; background: #fff; border: 1px dashed #ccc; border-radius: 8px; padding: 6px 12px; }
+.voucher-list.expired .voucher-card { border-color: #ddd; background: #fafafa; opacity: .75; }
+
+/* ---------- Diem Thuong ---------- */
+.points-hero { display: flex; flex-wrap: wrap; gap: 16px; justify-content: space-between; align-items: center; }
+.points-balance { text-align: right; }
+.points-balance-number { font-size: 36px; font-weight: 800; color: var(--lum-green-dark); line-height: 1; }
+.points-balance-label { font-size: 14px; color: var(--lum-muted); margin-left: 4px; }
+
+/* ---------- Doi so dien thoai ---------- */
+.phone-change-box { margin-top: 10px; padding: 12px; border: 1px solid #e5e5e5; border-radius: 12px; background: #fbfdfb; }
+
+/* ---------- Form danh gia kieu Shopee (nut chinh xanh la) ---------- */
+.review-guide { border: 1px solid #f5c542; background: #fff8e6; border-radius: 10px; padding: 10px 14px; margin-bottom: 16px; }
+.review-guide summary { cursor: pointer; font-size: 14px; list-style: none; }
+.review-guide summary::-webkit-details-marker { display: none; }
+.review-guide ul { margin: 8px 0 0; padding-left: 18px; font-size: 13px; }
+.review-product { padding: 16px 0; border-bottom: 1px solid #f0f0f0; }
+.review-product:last-of-type { border-bottom: 0; }
+.review-product-head { display: flex; gap: 12px; align-items: center; margin-bottom: 10px; }
+.review-product-head img { width: 56px; height: 56px; object-fit: cover; border-radius: 10px; border: 1px solid #eee; flex-shrink: 0; }
+.review-field { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-bottom: 10px; }
+.review-field-label { font-weight: 600; font-size: 14px; }
+.review-stars-input { display: inline-flex; gap: 4px; align-items: center; }
+.review-star-btn { cursor: pointer; font-size: 26px; color: #ddd; line-height: 1; }
+.review-star-btn input { display: none; }
+.review-star-btn.on { color: #f5a623; }
+.review-star-text { font-size: 14px; color: var(--lum-green-dark); font-weight: 600; margin-left: 6px; }
+.review-comment { background: #f7f7f7; }
+.review-media-btns { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-top: 10px; }
+.media-btn { display: inline-flex; gap: 6px; align-items: center; padding: 7px 14px; border: 1px solid var(--lum-green); border-radius: 8px; color: var(--lum-green-dark); background: #fff; cursor: pointer; font-size: 13px; font-weight: 600; }
+.media-btn:hover { background: var(--lum-green-soft); }
+.media-preview { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
+.media-preview img { width: 72px; height: 72px; object-fit: cover; border-radius: 8px; border: 1px solid #eee; }
+.review-footer { display: flex; justify-content: space-between; gap: 10px; margin-top: 20px; padding-top: 16px; border-top: 1px solid #f0f0f0; }
+
+/* ---------- Chi tiet don hang ---------- */
+.order-code-link { color: var(--lum-text); font-weight: 700; text-decoration: none; }
+.order-code-link:hover { color: var(--lum-green-dark); text-decoration: underline; }
+.order-detail-link { font-size: 13px; font-weight: 600; color: var(--lum-green-dark); align-self: center; }
+.order-detail-head { display: flex; flex-wrap: wrap; gap: 12px; justify-content: space-between; align-items: center; margin: 12px 0 16px; }
+/* ---------- Chi tiet don hang: thanh trang thai 5 buoc (giong ben admin) ---------- */
+.order-steps { display: flex; gap: 0; margin: 8px 0 4px; }
+.order-step { flex: 1; text-align: center; position: relative; font-size: 13px; color: var(--lum-muted); padding-top: 30px; }
+.order-step::before { content: ""; position: absolute; top: 10px; left: 50%; transform: translateX(-50%); width: 20px; height: 20px; border-radius: 50%; background: #e5e7eb; border: 3px solid #fff; box-shadow: 0 0 0 1px #d1d5db; z-index: 1; }
+.order-step::after { content: ""; position: absolute; top: 19px; left: calc(-50% + 12px); right: calc(50% + 12px); height: 2px; background: #e5e7eb; }
+.order-step:first-child::after { display: none; }
+.order-step.done { color: var(--lum-green-dark); font-weight: 600; }
+.order-step.done::before { background: var(--lum-green); box-shadow: 0 0 0 1px var(--lum-green); }
+.order-step.done::after { background: var(--lum-green); }
+.order-step.current { color: var(--lum-green-dark); font-weight: 700; }
+.order-step.current::before { background: #fff; box-shadow: 0 0 0 2px var(--lum-green); }
+.step-time { font-size: 12px; color: var(--lum-muted); margin-top: 4px; line-height: 1.4; }
+@media (max-width: 576px) { .order-step { font-size: 11px; } .step-time { font-size: 11px; } }
+.order-info-label { font-size: 13px; color: var(--lum-muted); }
+.order-info-value { font-size: 15px; font-weight: 600; color: var(--lum-text); }
+.order-info-sub { font-size: 13px; color: var(--lum-muted); }
+
+/* ---------- Hop "Danh gia thanh cong" sau khi gui danh gia ---------- */
+.review-success-overlay { position: fixed; inset: 0; z-index: 1050; display: flex; align-items: center; justify-content: center; background: rgba(0, 0, 0, .45); padding: 16px; }
+.review-success-box { background: #fff; border-radius: 20px; padding: 32px 28px 28px; text-align: center; max-width: 420px; width: 100%; box-shadow: 0 12px 40px rgba(0, 0, 0, .25); }
+.review-success-icon { width: 64px; height: 64px; margin: 0 auto 16px; border-radius: 50%; background: var(--lum-green-soft); color: var(--lum-green-dark); font-size: 32px; font-weight: 700; line-height: 64px; }
+.review-success-title { font-size: 20px; font-weight: 700; margin-bottom: 8px; }
+.review-success-ok { min-width: 120px; margin-top: 20px; }
+.order-total { margin-top: 16px; padding-top: 12px; border-top: 1px solid #f0f0f0; display: flex; flex-direction: column; gap: 6px; }
+.order-total-row { display: flex; justify-content: space-between; font-size: 14px; }
+.order-total-row.grand { font-weight: 800; font-size: 16px; color: var(--lum-green-dark); border-top: 1px dashed #e5e5e5; padding-top: 8px; margin-top: 4px; }

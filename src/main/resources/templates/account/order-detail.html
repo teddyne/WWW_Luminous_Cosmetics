@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="vi" th:with="pageCss='account.css'">
+<head th:replace="~{layout/header :: head('Chi tiết đơn hàng')}"></head>
+<body>
+<div th:replace="~{layout/header :: header}"></div>
+
+<main class="account-page">
+  <div class="container">
+    <div class="account-layout">
+      <div th:replace="~{account/fragments :: sidebar(active=${accountMenu})}"></div>
+
+      <div>
+        <div th:if="${orderOk}" class="alert alert-success" th:text="${orderOk}">Xong.</div>
+        <div th:if="${orderError}" class="alert alert-danger" th:text="${orderError}">Lỗi.</div>
+
+        <div class="account-card">
+          <a th:href="@{/account/orders}" class="text-decoration-none small">‹ Quay lại Đơn mua</a>
+          <div class="order-detail-head">
+            <div>
+              <h3 class="account-title mb-0" th:text="'Đơn hàng ' + ${card.order.orderCode}">Đơn hàng</h3>
+              <span class="text-muted small"
+                    th:text="'Đặt ngày ' + ${#temporals.format(card.order.orderDate, 'dd/MM/yyyy HH:mm')}">Ngày đặt</span>
+            </div>
+            <span class="order-status-badge" th:classappend="' st-' + ${card.order.status}"
+                  th:text="${card.order.status.label()}">Trạng thái</span>
+          </div>
+
+          <div th:if="${card.order.cancelled}" class="alert alert-danger rounded-3">
+            <span class="fw-semibold">Đơn hàng này đã bị hủy.</span>
+            <span th:if="${card.order.cancelReason != null and !card.order.cancelReason.isBlank()}" th:text="'Lý do: ' + ${card.order.cancelReason}"></span>
+            <span th:if="${card.order.cancelledAt != null}" th:text="'Thời gian hủy: ' + ${#temporals.format(card.order.cancelledAt, 'dd/MM/yyyy HH:mm')}"></span>
+          </div>
+          <div th:if="${card.order.returned}" class="alert alert-warning rounded-3">
+            <span class="fw-semibold">Đơn hàng này đã được trả lại.</span>
+            <span th:if="${card.order.returnReason != null and !card.order.returnReason.isBlank()}" th:text="'Lý do: ' + ${card.order.returnReason}"></span>
+            <span th:if="${card.order.returnedAt != null}" th:text="'Thời gian trả: ' + ${#temporals.format(card.order.returnedAt, 'dd/MM/yyyy HH:mm')}"></span>
+          </div>
+          <div th:if="${!card.order.cancelled and !card.order.returned and !card.order.storeSale}" class="order-steps">
+            <div th:each="step : ${stepItems}" class="order-step"
+                 th:classappend="${step.state == 'done'} ? ' done' : (${step.state == 'current'} ? ' current' : '')">
+              <div th:text="${step.label}">Chờ xác nhận</div>
+              <div class="step-time" th:if="${step.time != null}">
+                <span th:text="${#temporals.format(step.time, 'dd/MM/yyyy')}">09/11/2026</span><br/>
+                <span th:text="${#temporals.format(step.time, 'HH:mm')}">10:05</span>
+              </div>
+            </div>
+          </div>
+          <div th:if="${!card.order.cancelled and !card.order.returned and card.order.storeSale}" class="mb-2">
+            <span class="text-muted">Trạng thái: </span><span class="fw-semibold" th:text="${card.order.status.label()}">Hoàn thành</span>
+          </div>
+          <div class="row g-3 mt-3">
+            <div class="col-md-6">
+              <div class="order-info-label">Người đặt</div>
+              <div class="order-info-value" th:text="${card.order.user != null ? card.order.user.fullName : card.order.recipientName}">Khách hàng</div>
+              <div class="order-info-sub" th:if="${card.order.user != null}" th:text="${card.order.user.email}">email</div>
+              <div class="order-info-sub" th:text="${card.order.recipientPhone}">SĐT</div>
+            </div>
+            <div class="col-md-6" th:if="${!card.order.storeSale}">
+              <div class="order-info-label">Người nhận</div>
+              <div class="order-info-value" th:text="${card.order.recipientName}">Người nhận</div>
+              <div class="order-info-sub" th:text="${card.order.recipientPhone}">SĐT</div>
+              <div class="order-info-sub" th:text="${card.order.shippingAddress}">Địa chỉ</div>
+            </div>
+
+          </div>
+          <div th:if="${card.order.note != null and !card.order.note.isBlank()}" class="alert alert-light border rounded-3 mt-3 mb-0">
+            <span class="fw-semibold">Ghi chú: </span><span th:text="${card.order.note}"></span>
+          </div>
+        </div>
+
+        <div class="account-card">
+          <h2 class="h6">Sản phẩm</h2>
+          <div class="order-line" th:each="line : ${card.lines}">
+            <img th:src="${line.imageUrl()}" th:alt="${line.productName()}" loading="lazy"/>
+            <div class="order-line-info">
+              <strong th:text="${line.productName()}">Tên sản phẩm</strong>
+              <span class="text-muted small" th:text="${line.variantLabel()}">Phân loại</span>
+            </div>
+            <div class="order-line-price">
+              <div th:text="${line.unitPriceText()}">0đ</div>
+              <div class="text-muted small" th:text="'x' + ${line.quantity()}">x1</div>
+              <div class="fw-bold" th:text="${line.totalPriceText()}">0đ</div>
+            </div>
+          </div>
+
+          <div class="order-total">
+            <div class="order-total-row"><span>Tạm tính</span><span th:text="${#numbers.formatDecimal(card.order.subtotal, 1, 'POINT', 0, 'COMMA')} + 'đ'">0đ</span></div>
+            <div class="order-total-row"><span>Phí vận chuyển</span><span th:text="${#numbers.formatDecimal(card.order.shippingFee, 1, 'POINT', 0, 'COMMA')} + 'đ'">0đ</span></div>
+            <div class="order-total-row" th:if="${card.order.discountAmount != null and card.order.discountAmount > 0}">
+              <span>Giảm giá</span><span th:text="'-' + ${#numbers.formatDecimal(card.order.discountAmount, 1, 'POINT', 0, 'COMMA')} + 'đ'">-0đ</span>
+            </div>
+            <div class="order-total-row" th:if="${card.order.usedPoints != null and card.order.usedPoints > 0}">
+              <span>Điểm đã dùng</span><span th:text="'-' + ${#numbers.formatDecimal(card.order.usedPoints, 1, 'POINT', 0, 'COMMA')} + 'đ'">-0đ</span>
+            </div>
+            <div class="order-total-row grand"><span>Thành tiền</span><span th:text="${#numbers.formatDecimal(card.order.totalAmount, 1, 'POINT', 0, 'COMMA')} + 'đ'">0đ</span></div>
+          </div>
+
+          <div th:if="${card.order.status.name() == 'DELIVERED' or card.order.status.name() == 'COMPLETED'}" class="mt-3">
+            <div class="review-deadline" th:if="${card.canReview() or card.canReturn()}">
+              Đánh giá sản phẩm trước <u th:text="${#temporals.format(card.reviewDeadline(), 'dd-MM-yyyy')}">--</u>
+            </div>
+            <div class="review-reward" th:if="${card.canReview()}">Đánh giá ngay và nhận 200 Xu</div>
+            <div class="review-expired" th:if="${!card.canReview() and !card.canReturn()}">Đã hết hạn đánh giá</div>
+          </div>
+
+          <div class="order-actions mt-3">
+            <form th:if="${card.order.status.name() == 'PENDING' or card.order.status.name() == 'CONFIRMED'}"
+                  th:action="@{/account/orders/{id}/cancel(id=${card.order.id})}" method="post"
+                  class="order-reason m-0"
+                  onsubmit="return confirm('Bạn chắc chắn muốn hủy đơn này?')">
+              <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+              <input type="text" name="reason" required placeholder="Lý do hủy đơn" aria-label="Lý do hủy đơn"/>
+              <button class="btn-order danger" type="submit">Hủy đơn</button>
+            </form>
+            <a th:if="${card.canReview()}"
+               th:href="@{/account/orders/{id}/review(id=${card.order.id})}"
+               class="btn-order primary text-decoration-none">Đánh Giá</a>
+            <span class="order-note" th:if="${card.allReviewed() and (card.order.status.name() == 'DELIVERED' or card.order.status.name() == 'COMPLETED')}">Đã đánh giá</span>
+            <a th:if="${card.canReturn()}"
+               th:href="@{/account/orders/{id}/return(id=${card.order.id})}"
+               class="btn-order text-decoration-none">Yêu Cầu Trả Hàng/Hoàn Tiền</a>
+            <form th:if="${card.canConfirmReceived()}"
+                  th:action="@{/account/orders/{id}/confirm-received(id=${card.order.id})}" method="post" class="m-0">
+              <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+              <button class="btn-order" type="submit">Đã nhận hàng</button>
+            </form>
+            <span class="order-note" th:if="${card.order.status.name() == 'DELIVERED' and !card.canConfirmReceived() and !card.canReturn()}">Đã hết hạn chọn, đơn sẽ tự hoàn thành.</span>
+            <form th:if="${card.order.status.name() == 'COMPLETED' or card.order.status.name() == 'CANCELLED' or card.order.status.name() == 'RETURNED'}"
+                  th:action="@{/account/orders/{id}/buy-again(id=${card.order.id})}" method="post" class="m-0">
+              <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+              <button class="btn-order" type="submit">Mua lại</button>
+            </form>
+            <span class="order-note" th:if="${card.order.status.name() == 'SHIPPING'}">Đơn đang vận chuyển, vui lòng chờ.</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<div th:if="${reviewSuccess}" class="review-success-overlay">
+  <div class="review-success-box">
+    <div class="review-success-icon">✓</div>
+    <h3 class="review-success-title">Đánh giá thành công!</h3>
+    <p class="mb-0" th:text="'Bạn đã gửi ' + ${reviewSuccessCount} + ' đánh giá và được cộng ' + ${reviewSuccessPoints} + ' điểm vào tài khoản.'">Bạn được cộng điểm vào tài khoản.</p>
+    <a th:href="@{/account/orders}" class="btn btn-lum review-success-ok">OK</a>
+  </div>
+</div>
+
+<div th:replace="~{layout/footer :: footer}"></div>
+</body>
+</html>

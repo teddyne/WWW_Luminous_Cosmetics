@@ -81,10 +81,24 @@ body.page-fade-out { opacity: 0; transform: translateY(8px); will-change: opacit
   display: flex; align-items: center; justify-content: center;
   color: #fff; font-size: 34px;
 }
+.user-dropdown {
+  min-width: 210px;
+  font-size: 17px;
+  padding: 5px 0;
+}
+.user-dropdown .dropdown-item,
+.user-dropdown .dropdown-item-text {
+  padding: 10px 10px;
+}
+
 .cart-overlay-icon-ok { background: #1abc9c; }
 .cart-overlay-icon-err { background: #e11d48; }
 .cart-overlay-text { color: #fff; font-weight: 700; font-size: 16px; line-height: 1.5; }
 @keyframes cart-overlay-in { from { opacity: 0; } to { opacity: 1; } }
 @media (prefers-reduced-motion: reduce) {
-  .cart-overlay { animation: none; }
+  .cart-overlay {
+    animation: none;
+  }
 }
+
+

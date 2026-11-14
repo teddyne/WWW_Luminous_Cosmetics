@@ -18,4 +18,16 @@ public class ProfileForm {
 
     @Pattern(regexp = "^$|^0[0-9]{9}$", message = "Số điện thoại phải có 10 số và bắt đầu bằng 0")
     private String phone;
+
+    /**
+     * Gioi tinh o trang Ho so: "" = Khong xac dinh (luu null), NAM / NU.
+     * AdminSettingsController dung form nay chi de doi ten + sdt nen bo qua truong nay.
+     */
+    @Pattern(regexp = "^$|NAM|NU", message = "Giới tính không hợp lệ")
+    private String gender;
+
+    /** Ngay/thang/nam sinh o trang Ho so: de trong ca 3 o = khong doi ngay sinh. */
+    private String birthDay;
+    private String birthMonth;
+    private String birthYear;
 }

@@ -121,3 +121,8 @@
 /* ---------- Huong dan su dung ---------- */
 .detail-usage { margin-top: 28px; }
 .detail-usage p { white-space: pre-line; line-height: 1.8; margin: 0; }
+
+/* Anh / video kem theo danh gia */
+.review-media { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
+.review-media img { width: 72px; height: 72px; object-fit: cover; border-radius: 8px; border: 1px solid #eee; }
+.review-media video { width: 180px; max-width: 100%; border-radius: 8px; border: 1px solid #eee; }

@@ -20,6 +20,14 @@ public interface OrderRepository extends JpaRepository<Orders, Integer>, JpaSpec
 
     List<Orders> findByUserIdOrderByOrderDateDesc(Integer userId);
 
+    /** Don DELIVERED da qua han 3 ngay: job tu dong hoan thanh chay moi gio. */
+    List<Orders> findByStatusAndDeliveredAtLessThanEqual(OrderStatus status, LocalDateTime cutoff);
+
+    /** Chi lay don cua chinh khach nay (khong cho xem / sua don cua nguoi khac). */
+    Optional<Orders> findByIdAndUserId(Integer id, Integer userId);
+
+    List<Orders> findByUserIdAndStatusInOrderByOrderDateDesc(Integer userId, List<OrderStatus> statuses);
+
     long countByUserId(Integer userId);
 
     @Query("SELECT COALESCE(SUM(o.totalAmount), 0) FROM Orders o WHERE o.status = :status")

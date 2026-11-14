@@ -27,6 +27,14 @@ public class RegisterForm {
     @NotBlank(message = "Vui lòng nhập mã captcha")
     private String captcha;
 
+    /**
+     * Ma xac thuc 6 chu so gui qua email/SMS toi dung email/sdt vua nhap.
+     * Nhan nut "Gửi mã xác thực" truoc, nhap ma vao day roi moi bam Dang ky.
+     */
+    @NotBlank(message = "Vui lòng nhập mã xác thực 6 chữ số đã gửi tới email/số điện thoại của bạn")
+    @Pattern(regexp = "^\\d{6}$", message = "Mã xác thực gồm đúng 6 chữ số")
+    private String verificationCode;
+
     // De String (khong phai Integer) de o trong "" khong bi loi convert cua Spring,
     // validation se bao bang tieng Viet, AuthService moi parse sang so.
     @NotBlank(message = "Vui lòng chọn ngày sinh")

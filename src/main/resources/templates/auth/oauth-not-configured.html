@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="vi" th:with="pageCss='auth.css'">
+<head th:replace="~{layout/header :: head('Chưa cấu hình đăng nhập')}"></head>
+<body>
+<div th:replace="~{layout/header :: header}"></div>
+
+<main class="auth-page">
+  <div class="container">
+    <div class="auth-card">
+      <h1 class="auth-title">Đăng nhập bằng Google chưa bật</h1>
+      <p>
+        Nút đăng nhập bằng <strong>Google</strong> đã có sẵn trên trang
+        Đăng nhập / Đăng ký, nhưng app chưa cấu hình OAuth2 nên chưa đăng nhập được.
+        Đây là bước cấu hình trên tài khoản của chủ shop, không phải lỗi code:
+      </p>
+      <ol class="text-start">
+        <li>
+          Tạo OAuth client ở <strong>console.cloud.google.com</strong> (Web application),
+          redirect URI: <code>http://localhost:8080/login/oauth2/code/google</code>.
+        </li>
+        <li>
+          Điền <strong>client-id</strong> và <strong>client-secret</strong> vào
+          <code>application.properties</code> (bỏ dấu <code>#</code> ở 2 dòng tương ứng),
+          rồi khởi động lại app — nút sẽ đăng nhập được ngay.
+        </li>
+      </ol>
+      <p class="text-muted small">
+        Hướng dẫn từng bước đầy đủ: xem <strong>HUONG_DAN.md mục 4b</strong> trong file zip.
+        Trong lúc chờ cấu hình, bạn vẫn đăng nhập bình thường bằng email hoặc số điện thoại.
+      </p>
+      <div class="d-flex gap-2 justify-content-center">
+        <a th:href="@{/login}" class="btn btn-lum">Về trang Đăng nhập</a>
+        <a th:href="@{/register}" class="btn btn-outline-lum">Đăng ký bằng Email/SĐT</a>
+      </div>
+    </div>
+  </div>
+</main>
+
+<div th:replace="~{layout/footer :: footer}"></div>
+</body>
+</html>

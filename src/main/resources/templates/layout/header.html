@@ -26,6 +26,13 @@
         <img th:src="@{/images/logo.png}" alt="LUMINOUS" class="logo-img"/>
       </a>
       <div class="d-flex align-items-center gap-2">
+        <!-- Thong bao: bam vao mo trang thong bao (chi hien khi da dang nhap). -->
+        <a th:if="${currentUser != null}" th:href="@{/account/notifications}" class="header-icon text-decoration-none position-relative" title="Thông báo" aria-label="Thông báo">
+          <i class="bi bi-bell"></i>
+          <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"
+                th:if="${unreadNotificationCount != null and unreadNotificationCount > 0}"
+                th:text="${unreadNotificationCount > 99 ? '99+' : unreadNotificationCount}">0</span>
+        </a>
         <!-- Tai khoan: Guest -> Dang nhap; da dang nhap -> dropdown theo role -->
         <div th:if="${currentUser == null}">
           <a th:href="@{/login}" class="header-icon text-decoration-none" title="Tài khoản" aria-label="Tài khoản"><i class="bi bi-person"></i></a>
@@ -42,6 +49,8 @@
             </span></li>
             <li><hr class="dropdown-divider"/></li>
             <li th:if="${currentUser.admin}"><a class="dropdown-item" th:href="@{/admin}">Trang quản trị</a></li>
+            <li><a class="dropdown-item" th:href="@{/account/profile}">Hồ Sơ Của Tôi</a></li>
+            <li><a class="dropdown-item" th:href="@{/account/orders}">Đơn Mua</a></li>
             <li><a class="dropdown-item" th:href="@{/cart}">Giỏ hàng</a></li>
             <li>
               <form th:action="@{/logout}" method="post" class="m-0">
@@ -83,7 +92,7 @@
         setTimeout(function () { overlay.remove(); }, 200);
       };
       overlay.addEventListener('click', close);
-      setTimeout(close, 300);
+      setTimeout(close, 1000);
     })();
   </script>
 

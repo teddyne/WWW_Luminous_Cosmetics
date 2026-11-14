@@ -52,6 +52,7 @@
         <option value="CANCELLED">Đã hủy</option>
       </select>
       <button type="button" class="btn btn-sm btn-green rounded-pill" onclick="submitBulk('bulk-status')">Áp dụng</button>
+      <button type="button" class="btn btn-sm btn-danger rounded-pill" onclick="confirmBulkDelete()">Xóa đã chọn</button>
     </div>
 
     <form id="bulkForm" method="post" class="d-none">
@@ -97,6 +98,7 @@
     <div th:replace="~{admin/fragments :: pager(${orders}, ${baseUrl}, ${pageQuery})}"></div>
   </main>
 </div>
+<div th:replace="~{admin/fragments :: confirmModal}"></div>
 <div th:replace="~{admin/fragments :: scripts}"></div>
 </body>
 </html>

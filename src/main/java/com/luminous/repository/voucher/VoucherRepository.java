@@ -13,6 +13,9 @@ public interface VoucherRepository extends JpaRepository<Voucher, Integer>, JpaS
 
     boolean existsByVoucherCodeIgnoreCase(String voucherCode);
 
+    /** Voucher dang bat, sap het han truoc (cho trang Kho Voucher cua khach). */
+    java.util.List<Voucher> findByIsActiveTrueOrderByEndDateAsc();
+
 
     @Query(value = "SELECT COUNT(*) FROM OrderVoucher WHERE voucherID = :voucherId", nativeQuery = true)
     long countOrderVoucherByVoucherId(@Param("voucherId") Integer voucherId);

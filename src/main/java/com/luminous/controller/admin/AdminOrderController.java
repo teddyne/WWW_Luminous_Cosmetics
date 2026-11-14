@@ -91,10 +91,24 @@ public class AdminOrderController {
 
     @PostMapping("/bulk-status")
     public String bulkStatus(@RequestParam(required = false) List<Integer> ids,
-                             @RequestParam String newStatus,
+                             @RequestParam(required = false) String bulkAction,
+                             @RequestParam(required = false) String newStatus,
                              RedirectAttributes redirect) {
         if (ids == null || ids.isEmpty()) {
             redirect.addFlashAttribute("toast", "Chưa chọn đơn hàng nào");
+            redirect.addFlashAttribute("toastType", "error");
+            return "redirect:/admin/orders";
+        }
+        // Nut "Xoa da chon" o thanh bulk: chi an don khoi danh sach,
+        // khong xoa khoi database.
+        if ("delete".equals(bulkAction)) {
+            int done = service.bulkHide(ids);
+            redirect.addFlashAttribute("toast", "Đã xóa " + done + " đơn hàng khỏi danh sách");
+            redirect.addFlashAttribute("toastType", "success");
+            return "redirect:/admin/orders";
+        }
+        if (newStatus == null || newStatus.isBlank()) {
+            redirect.addFlashAttribute("toast", "Chưa chọn trạng thái mới");
             redirect.addFlashAttribute("toastType", "error");
             return "redirect:/admin/orders";
         }

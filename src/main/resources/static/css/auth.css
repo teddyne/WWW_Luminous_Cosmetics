@@ -11,4 +11,6 @@
 .btn-facebook:hover { background: #0f63d6; color: #fff; }
 .btn-google { background: #fff; color: #333; border: 1px solid #dee2e6; border-radius: 10px; font-weight: 600; }
 .btn-google:hover { background: #f8f9fa; }
+/* O ma xac thuc 6 so: chu cach nhau, can giua, de doc. */
+.otp-input { letter-spacing: 6px; font-weight: 700; text-align: center; }
 

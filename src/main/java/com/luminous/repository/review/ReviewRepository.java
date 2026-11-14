@@ -19,6 +19,12 @@ public interface ReviewRepository extends JpaRepository<Review, Integer>, JpaSpe
 
     long countByIsVisibleTrue();
 
+    /** Khach da danh gia dong san pham nay trong don hay chua (moi dong 1 lan). */
+    boolean existsByOrderDetailIdAndUserId(Integer orderDetailId, Integer userId);
+
+    /** Cac danh gia cua cac dong trong 1 don (de hien "Da danh gia" o trang Don mua). */
+    List<Review> findByOrderDetailIdIn(List<Integer> orderDetailIds);
+
     List<Review> findByUserIdOrderByCreatedAtDesc(Integer userId);
 
     /** Danh gia hien thi cua 1 san pham, moi nhat truoc (dung cho trang chi tiet). */

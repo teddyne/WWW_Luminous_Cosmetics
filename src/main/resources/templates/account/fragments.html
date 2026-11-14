@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="vi">
+<body>
+
+<aside th:fragment="sidebar(active)" class="account-sidebar">
+  <div class="account-user">
+    <span class="account-avatar" th:if="${currentUser != null and currentUser.user.avtUrl != null}">
+      <img th:src="${currentUser.user.avtUrl}" alt="Ảnh đại diện"/>
+    </span>
+    <span class="account-avatar account-avatar-initial"
+          th:if="${currentUser == null or currentUser.user.avtUrl == null}"
+          th:text="${currentUser != null ? #strings.substring(currentUser.fullName(), 0, 1) : '?'}">N</span>
+    <div class="account-user-info">
+      <strong th:text="${currentUser != null ? currentUser.fullName() : 'Tài khoản'}">Tên người dùng</strong>
+      <a th:href="@{/account/profile}" class="account-edit-link">
+        <i class="bi bi-pencil"></i> Sửa Hồ Sơ
+      </a>
+    </div>
+  </div>
+
+  <nav class="account-menu">
+    <a th:href="@{/account/notifications}" class="account-menu-item"
+       th:classappend="${active == 'notifications'} ? ' active'">
+      <i class="bi bi-bell"></i> Thông Báo
+      <span class="notif-badge" th:if="${unreadNotificationCount != null and unreadNotificationCount > 0}"
+            th:text="${unreadNotificationCount}">1</span>
+    </a>
+    <div class="account-menu-group">Tài Khoản Của Tôi</div>
+    <a th:href="@{/account/profile}" class="account-menu-item account-menu-sub"
+       th:classappend="${active == 'profile' or active == 'change-password'} ? ' active'">
+      <i class="bi bi-person"></i> Hồ Sơ
+    </a>
+    <a th:href="@{/account/skin-result}" class="account-menu-item"
+       th:classappend="${active == 'skin-result'} ? ' active'">
+      <i class="bi bi-heart-pulse"></i> Kết Quả Trắc Nghiệm
+    </a>
+    <a th:href="@{/account/orders}" class="account-menu-item"
+       th:classappend="${active == 'orders'} ? ' active'">
+      <i class="bi bi-bag"></i> Đơn Mua
+    </a>
+    <a th:href="@{/account/vouchers}" class="account-menu-item"
+       th:classappend="${active == 'vouchers'} ? ' active'">
+      <i class="bi bi-ticket-perforated"></i> Kho Voucher
+    </a>
+    <a th:href="@{/account/points}" class="account-menu-item"
+       th:classappend="${active == 'points'} ? ' active'">
+      <i class="bi bi-coin"></i> Điểm Thưởng
+    </a>
+  </nav>
+</aside>
+
+</body>
+</html>

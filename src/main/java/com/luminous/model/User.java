@@ -48,7 +48,15 @@ public class User {
     private LocalDate dateOfBirth;
 
     @Column(name = "gender", length = 10)
-    private String gender; // NAM / NU
+    private String gender; // NAM / NU, null = Khong xac dinh
+
+    /** Cach tao tai khoan: LOCAL (email/sdt + mat khau), GOOGLE. */
+    @Column(name = "provider", length = 20, nullable = false)
+    private String provider = "LOCAL";
+
+    /** ID tai khoan ben Google (sub), null voi tai khoan LOCAL. */
+    @Column(name = "providerId", length = 255)
+    private String providerId;
 
     @Column(name = "skinQuizAsked", nullable = false)
     private Boolean skinQuizAsked = false;

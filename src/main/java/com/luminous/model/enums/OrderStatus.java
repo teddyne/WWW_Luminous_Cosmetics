@@ -9,7 +9,8 @@ public enum OrderStatus {
     SHIPPING("Đang giao"),
     DELIVERED("Đã giao"),
     COMPLETED("Hoàn thành"),
-    CANCELLED("Đã hủy");
+    CANCELLED("Đã hủy"),
+    RETURNED("Trả hàng");
 
     private final String label;
 
@@ -37,9 +38,14 @@ public enum OrderStatus {
             case PENDING -> List.of(CONFIRMED, CANCELLED);
             case CONFIRMED -> List.of(SHIPPING, CANCELLED);
             case SHIPPING -> List.of(DELIVERED, CANCELLED);
-            case DELIVERED -> List.of(COMPLETED);
-            case COMPLETED -> List.of();
+            // DELIVERED khong duoc chuyen tay sang COMPLETED nua: don chi
+            // hoan thanh khi khach xac nhan da nhan, hoac job tu dong hoan
+            // thanh sau 3 ngay (OrderAutoCompleteService). Admin chi co the
+            // chuyen DELIVERED sang RETURNED.
+            case DELIVERED -> List.of(RETURNED);
+            case COMPLETED -> List.of(RETURNED);
             case CANCELLED -> List.of(PENDING);
+            case RETURNED -> List.of();
         };
     }
 }

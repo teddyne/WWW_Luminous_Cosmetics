@@ -4,8 +4,11 @@ import com.luminous.model.User;
 import com.luminous.repository.UserRepository;
 import com.luminous.repository.skinquiz.SkinRoutineRepository;
 import com.luminous.security.CustomUserDetails;
+import com.luminous.service.auth.CustomOAuth2UserService;
+import com.luminous.service.auth.CustomOidcUserService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -13,6 +16,7 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.springframework.security.web.savedrequest.HttpSessionRequestCache;
@@ -32,13 +36,18 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http,
                                            UserRepository userRepository,
-                                           SkinRoutineRepository routines) throws Exception {
+                                           SkinRoutineRepository routines,
+                                           CustomOAuth2UserService oauth2UserService,
+                                           CustomOidcUserService oidcUserService,
+                                           ObjectProvider<ClientRegistrationRepository> clientRegistrations) throws Exception {
         http
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers(
-                        "/", "/menu", "/login", "/register", "/captcha.png", "/blog", "/blog/**",
+                        "/", "/menu", "/login", "/register", "/register/send-code",
+                        "/captcha.png", "/blog", "/blog/**",
                         "/about", "/contact", "/support",
-                        "/forgot-password", "/error", "/favicon.ico",
+                        "/forgot-password", "/forgot-password/**", "/error", "/favicon.ico",
+                        "/oauth2/**", "/login/oauth2/**",
                         "/css/**", "/js/**", "/images/**", "/products/**",
                         "/skin-quiz", "/skin-quiz/submit", "/my-routine", "/my-routine/building",
                         "/my-routine/buy-all",
@@ -71,7 +80,36 @@ public class SecurityConfig {
             .rememberMe(remember -> remember
                 .key("luminous-remember-me")
                 .tokenValiditySeconds(7 * 24 * 3600)
+                // Luon ghi nho phien dang nhap (ca form lan Google): cookie
+                // remember-me song 7 ngay ke ca khi tat/mo lai app, vi
+                // session trong bo nho cua Tomcat mat het khi app dung.
+                // Dang xuat van xoa cookie nay.
+                .alwaysRemember(true)
             );
+        // Dang nhap bang Google: dung chung successHandler voi dang nhap
+        // thuong (hoi trac nghiem lan dau, quay lai trang vua bi chan, xem
+        // chu trinh vua lam luc con la khach...).
+        // PHAI gan ca 2 service: Google tra ve ID token (scope openid) nen
+        // Spring chay qua OIDC (.oidcUserService); chi gan .userService()
+        // thi CustomOAuth2UserService khong bao gio duoc goi, principal se
+        // la DefaultOidcUser (khong phai CustomUserDetails, khong co
+        // ROLE_CUSTOMER) -> chon xong tai khoan Google, ve trang chu van
+        // hien "chua dang nhap", /account bi chan 403.
+        // CHI bat khi da cau hinh it nhat 1 provider trong properties:
+        // Spring Boot chi tao bean ClientRegistrationRepository khi co
+        // registration; goi .oauth2Login() luc chua co bean se lam app
+        // khong khoi dong duoc ("required a bean of type
+        // 'ClientRegistrationRepository' that could not be found").
+        if (clientRegistrations.getIfAvailable() != null) {
+            http.oauth2Login(oauth -> oauth
+                .loginPage("/login")
+                .userInfoEndpoint(userInfo -> userInfo
+                    .userService(oauth2UserService)
+                    .oidcUserService(oidcUserService))
+                .successHandler(loginSuccessHandler(userRepository, routines))
+                .failureUrl("/login?error=oauth")
+            );
+        }
         return http.build();
     }
 
@@ -118,7 +156,9 @@ public class SecurityConfig {
                 response.sendRedirect(saved.getRedirectUrl());
                 return;
             }
-            String email = auth.getName();
+            String email = auth.getPrincipal() instanceof CustomUserDetails details
+                    ? details.getUser().getEmail()
+                    : auth.getName(); // OAuth2: getName() la sub/id, khong phai email
             User user = userRepository.findByEmail(email).orElse(null);
             if (user != null
                     && !Boolean.TRUE.equals(user.getSkinQuizAsked())

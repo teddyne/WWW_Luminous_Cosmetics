@@ -42,7 +42,6 @@
               <div class="col-12">
                 <label class="form-label" for="productDescription">Mô tả chi tiết</label>
                 <textarea id="productDescription" class="form-control" rows="6" th:field="*{description}" placeholder="Mô tả công dụng, thành phần, ưu điểm... (soạn văn bản, chèn ảnh như bài viết)"></textarea>
-                <div class="form-text">Soạn như bài viết: in đậm, danh sách, bảng, chèn ảnh (tải lên hoặc dán link) — hiển thị đầy đủ ở trang chi tiết sản phẩm.</div>
               </div>
               <div class="col-12">
                 <label class="form-label" for="productUsage">Hướng dẫn sử dụng</label>
@@ -53,7 +52,6 @@
 
           <div class="form-card mb-3">
             <h2><span class="step-num">2</span> Biến thể (dung tích / màu sắc)</h2>
-            <p class="text-muted small mb-2">Một sản phẩm có thể có nhiều biến thể, ví dụ son có nhiều mã màu, sữa rửa mặt có nhiều dung tích. Mỗi biến thể có giá, khuyến mãi và tồn kho riêng; để trống mã SKU thì hệ thống tự tạo.</p>
             <div id="variantRows">
               <div class="variant-row" th:each="v, stat : ${productForm.variants}">
                 <input type="hidden" th:field="*{variants[__${stat.index}__].id}"/>
@@ -142,7 +140,6 @@
 
           <div class="form-card mb-3">
             <h2><span class="step-num">3</span> Thông số sản phẩm</h2>
-            <p class="text-muted small mb-2">Các dòng thông số hiển thị dạng bảng ở trang chi tiết (như Barcode, Xuất xứ, Nơi sản xuất...). Dòng nào để trống tên hoặc giá trị thì không lưu.</p>
             <div id="attributeRows">
               <div class="attribute-row" th:each="a, stat : ${productForm.attributes}">
                 <div class="row g-2">

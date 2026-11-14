@@ -256,9 +256,9 @@ a:hover { color: var(--green-dark); }
   letter-spacing: .4px; text-transform: uppercase; white-space: nowrap;
 }
 .voucher-badge--shipping { background: green; }
-.voucher-badge--percent { background: #d81d1d; }
-.voucher-badge--fixed { background: #d81d1d; }
-.voucher-badge--special { background: #eded12; color: #422006; }
+.voucher-badge--percent { background: #d83c3c; }
+.voucher-badge--fixed { background: #df7432; }
+.voucher-badge--special { background: #f1cf23; color: #422006; }
 
 /* The voucher day du dung xem truoc o form them/sua khuyen mai:
    khoi mau ben trai + thong tin ben phai, ngan cach bang duong dut. */
@@ -289,9 +289,9 @@ a:hover { color: var(--green-dark); }
 .voucher-card__code { font-size: 13px; color: var(--muted); }
 .voucher-card__meta { font-size: 13px; color: #374151; margin-top: 2px; }
 .voucher-card--shipping .voucher-card__badge { background: green; }
-.voucher-card--percent .voucher-card__badge { background: #d81d1d;}
-.voucher-card--fixed .voucher-card__badge { background: #d81d1d; }
-.voucher-card--special .voucher-card__badge { background: #eded12; color: #422006; }
+.voucher-card--percent .voucher-card__badge { background: #d83c3c;}
+.voucher-card--fixed .voucher-card__badge { background: #df7432; }
+.voucher-card--special .voucher-card__badge { background: #f1cf23; color: #422006; }
 
 /* ---------- Bien the + thong so san pham (form admin, them/xoa dong) ---------- */
 .variant-row, .attribute-row {

@@ -25,6 +25,7 @@ import com.luminous.repository.order.PaymentRepository;
 import com.luminous.repository.order.PointTransactionRepository;
 import com.luminous.repository.product.ProductVariantRepository;
 import com.luminous.repository.voucher.VoucherRepository;
+import com.luminous.service.notification.NotificationService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -61,6 +62,7 @@ public class CheckoutService {
     private final PointTransactionRepository pointTransactions;
     private final VoucherRepository vouchers;
     private final UserRepository users;
+    private final NotificationService notifications;
 
     public CheckoutService(CartService cartService,
                            CartRepository carts,
@@ -73,7 +75,8 @@ public class CheckoutService {
                            OrderVoucherRepository orderVouchers,
                            PointTransactionRepository pointTransactions,
                            VoucherRepository vouchers,
-                           UserRepository users) {
+                           UserRepository users,
+                           NotificationService notifications) {
         this.cartService = cartService;
         this.carts = carts;
         this.cartItems = cartItems;
@@ -86,6 +89,7 @@ public class CheckoutService {
         this.pointTransactions = pointTransactions;
         this.vouchers = vouchers;
         this.users = users;
+        this.notifications = notifications;
     }
 
     /** Ket qua dat hang: don vua tao + cac dong da dat + tong tien phai tra. */
@@ -252,6 +256,11 @@ public class CheckoutService {
                 cartItems.deleteByCartIdAndVariantId(cart.getId(), line.card().getVariant().getId());
             }
         }
+
+        notifications.notify(user.getId(), "ORDER",
+                "Đặt hàng thành công — " + order.getOrderCode(),
+                "Shop sẽ xác nhận đơn hàng của bạn trong thời gian sớm nhất.",
+                "/account/orders");
 
         return new PlacedOrder(order, selected, total);
     }

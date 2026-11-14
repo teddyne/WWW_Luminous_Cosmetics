@@ -13,6 +13,7 @@
 
       <div th:if="${param.error}" class="alert alert-danger">Email/số điện thoại hoặc mật khẩu không đúng, hoặc tài khoản đã bị khóa.</div>
       <div th:if="${registered}" class="alert alert-success">Đăng ký thành công! Hãy đăng nhập bằng tài khoản vừa tạo.</div>
+      <div th:if="${reset}" class="alert alert-success">Đặt lại mật khẩu thành công! Hãy đăng nhập bằng mật khẩu mới.</div>
 
       <form th:action="@{/login}" method="post">
         <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
@@ -26,20 +27,17 @@
           <button type="button" class="btn position-absolute top-50 end-0 translate-middle-y text-muted"
                   onclick="togglePassword('loginPassword', this)" aria-label="Hiện/ẩn mật khẩu"><i class="bi bi-eye"></i></button>
         </div>
-        <div class="d-flex justify-content-between align-items-center mb-3">
-          <label class="form-check-label fst-italic small">
-            <input class="form-check-input" type="checkbox" name="remember-me"/> Lưu mật khẩu
-          </label>
+        <div class="d-flex justify-content-end mb-3">
           <a th:href="@{/forgot-password}" class="fst-italic text-primary text-decoration-none small">Quên mật khẩu</a>
         </div>
         <button class="btn btn-lum w-100 btn-lg" type="submit">Đăng nhập</button>
       </form>
 
       <p class="text-center mt-3 mb-1">Bạn chưa có tài khoản? <a th:href="@{/register}" class="fw-bold text-success text-decoration-none">ĐĂNG KÝ NGAY</a></p>
-      <p class="text-center text-muted small my-3">— Hoặc đăng nhập với —</p>
-      <div class="row g-2">
-        <div class="col-6"><button type="button" class="btn btn-facebook w-100" onclick="alert('Đăng nhập Facebook sẽ được cấu hình OAuth ở bước sau, hiện chỉ là giao diện theo Figma.')">f &nbsp;Facebook</button></div>
-        <div class="col-6"><button type="button" class="btn btn-google w-100" onclick="alert('Đăng nhập Google sẽ được cấu hình OAuth ở bước sau, hiện chỉ là giao diện theo Figma.')">G &nbsp;Google</button></div>
+      <div>
+        <p class="text-center text-muted small my-3">— Hoặc đăng nhập với —</p>
+        <a th:href="${oauthEnabled} ? @{/oauth2/authorization/google} : @{/auth/oauth-chua-cau-hinh}" class="btn btn-google w-100">G &nbsp;Google</a>
+        <p th:if="${!oauthEnabled}" class="text-center text-muted small mt-2">Nút Google đã có sẵn — chỉ cần cấu hình client-id/secret (xem trang hướng dẫn khi bấm vào nút) là đăng nhập được.</p>
       </div>
     </div>
   </div>

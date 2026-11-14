@@ -101,14 +101,29 @@ public class Orders {
     @Column(name = "cancelledAt")
     private LocalDateTime cancelledAt;
 
+    @Column(name = "returnedAt")
+    private LocalDateTime returnedAt;
+
+    @Column(name = "returnReason", length = 500)
+    private String returnReason;
+
     @Column(name = "updatedAt")
     private LocalDateTime updatedAt;
 
+    // Admin an don khoi danh sach (chi an khoi man hinh, van con trong DB).
+    @Column(name = "adminHidden", nullable = false)
+    private Boolean adminHidden = false;
+
     public boolean isTerminal() {
-        return status == OrderStatus.COMPLETED || status == OrderStatus.CANCELLED;
+        return status == OrderStatus.COMPLETED || status == OrderStatus.CANCELLED
+                || status == OrderStatus.RETURNED;
     }
 
     public boolean isCancelled() {
         return status == OrderStatus.CANCELLED;
+    }
+
+    public boolean isReturned() {
+        return status == OrderStatus.RETURNED;
     }
 }

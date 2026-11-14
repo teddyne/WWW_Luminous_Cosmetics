@@ -157,7 +157,7 @@
                 <span class="text-muted small"> · Phù hợp với: <span th:text="${step.suitableText}">—</span></span>
               </p>
               <h3 class="h6 fw-bold mt-3">Công dụng</h3>
-              <p th:text="${step.card.product.description}">Mô tả</p>
+              <div class="routine-desc" th:utext="${step.card.product.description}">Mô tả</div>
               <h3 class="h6 fw-bold">Thành phần chính</h3>
               <p th:text="${step.card.variant.ingredients}">Thành phần</p>
               <h3 class="h6 fw-bold">Cách dùng trong chu trình</h3>
