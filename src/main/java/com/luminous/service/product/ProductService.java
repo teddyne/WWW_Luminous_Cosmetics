@@ -32,6 +32,7 @@ public class ProductService {
     private final ProductVariantRepository variants;
     private final ProductAttributeRepository productAttributes;
     private final UserRepository users;
+    private final ProductCacheService productCache;
 
     /** Anh cho san chung khi san pham chua co anh nao (khong do ve anh san pham khac). */
     private static final String NO_IMAGE = "/images/no-image.svg";
@@ -63,7 +64,8 @@ public class ProductService {
                           ReviewMediaRepository reviewMedia,
                           ProductVariantRepository variants,
                           ProductAttributeRepository productAttributes,
-                          UserRepository users) {
+                          UserRepository users,
+                          ProductCacheService productCache) {
         this.products = products;
         this.orderDetails = orderDetails;
         this.reviews = reviews;
@@ -71,6 +73,7 @@ public class ProductService {
         this.variants = variants;
         this.productAttributes = productAttributes;
         this.users = users;
+        this.productCache = productCache;
     }
 
     /** Trang danh gia cua 1 san pham, loc theo sao (rating null = tat ca). */
@@ -140,11 +143,23 @@ public class ProductService {
     }
 
     public List<ProductCard> deals(int limit) {
-        return inStockCards(products.findDeals(), limit);
+        List<ProductCard> cached = productCache.getHomeList("deals", limit);
+        if (cached != null) {
+            return cached;
+        }
+        List<ProductCard> result = inStockCards(products.findDeals(), limit);
+        productCache.putHomeList("deals", limit, result);
+        return result;
     }
 
     public List<ProductCard> newest(int limit) {
-        return inStockCards(products.findByIsActiveTrueOrderByCreatedAtDesc(), limit);
+        List<ProductCard> cached = productCache.getHomeList("newest", limit);
+        if (cached != null) {
+            return cached;
+        }
+        List<ProductCard> result = inStockCards(products.findByIsActiveTrueOrderByCreatedAtDesc(), limit);
+        productCache.putHomeList("newest", limit, result);
+        return result;
     }
 
     /**
@@ -163,13 +178,19 @@ public class ProductService {
     }
 
     public List<ProductCard> bestSellers(int limit) {
+        List<ProductCard> cached = productCache.getHomeList("best", limit);
+        if (cached != null) {
+            return cached;
+        }
         List<Product> best = orderDetails.findBestSellers();
         // Neu DB chua co don hang nao, best sellers se rong -> fallback ve san pham moi nhat
         // de trang chu khong bi khoi trong (van la du lieu that tu DB, khong phai so gia).
         if (best.isEmpty()) {
             return newest(limit);
         }
-        return inStockCards(best.stream().filter(p -> Boolean.TRUE.equals(p.getIsActive())).toList(), limit);
+        List<ProductCard> result = inStockCards(best.stream().filter(p -> Boolean.TRUE.equals(p.getIsActive())).toList(), limit);
+        productCache.putHomeList("best", limit, result);
+        return result;
     }
 
     public List<ProductCard> allActiveCards() {
@@ -222,12 +243,23 @@ public class ProductService {
                                         Double minRating, String sort, boolean onSaleOnly,
                                         int page, int size) {
         int safeSize = size <= 0 ? 12 : size;
+        // Cache-Aside: khoa chua du tham so loc/sap xep/phan trang.
+        String key = productCache.searchKey(q, brand, categoryIds, minPrice, maxPrice,
+                minRating, sort, onSaleOnly, page, safeSize);
+        ProductCacheService.CachedPage cached = productCache.getSearchPage(key);
+        if (cached != null) {
+            return new PageImpl<>(cached.items().stream().map(productCache::toCard).toList(),
+                    PageRequest.of(page, safeSize), cached.total());
+        }
         List<ProductCard> all = search(q, brand, categoryIds, minPrice, maxPrice, minRating, sort, onSaleOnly);
         int totalPages = (int) Math.ceil((double) all.size() / safeSize);
         int safePage = Math.max(0, Math.min(page, Math.max(0, totalPages - 1)));
         int from = safePage * safeSize;
         int to = Math.min(from + safeSize, all.size());
         List<ProductCard> content = from >= all.size() ? List.of() : all.subList(from, to);
+        // Luu theo trang da cat (safePage) de trang sau khong lech.
+        productCache.putSearchPage(productCache.searchKey(q, brand, categoryIds, minPrice, maxPrice,
+                minRating, sort, onSaleOnly, safePage, safeSize), all.size(), content);
         return new PageImpl<>(content, PageRequest.of(safePage, safeSize), all.size());
     }
 
@@ -263,11 +295,17 @@ public class ProductService {
 
     /** Du lieu day du cho trang chi tiet, chi cho phep san pham dang ban. */
     public Optional<ProductCard> detailCard(Integer productId) {
-        return products.findById(productId)
+        ProductCard cached = productId == null ? null : productCache.getProduct(productId);
+        if (cached != null) {
+            return Optional.of(cached);
+        }
+        Optional<ProductCard> result = products.findById(productId)
                 .filter(p -> Boolean.TRUE.equals(p.getIsActive()))
                 .map(p -> toCards(List.of(p), 1))
                 .filter(list -> !list.isEmpty())
                 .map(list -> list.get(0));
+        result.ifPresent(productCache::putProduct);
+        return result;
     }
 
     /** Cac bien the dang ban cua san pham, dung cho nut chon dung tich/mau. */

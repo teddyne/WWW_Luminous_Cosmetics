@@ -192,24 +192,26 @@
   doughnut("bestChart", bestLabels, bestValues);
   doughnut("slowChart", slowLabels, slowValues);
   new Chart(document.getElementById("revenueChart"), {
-    type: "line",
+    type: "bar",
     data: {
       labels: labels,
       datasets: [{
         label: "Doanh thu",
         data: values,
+        backgroundColor: "#456a41",
         borderColor: "#456a41",
-        backgroundColor: "rgba(69,106,65,.12)",
-        fill: true,
-        tension: .35,
-        pointRadius: 3,
-        pointBackgroundColor: "#456a41"
+        borderWidth: 1,
+        borderRadius: 6,
+        maxBarThickness: 48
       }]
     },
     options: {
       responsive: true,
       maintainAspectRatio: false,
-      plugins: { legend: { display: false } },
+      plugins: {
+        legend: { display: false },
+        tooltip: { callbacks: { label: function (c) { return " Doanh thu: " + c.parsed.y.toLocaleString("vi-VN") + "đ"; } } }
+      },
       scales: {
         y: { beginAtZero: true, ticks: { callback: function (v) { return v.toLocaleString("vi-VN") + "đ"; } } }
       }

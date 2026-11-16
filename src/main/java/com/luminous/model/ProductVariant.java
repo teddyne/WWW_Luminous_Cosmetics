@@ -58,6 +58,11 @@ public class ProductVariant {
     @Column(name = "isActive", nullable = false)
     private Boolean isActive = true;
 
+    // Khoa lac quan: gia/ton kho doi dong thoi se bi phat hien o tang service.
+    @Version
+    @Column(name = "version", nullable = false)
+    private Long version = 0L;
+
     /** Gia hien thi: uu tien gia sale neu co. */
     public BigDecimal displayPrice() {
         return salePrice != null ? salePrice : price;

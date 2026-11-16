@@ -84,6 +84,10 @@ public class Voucher {
     @Column(name = "isActive", nullable = false)
     private Boolean isActive = true;
 
+    /** So phien ban de chong ghi de khi 2 admin cung sua (kiem tra tay trong service, khong dung @Version de khoi anh huong cac luong luu khac). */
+    @Column(name = "version", nullable = false)
+    private Long version = 0L;
+
     public boolean isPercentage() {
         return discountType == DiscountType.PERCENTAGE;
     }

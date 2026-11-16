@@ -153,6 +153,7 @@
           <div class="admin-card-body">
             <form th:action="@{|/admin/orders/${order.id}/status|}" method="post" onsubmit="return validateCancelReason()">
               <input type="hidden" th:if="${_csrf != null}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+              <input type="hidden" name="version" th:value="${order.version}"/>
               <label class="form-label" for="newStatus">Trạng thái mới</label>
               <select id="newStatus" name="newStatus" class="form-select mb-3" onchange="toggleCancelReason()">
                 <option th:each="opt : ${nextStatusOptions}" th:value="${opt.value}" th:text="${opt.label}">Đã xác nhận</option>

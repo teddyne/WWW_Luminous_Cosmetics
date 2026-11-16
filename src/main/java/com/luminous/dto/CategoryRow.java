@@ -10,7 +10,8 @@ public record CategoryRow(
         String description,
         CategoryStatus status,
         long productCount,
-        LocalDateTime createdAt) {
+        LocalDateTime createdAt,
+        Long version) {
 
     public boolean active() {
         return status == CategoryStatus.ACTIVE;

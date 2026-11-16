@@ -13,7 +13,8 @@ public record CustomerRow(
         String roleName,
         LocalDateTime createdAt,
         long orderCount,
-        BigDecimal totalSpent) {
+        BigDecimal totalSpent,
+        Long version) {
 
     public String totalSpentText() {
         return Vnd.format(totalSpent);

@@ -26,7 +26,8 @@ public class ProductForm {
 
     private Integer id;
 
-    @NotBlank(message = "Tên sản phẩm không được để trống")
+    // Phien ban khoa lac quan cua san pham (gui kem form, kiem tra khi luu).
+    private Long version;
     @Size(max = 200, message = "Tên sản phẩm tối đa 200 ký tự")
     private String name;
 
@@ -69,6 +70,9 @@ public class ProductForm {
 
         /** null = bien the moi; co id = cap nhat bien the da co. */
         private Integer id;
+
+        // Phien ban khoa lac quan cua bien the.
+        private Long version;
 
         @Size(max = 50, message = "Mã SKU tối đa 50 ký tự")
         private String sku;

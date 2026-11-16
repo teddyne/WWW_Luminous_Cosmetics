@@ -21,4 +21,6 @@ public class CategoryForm {
     private String description;
 
     private String status = "ACTIVE";
+
+    private Long version;
 }

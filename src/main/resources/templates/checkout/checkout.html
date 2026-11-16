@@ -17,6 +17,8 @@
 
   <form th:action="@{/checkout/submit}" method="post" id="place-form">
     <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+    <input type="hidden" name="idempotencyKey" th:value="${idempotencyKey}"/>
+    <input type="hidden" name="expectedTotal" th:value="${totalValue}"/>
     <span th:each="id : ${selectedVariantIds}">
       <input type="hidden" name="selectedVariantIds" th:value="${id}"/>
     </span>
@@ -378,6 +380,16 @@
         if (deleteIdInput) deleteIdInput.value = btn.dataset.id || '';
         if (deleteForm) deleteForm.submit();
       });
+    });
+  // Chong bam Dat hang 2 lan: khoa nut ngay khi gui form (server van chan
+  // bang idempotencyKey neu request lap lai lot qua).
+  (function () {
+    var form = document.getElementById('place-form');
+    if (!form) return;
+    form.addEventListener('submit', function (e) {
+      if (e.submitter && e.submitter.value === 'place') {
+        e.submitter.disabled = true;
+      }
     });
   })();
 </script>

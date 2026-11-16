@@ -99,7 +99,7 @@ function confirmBulkDelete() {
   new bootstrap.Modal(document.getElementById("confirmModal")).show();
 }
 
-function openCategoryModal(action, id, name, description, status) {
+function openCategoryModal(action, id, name, description, status, version) {
   var form = document.getElementById("categoryModalForm");
   var title = document.getElementById("categoryModalTitle");
   var idInput = document.getElementById("categoryIdText");
@@ -110,6 +110,8 @@ function openCategoryModal(action, id, name, description, status) {
   document.getElementById("categoryName").value = name || "";
   document.getElementById("categoryDescription").value = description || "";
   document.getElementById("categoryStatus").value = status || "ACTIVE";
+  var versionInput = document.getElementById("categoryVersion");
+  if (versionInput) versionInput.value = version || "";
   var error = document.getElementById("categoryNameError");
   if (error) error.textContent = "";
   new bootstrap.Modal(document.getElementById("categoryModal")).show();

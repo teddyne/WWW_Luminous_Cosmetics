@@ -16,6 +16,8 @@ import com.luminous.repository.product.ProductRepository;
 import com.luminous.repository.product.ProductVariantRepository;
 import com.luminous.service.FileStorageService;
 import com.luminous.service.ProductImage;
+import com.luminous.service.product.ProductCacheService;
+import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -60,6 +62,7 @@ public class AdminProductService {
     private final ProductAttributeRepository attributes;
     private final OrderDetailRepository orderDetails;
     private final FileStorageService files;
+    private final ProductCacheService productCache;
 
     public AdminProductService(ProductRepository products,
                                CategoryRepository categories,
@@ -67,7 +70,8 @@ public class AdminProductService {
                                ProductMediaRepository media,
                                ProductAttributeRepository attributes,
                                OrderDetailRepository orderDetails,
-                               FileStorageService files) {
+                               FileStorageService files,
+                               ProductCacheService productCache) {
         this.products = products;
         this.categories = categories;
         this.variants = variants;
@@ -75,6 +79,7 @@ public class AdminProductService {
         this.attributes = attributes;
         this.orderDetails = orderDetails;
         this.files = files;
+        this.productCache = productCache;
     }
 
     public Page<ProductRow> page(String q, Integer categoryId, Boolean active, String sort, int page, int size) {
@@ -153,6 +158,9 @@ public class AdminProductService {
             products.save(product);
             changed++;
         }
+        if (changed > 0) {
+            productCache.evictAll();
+        }
         return changed;
     }
 
@@ -165,6 +173,7 @@ public class AdminProductService {
                 .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy sản phẩm"));
         ProductForm form = new ProductForm();
         form.setId(product.getId());
+        form.setVersion(product.getVersion());
         form.setName(product.getName());
         form.setBrand(product.getBrand());
         form.setCategoryId(product.getCategory().getId());
@@ -179,6 +188,7 @@ public class AdminProductService {
         for (ProductVariant v : all) {
             ProductForm.VariantForm row = new ProductForm.VariantForm();
             row.setId(v.getId());
+            row.setVersion(v.getVersion());
             row.setSku(v.getSku());
             row.setSize(v.getSize());
             row.setShadeName(v.getShadeName());
@@ -237,6 +247,7 @@ public class AdminProductService {
                 media.save(imageMedia(product, form.getImageUrl().trim(), 1));
             }
         }
+        productCache.evictAll();
         return product.getId();
     }
 
@@ -246,6 +257,12 @@ public class AdminProductService {
         validateVariants(form);
         Product product = products.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy sản phẩm"));
+        // Khoa lac quan: form mo tu truoc, co nguoi luu truoc -> bao loi
+        // thay vi ghi de. JPA @Version cung chan o luc save neu van lot.
+        if (form.getVersion() != null && product.getVersion() != null
+                && !form.getVersion().equals(product.getVersion())) {
+            throw new OptimisticLockingFailureException("Sản phẩm đã được người khác cập nhật, vui lòng tải lại trang.");
+        }
         Category category = categories.findById(form.getCategoryId())
                 .orElseThrow(() -> new IllegalArgumentException("Loại sản phẩm không tồn tại"));
         applyProductFields(product, form, category);
@@ -265,6 +282,7 @@ public class AdminProductService {
         if (storedImage != null) {
             replaceMainMedia(product, storedImage);
         }
+        productCache.evictAll();
     }
 
     @Transactional
@@ -273,6 +291,7 @@ public class AdminProductService {
                 .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy sản phẩm"));
         product.setIsActive(!Boolean.TRUE.equals(product.getIsActive()));
         products.save(product);
+        productCache.evictAll();
     }
 
     @Transactional
@@ -284,6 +303,7 @@ public class AdminProductService {
         attributes.deleteByProductId(id);
         variants.deleteByProductId(id);
         products.deleteById(id);
+        productCache.evictAll();
     }
 
     private void applyProductFields(Product product, ProductForm form, Category category) {
@@ -342,6 +362,10 @@ public class AdminProductService {
             ProductForm.VariantForm row = rows.get(i);
             String sku = resolveVariantSku(row.getSku(), form, row.getId(), i);
             ProductVariant variant = row.getId() != null ? byId.get(row.getId()) : null;
+            if (variant != null && row.getVersion() != null && variant.getVersion() != null
+                    && !row.getVersion().equals(variant.getVersion())) {
+                throw new OptimisticLockingFailureException("Sản phẩm đã được người khác cập nhật, vui lòng tải lại trang.");
+            }
             if (variant == null) {
                 variant = new ProductVariant();
                 variant.setProduct(product);

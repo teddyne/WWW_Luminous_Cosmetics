@@ -3,13 +3,11 @@ package com.luminous.dto;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
 
-@Getter
-@Setter
-@NoArgsConstructor
+/**
+ * Getter/setter viet tay (khong dung Lombok) de file nay bien dich duoc
+ * ngay ca khi annotation processing cua Lombok bi tat o IntelliJ.
+ */
 public class ProfileForm {
 
     @NotBlank(message = "Họ tên không được để trống")
@@ -30,4 +28,22 @@ public class ProfileForm {
     private String birthDay;
     private String birthMonth;
     private String birthYear;
+
+    private Long version;
+
+    public Long getVersion() { return version; }
+    public void setVersion(Long version) { this.version = version; }
+
+    public String getFullName() { return fullName; }
+    public void setFullName(String fullName) { this.fullName = fullName; }
+    public String getPhone() { return phone; }
+    public void setPhone(String phone) { this.phone = phone; }
+    public String getGender() { return gender; }
+    public void setGender(String gender) { this.gender = gender; }
+    public String getBirthDay() { return birthDay; }
+    public void setBirthDay(String birthDay) { this.birthDay = birthDay; }
+    public String getBirthMonth() { return birthMonth; }
+    public void setBirthMonth(String birthMonth) { this.birthMonth = birthMonth; }
+    public String getBirthYear() { return birthYear; }
+    public void setBirthYear(String birthYear) { this.birthYear = birthYear; }
 }

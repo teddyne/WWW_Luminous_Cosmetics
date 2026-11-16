@@ -3,6 +3,8 @@ package com.luminous.controller.admin;
 import com.luminous.dto.OrderCreateForm;
 import com.luminous.security.CustomUserDetails;
 import com.luminous.service.admin.AdminOrderService;
+import jakarta.persistence.OptimisticLockException;
+import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
@@ -155,13 +157,20 @@ public class AdminOrderController {
     public String changeStatus(@PathVariable Integer id,
                                @RequestParam String newStatus,
                                @RequestParam(required = false) String cancelReason,
+                               @RequestParam(required = false) Long version,
                                RedirectAttributes redirect) {
         try {
-            service.changeStatus(id, newStatus, cancelReason);
+            service.changeStatus(id, newStatus, cancelReason, version);
             redirect.addFlashAttribute("toast", "Đã cập nhật trạng thái đơn hàng");
             redirect.addFlashAttribute("toastType", "success");
         } catch (IllegalArgumentException e) {
             redirect.addFlashAttribute("toast", e.getMessage());
+            redirect.addFlashAttribute("toastType", "error");
+        } catch (IllegalStateException e) {
+            redirect.addFlashAttribute("toast", e.getMessage());
+            redirect.addFlashAttribute("toastType", "error");
+        } catch (OptimisticLockingFailureException | OptimisticLockException e) {
+            redirect.addFlashAttribute("toast", "Đơn hàng đã được xử lý sang trạng thái khác.");
             redirect.addFlashAttribute("toastType", "error");
         }
         return "redirect:/admin/orders/" + id;

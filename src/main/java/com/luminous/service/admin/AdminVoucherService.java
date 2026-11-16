@@ -18,6 +18,7 @@ import com.luminous.repository.voucher.VoucherCategoryRepository;
 import com.luminous.repository.voucher.VoucherProductRepository;
 import com.luminous.repository.voucher.VoucherRepository;
 import com.luminous.repository.voucher.VoucherTypeRepository;
+import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -133,6 +134,7 @@ public class AdminVoucherService {
         form.setVoucherType(voucher.getVoucherType() == null
                 ? null : voucher.getVoucherType().getTypeName());
         form.setActive(voucher.getIsActive());
+        form.setVersion(voucher.getVersion());
         form.setCategoryIds(voucherCategories.findByVoucherId(id).stream()
                 .map(link -> link.getCategory().getId()).toList());
         form.setProductIds(voucherProducts.findByVoucherId(id).stream()
@@ -163,8 +165,13 @@ public class AdminVoucherService {
     public void update(Integer id, VoucherForm form) {
         Voucher voucher = vouchers.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy khuyến mãi"));
+        if (form.getVersion() != null && voucher.getVersion() != null
+                && !form.getVersion().equals(voucher.getVersion())) {
+            throw new OptimisticLockingFailureException("Khuyến mãi đã được người khác cập nhật, vui lòng tải lại trang.");
+        }
         validate(form, id);
         apply(voucher, form);
+        voucher.setVersion(voucher.getVersion() == null ? 1L : voucher.getVersion() + 1);
         vouchers.save(voucher);
         voucherCategories.deleteByVoucherId(id);
         voucherProducts.deleteByVoucherId(id);

@@ -13,6 +13,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import jakarta.persistence.Version;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -113,6 +114,11 @@ public class Orders {
     // Admin an don khoi danh sach (chi an khoi man hinh, van con trong DB).
     @Column(name = "adminHidden", nullable = false)
     private Boolean adminHidden = false;
+
+    // Khoa lac quan: 2 nhan vien cung doi trang thai -> nguoi sau bi bao xung dot.
+    @Version
+    @Column(name = "version", nullable = false)
+    private Long version = 0L;
 
     public boolean isTerminal() {
         return status == OrderStatus.COMPLETED || status == OrderStatus.CANCELLED

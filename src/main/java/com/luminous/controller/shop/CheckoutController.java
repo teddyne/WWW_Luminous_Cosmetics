@@ -24,6 +24,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.UUID;
 
 /**
  * Dat hang (chi tien mat COD trong dot nay): chon dia chi + gio giao +
@@ -115,6 +116,9 @@ public class CheckoutController {
         model.addAttribute("shippingText", CartLine.formatVnd(CheckoutService.SHIPPING_FEE));
         model.addAttribute("totalText", CartLine.formatVnd(afterDiscount));
         model.addAttribute("totalValue", afterDiscount);
+        // Khoa chong trung: sinh moi moi lan mo trang; bam Dat hang 2 lan
+        // (double-click / F5) cung chi tao 1 don.
+        model.addAttribute("idempotencyKey", UUID.randomUUID().toString());
         model.addAttribute("pointBalance", balance);
         model.addAttribute("pointsMax", pointsMax);
         return "checkout/checkout";
@@ -130,6 +134,8 @@ public class CheckoutController {
                          @RequestParam(defaultValue = "0") int usePoints,
                          @RequestParam(required = false) String paymentMethod,
                          @RequestParam(required = false) String voucherCode,
+                         @RequestParam(required = false) String idempotencyKey,
+                         @RequestParam(required = false) BigDecimal expectedTotal,
                          @RequestParam(required = false) String recipientName,
                          @RequestParam(required = false) String phone,
                          @RequestParam(required = false) String province,
@@ -267,7 +273,7 @@ public class CheckoutController {
         CheckoutService.PlacedOrder placed;
         try {
             placed = checkoutService.placeOrder(user, selectedVariantIds, addressId,
-                    deliverySlot, note, usePoints, method, code);
+                    deliverySlot, note, usePoints, method, code, idempotencyKey, expectedTotal);
         } catch (IllegalArgumentException e) {
             redirect.addFlashAttribute("checkoutError", e.getMessage());
             return "redirect:/checkout" + back;

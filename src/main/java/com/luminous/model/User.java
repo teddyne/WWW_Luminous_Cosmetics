@@ -67,6 +67,10 @@ public class User {
     @Column(name = "updatedAt")
     private LocalDateTime updatedAt;
 
+    /** So phien ban de chong ghi de khi 2 admin cung sua tai khoan (kiem tra tay trong AdminCustomerService, khong dung @Version vi User con duoc luu o nhieu luong khac: dang nhap, ho so, quiz, don hang). */
+    @Column(name = "version", nullable = false)
+    private Long version = 0L;
+
     public String roleName() {
         return role != null ? role.getName() : null;
     }

@@ -42,6 +42,11 @@ public class Product {
     @Column(name = "createdAt", nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
+    // Khoa lac quan: 2 admin cung sua -> nguoi luu sau bi bao xung dot.
+    @Version
+    @Column(name = "version", nullable = false)
+    private Long version = 0L;
+
     @OneToMany(mappedBy = "product", fetch = FetchType.LAZY)
     @OrderBy("price ASC")
     private List<ProductVariant> variants = new ArrayList<>();

@@ -2,12 +2,20 @@ package com.luminous.repository.product;
 
 import com.luminous.model.ProductVariant;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import java.util.List;
 import java.util.Optional;
 
 public interface ProductVariantRepository extends JpaRepository<ProductVariant, Integer> {
+
+    // Tru kho nguyen tu: chi tru khi con du hang; tra ve 0 dong = het hang
+    // (2 khach mua mon cuoi cung thi chi 1 nguoi tru duoc). Khong doc-sua-ghi.
+    @Modifying
+    @Query("UPDATE ProductVariant v SET v.stockQuantity = v.stockQuantity - :qty "
+            + "WHERE v.id = :id AND v.stockQuantity >= :qty")
+    int decrementStock(@Param("id") Integer id, @Param("qty") int qty);
 
     List<ProductVariant> findByProductIdAndIsActiveTrue(Integer productId);
 

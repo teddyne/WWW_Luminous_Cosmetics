@@ -292,8 +292,14 @@ public class AdminOrderService {
             detail.setTotalPrice(unit.multiply(BigDecimal.valueOf(quantity)));
             details.add(detail);
             subtotal = subtotal.add(detail.getTotalPrice());
-            variant.setStockQuantity(stock - quantity);
-            variants.save(variant);
+            // Tru kho nguyen tu: 0 dong = vua het hang (don online mua truoc).
+            if (variants.decrementStock(variantId, quantity) == 0) {
+                int left = variants.findById(variantId)
+                        .map(x -> x.getStockQuantity() == null ? 0 : x.getStockQuantity())
+                        .orElse(0);
+                throw new IllegalArgumentException("Sản phẩm " + variant.getProduct().getName()
+                        + " chỉ còn " + left);
+            }
         }
         SalesChannel channel = SalesChannel.from(form.getSalesChannel());
         if (channel == null) {
@@ -387,9 +393,16 @@ public class AdminOrderService {
                 skipped++;
                 continue;
             }
-            changeStatus(id, target,
-                    target == OrderStatus.CANCELLED ? "Đã hủy bởi quản trị viên" : null);
-            updated++;
+            try {
+                changeStatus(id, target,
+                        target == OrderStatus.CANCELLED ? "Đã hủy bởi quản trị viên" : null,
+                        order.getVersion());
+                updated++;
+            } catch (IllegalArgumentException | IllegalStateException
+                    | jakarta.persistence.OptimisticLockException e) {
+                // Don vua bi nguoi khac doi trang thai -> bo qua don nay.
+                skipped++;
+            }
         }
         return new int[]{updated, skipped};
     }
@@ -501,13 +514,32 @@ public class AdminOrderService {
         if (target == null) {
             throw new IllegalArgumentException("Trạng thái không hợp lệ");
         }
-        changeStatus(id, target, cancelReason);
+        changeStatus(id, target, cancelReason, null);
+    }
+
+    @Transactional
+    public void changeStatus(Integer id, String newStatus, String cancelReason, Long expectedVersion) {
+        OrderStatus target = OrderStatus.from(newStatus);
+        if (target == null) {
+            throw new IllegalArgumentException("Trạng thái không hợp lệ");
+        }
+        changeStatus(id, target, cancelReason, expectedVersion);
     }
 
     @Transactional
     public void changeStatus(Integer id, OrderStatus target, String cancelReason) {
+        changeStatus(id, target, cancelReason, null);
+    }
+
+    @Transactional
+    public void changeStatus(Integer id, OrderStatus target, String cancelReason, Long expectedVersion) {
         Orders order = orders.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy đơn hàng"));
+        // Khoa lac quan: trang chi tiet mo tu truoc, co nguoi doi truoc.
+        if (expectedVersion != null && order.getVersion() != null
+                && !expectedVersion.equals(order.getVersion())) {
+            throw new IllegalStateException("Đơn hàng đã được xử lý sang trạng thái khác.");
+        }
         if (!nextStatuses(order.getStatus()).contains(target)) {
             throw new IllegalArgumentException("Không thể chuyển từ "
                     + statusLabel(order.getStatus()) + " sang " + statusLabel(target));

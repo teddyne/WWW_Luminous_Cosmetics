@@ -3,6 +3,7 @@ package com.luminous.controller.admin;
 import com.luminous.dto.VoucherForm;
 import com.luminous.service.admin.AdminVoucherService;
 import jakarta.validation.Valid;
+import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -101,6 +102,10 @@ public class AdminVoucherController {
             service.update(id, form);
         } catch (IllegalArgumentException e) {
             model.addAttribute("formError", e.getMessage());
+            return editForm(id, model);
+        } catch (OptimisticLockingFailureException e) {
+            model.addAttribute("formError", e.getMessage());
+            model.addAttribute("versionConflict", true);
             return editForm(id, model);
         }
         redirect.addFlashAttribute("toast", "Đã cập nhật khuyến mãi");

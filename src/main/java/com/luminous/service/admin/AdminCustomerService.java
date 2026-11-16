@@ -13,6 +13,7 @@ import com.luminous.repository.order.OrderDetailRepository;
 import com.luminous.repository.order.OrderRepository;
 import com.luminous.repository.review.ReviewRepository;
 import com.luminous.service.ProductImage;
+import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
@@ -193,8 +194,13 @@ public class AdminCustomerService {
     }
 
     @Transactional
-    public void update(Integer id, String fullName, String phone, String roleName, Integer adminId) {
+    public void update(Integer id, String fullName, String phone, String roleName, Integer adminId,
+                       Long expectedVersion) {
         User user = find(id);
+        if (expectedVersion != null && user.getVersion() != null
+                && !expectedVersion.equals(user.getVersion())) {
+            throw new OptimisticLockingFailureException("Tài khoản đã được người khác cập nhật, vui lòng tải lại trang.");
+        }
         String cleanPhone = phone == null || phone.isBlank() ? null : phone.trim();
         if (cleanPhone != null && users.findByPhone(cleanPhone)
                 .map(other -> !other.getId().equals(id)).orElse(false)) {
@@ -208,6 +214,7 @@ public class AdminCustomerService {
         user.setFullName(fullName.trim());
         user.setPhone(cleanPhone);
         user.setRole(role);
+        user.setVersion(user.getVersion() == null ? 1L : user.getVersion() + 1);
         users.save(user);
     }
 
@@ -228,7 +235,8 @@ public class AdminCustomerService {
                 user.roleName(),
                 user.getCreatedAt(),
                 orders.countByUserId(user.getId()),
-                spent == null ? BigDecimal.ZERO : spent);
+                spent == null ? BigDecimal.ZERO : spent,
+                user.getVersion());
     }
 
     private static String blankToNull(String value) {

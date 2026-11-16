@@ -7,6 +7,7 @@ import com.luminous.model.enums.CategoryStatus;
 import com.luminous.repository.category.CategoryRepository;
 import com.luminous.repository.product.ProductRepository;
 import com.luminous.service.FileStorageService;
+import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -80,6 +81,7 @@ public class AdminCategoryService {
         form.setName(category.getName());
         form.setDescription(category.getDescription());
         form.setStatus(category.getStatus().name());
+        form.setVersion(category.getVersion());
         return form;
     }
 
@@ -101,6 +103,10 @@ public class AdminCategoryService {
     public void update(Integer id, CategoryForm form) {
         Category category = categories.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy loại sản phẩm"));
+        if (form.getVersion() != null && category.getVersion() != null
+                && !form.getVersion().equals(category.getVersion())) {
+            throw new OptimisticLockingFailureException("Loại sản phẩm đã được người khác cập nhật, vui lòng tải lại trang.");
+        }
         String name = form.getName().trim();
         if (!category.getName().equalsIgnoreCase(name) && categories.existsByNameIgnoreCase(name)) {
             throw new IllegalArgumentException("Tên loại sản phẩm đã tồn tại");
@@ -108,6 +114,7 @@ public class AdminCategoryService {
         category.setName(name);
         category.setDescription(blankToNull(form.getDescription()));
         category.setStatus(statusOrDefault(form.getStatus()));
+        category.setVersion(category.getVersion() == null ? 1L : category.getVersion() + 1);
         categories.save(category);
         files.ensureCategoryFolder(name);
     }
@@ -136,7 +143,8 @@ public class AdminCategoryService {
                 category.getDescription(),
                 category.getStatus(),
                 products.countByCategoryId(category.getId()),
-                category.getCreatedAt());
+                category.getCreatedAt(),
+                category.getVersion());
     }
 
     private static CategoryStatus statusOrDefault(String code) {

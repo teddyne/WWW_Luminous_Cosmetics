@@ -36,6 +36,10 @@ public class Category {
     @Column(name = "status", nullable = false, length = 20)
     private CategoryStatus status = CategoryStatus.ACTIVE;
 
+    /** So phien ban de chong ghi de khi 2 admin cung sua (kiem tra tay trong service, khong dung @Version de khoi anh huong cac luong luu khac). */
+    @Column(name = "version", nullable = false)
+    private Long version = 0L;
+
     public boolean isActive() {
         return status == CategoryStatus.ACTIVE;
     }

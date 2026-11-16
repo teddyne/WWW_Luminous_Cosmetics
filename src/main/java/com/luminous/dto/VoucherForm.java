@@ -73,6 +73,8 @@ public class VoucherForm {
 
     private Boolean active = true;
 
+    private Long version;
+
     /** Loai the xem truoc (shipping/percent/fixed/special) tu du lieu form. */
     public String previewKind() {
         return Voucher.badgeKind(voucherType,

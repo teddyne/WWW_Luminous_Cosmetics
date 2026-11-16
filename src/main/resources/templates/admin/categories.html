@@ -60,8 +60,8 @@
               <td>
                 <div class="admin-row-actions">
                   <button type="button" class="admin-action-btn" title="Chỉnh sửa"
-                          th:data-id="${cat.id}" th:data-name="${cat.name}" th:data-description="${cat.description}" th:data-status="${cat.status}"
-                          onclick="openCategoryModal('/admin/categories/' + this.dataset.id, this.dataset.id, this.dataset.name, this.dataset.description, this.dataset.status)">
+                          th:data-id="${cat.id}" th:data-name="${cat.name}" th:data-description="${cat.description}" th:data-status="${cat.status}" th:data-version="${cat.version}"
+                          onclick="openCategoryModal('/admin/categories/' + this.dataset.id, this.dataset.id, this.dataset.name, this.dataset.description, this.dataset.status, this.dataset.version)">
                     <i class="bi bi-pencil"></i>
                   </button>
                   <form th:action="@{|/admin/categories/${cat.id}/toggle|}" method="post" class="m-0">
@@ -100,6 +100,7 @@
       <form id="categoryModalForm" th:action="${categoryModalAction ?: '/admin/categories'}" th:object="${categoryForm}" method="post">
         <div class="modal-body">
           <input type="hidden" th:if="${_csrf != null}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+          <input type="hidden" id="categoryVersion" th:field="*{version}"/>
           <div class="mb-3">
             <label class="form-label" for="categoryIdText">Mã loại sản phẩm</label>
             <input type="text" id="categoryIdText" class="form-control" value="Tự động" disabled/>

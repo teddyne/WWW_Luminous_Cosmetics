@@ -1,16 +1,15 @@
 package com.luminous.dto;
 
 import jakarta.validation.constraints.*;
-import lombok.Getter;
-import lombok.Setter;
 
 /**
  * Khop dung cac o tren form Dang ky theo Figma:
  * identifier = "email hoac so dien thoai" (1 o duy nhat),
  * mat khau, ho ten, captcha, ngay/thang/nam sinh, gioi tinh, 2 checkbox dieu khoan.
+ *
+ * Getter/setter viet tay (khong dung Lombok) de file nay bien dich duoc
+ * ngay ca khi annotation processing cua Lombok bi tat o IntelliJ.
  */
-@Getter
-@Setter
 public class RegisterForm {
     @NotBlank(message = "Vui lòng nhập email hoặc số điện thoại")
     @Size(max = 100, message = "Email/số điện thoại tối đa 100 ký tự")
@@ -55,4 +54,27 @@ public class RegisterForm {
 
     @AssertTrue(message = "Bạn cần đồng ý với chính sách của Luminous")
     private boolean policyAccepted;
+
+    public String getIdentifier() { return identifier; }
+    public void setIdentifier(String identifier) { this.identifier = identifier; }
+    public String getPassword() { return password; }
+    public void setPassword(String password) { this.password = password; }
+    public String getFullName() { return fullName; }
+    public void setFullName(String fullName) { this.fullName = fullName; }
+    public String getCaptcha() { return captcha; }
+    public void setCaptcha(String captcha) { this.captcha = captcha; }
+    public String getVerificationCode() { return verificationCode; }
+    public void setVerificationCode(String verificationCode) { this.verificationCode = verificationCode; }
+    public String getBirthDay() { return birthDay; }
+    public void setBirthDay(String birthDay) { this.birthDay = birthDay; }
+    public String getBirthMonth() { return birthMonth; }
+    public void setBirthMonth(String birthMonth) { this.birthMonth = birthMonth; }
+    public String getBirthYear() { return birthYear; }
+    public void setBirthYear(String birthYear) { this.birthYear = birthYear; }
+    public String getGender() { return gender; }
+    public void setGender(String gender) { this.gender = gender; }
+    public boolean isTermsAccepted() { return termsAccepted; }
+    public void setTermsAccepted(boolean termsAccepted) { this.termsAccepted = termsAccepted; }
+    public boolean isPolicyAccepted() { return policyAccepted; }
+    public void setPolicyAccepted(boolean policyAccepted) { this.policyAccepted = policyAccepted; }
 }

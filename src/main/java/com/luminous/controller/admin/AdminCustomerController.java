@@ -6,6 +6,7 @@ import com.luminous.security.CustomUserDetails;
 import com.luminous.service.admin.AdminCustomerService;
 import java.math.BigDecimal;
 import jakarta.validation.Valid;
+import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -100,6 +101,7 @@ public class AdminCustomerController {
             ProfileForm form = new ProfileForm();
             form.setFullName(customer.fullName());
             form.setPhone(customer.phone());
+            form.setVersion(customer.version());
             model.addAttribute("profileForm", form);
         }
         model.addAttribute("activeMenu", "customers");
@@ -133,8 +135,13 @@ public class AdminCustomerController {
             return detail(id, model);
         }
         try {
-            service.update(id, form.getFullName(), form.getPhone(), roleName, admin.getUser().getId());
+            service.update(id, form.getFullName(), form.getPhone(), roleName, admin.getUser().getId(),
+                    form.getVersion());
         } catch (IllegalArgumentException e) {
+            redirect.addFlashAttribute("toast", e.getMessage());
+            redirect.addFlashAttribute("toastType", "error");
+            return "redirect:/admin/customers/" + id;
+        } catch (OptimisticLockingFailureException e) {
             redirect.addFlashAttribute("toast", e.getMessage());
             redirect.addFlashAttribute("toastType", "error");
             return "redirect:/admin/customers/" + id;

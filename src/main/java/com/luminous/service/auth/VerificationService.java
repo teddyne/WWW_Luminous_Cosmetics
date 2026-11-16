@@ -15,28 +15,6 @@ import java.time.LocalDateTime;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-/**
- * Ma xac thuc 6 chu so gui qua email hoac SMS.
- *
- * <p>Nguyen tac "gmail/sdt co that": khong co cach nao kiem tra mot dia chi
- * co ton tai hay khong ma khong gui thu toi no. Vi vay flow dung la:
- * gui ma toi dung dia chi nguoi dung nhap, chi khi nao ho nhap dung ma
- * trong mail/tin nhan thi moi cho dang ky / dat lai mat khau. Nhap sai
- * dia chi thi khong bao gio nhan duoc ma, khong the qua buoc xac thuc.</p>
- *
- * <p>Email: gui that qua SMTP (JavaMailSender) khi da cau hinh
- * spring.mail.* trong application.properties. Chua cau hinh SMTP thi ma
- * chi ghi ra log server (che do demo cho bai tap) va tin nhan tra ve
- * noi ro dieu nay — khong bao gio hien ma len giao dien web.</p>
- *
- * <p>SMS: gui qua {@link SmsSender}. Ban giao kem {@link LoggingSmsSender}
- * chi ghi log (khong co SMS that mien phi). Muon gui SMS that, viet mot
- * lop implements SmsSender goi Twilio / Viettel SMS / eSMS..., dang ky
- * no thanh bean, ma se tu chay qua do ma khong can sua code khac.</p>
- *
- * <p>Ma luu trong bo nho (khong luu DB): het han sau 5 phut, sai toi da
- * 5 lan thi huy, gui lai cach nhau it nhat 60 giay.</p>
- */
 @Service
 public class VerificationService {
 
@@ -57,15 +35,13 @@ public class VerificationService {
     }
 
     private final Map<String, CodeRecord> codes = new ConcurrentHashMap<>();
-    private final SmsSender smsSender;
     private final ObjectProvider<JavaMailSender> mailSenders;
     private final String mailFrom;
     private final SecureRandom random = new SecureRandom();
 
-    public VerificationService(SmsSender smsSender,
+    public VerificationService(
                                ObjectProvider<JavaMailSender> mailSenders,
                                @Value("${spring.mail.username:}") String mailFrom) {
-        this.smsSender = smsSender;
         this.mailSenders = mailSenders;
         this.mailFrom = mailFrom == null ? "" : mailFrom.trim();
     }
@@ -99,7 +75,7 @@ public class VerificationService {
         if (isEmail(identifier)) {
             return sendByEmail(normalize(identifier), code, purpose);
         }
-        return sendBySms(normalize(identifier), code, purpose);
+        return new SendResult(false, "SMS", "Chỉ hỗ trợ gửi mã qua email");
     }
 
     private SendResult sendByEmail(String email, String code, Purpose purpose) {
@@ -135,17 +111,7 @@ public class VerificationService {
         return new SendResult(true, "EMAIL", "Đã gửi mã xác thực 6 chữ số tới email của bạn (hiệu lực 5 phút)");
     }
 
-    private SendResult sendBySms(String phone, String code, Purpose purpose) {
-        String text = "Ma xac thuc Luminous cua ban la: " + code + ". Ma co hieu luc trong 5 phut.";
-        try {
-            smsSender.sendSms(phone, text);
-        } catch (RuntimeException e) {
-            log.warn("Gui SMS OTP toi {} that bai: {}", phone, e.getMessage());
-            return new SendResult(false, "SMS", "Không gửi được SMS lúc này, vui lòng thử lại sau");
-        }
-        return new SendResult(true, "SMS",
-                "Đã gửi mã xác thực 6 chữ số tới số điện thoại của bạn (hiệu lực 5 phút)");
-    }
+
 
     /**
      * Doi chieu ma. Dung thi tieu thu ma ngay (khong dung lai duoc lan 2).

@@ -3,7 +3,9 @@ package com.luminous.controller.admin;
 import com.luminous.dto.ProductForm;
 import com.luminous.service.FileStorageService;
 import com.luminous.service.admin.AdminProductService;
+import jakarta.persistence.OptimisticLockException;
 import jakarta.validation.Valid;
+import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -109,6 +111,9 @@ public class AdminProductController {
         } catch (IllegalArgumentException e) {
             model.addAttribute("formError", e.getMessage());
             return createForm(model);
+        } catch (OptimisticLockingFailureException | OptimisticLockException e) {
+            model.addAttribute("formError", "Sản phẩm đã được người khác cập nhật, vui lòng tải lại trang.");
+            return createForm(model);
         }
     }
 
@@ -143,6 +148,10 @@ public class AdminProductController {
             service.update(id, form, image, images, video);
         } catch (IllegalArgumentException e) {
             model.addAttribute("formError", e.getMessage());
+            return editForm(id, model);
+        } catch (OptimisticLockingFailureException | OptimisticLockException e) {
+            model.addAttribute("formError", "Sản phẩm đã được người khác cập nhật, vui lòng tải lại trang.");
+            model.addAttribute("versionConflict", true);
             return editForm(id, model);
         }
         redirect.addFlashAttribute("toast", "Đã cập nhật sản phẩm");

@@ -3,6 +3,7 @@ package com.luminous.controller.admin;
 import com.luminous.dto.CategoryForm;
 import com.luminous.service.admin.AdminCategoryService;
 import jakarta.validation.Valid;
+import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -91,6 +92,10 @@ public class AdminCategoryController {
             model.addAttribute("showCategoryModal", true);
             model.addAttribute("categoryModalAction", "/admin/categories/" + id);
             return list(q, status, page, size, model);
+        } catch (OptimisticLockingFailureException e) {
+            redirect.addFlashAttribute("toast", e.getMessage());
+            redirect.addFlashAttribute("toastType", "error");
+            return "redirect:/admin/categories";
         }
         redirect.addFlashAttribute("toast", "Đã cập nhật loại sản phẩm");
         redirect.addFlashAttribute("toastType", "success");
