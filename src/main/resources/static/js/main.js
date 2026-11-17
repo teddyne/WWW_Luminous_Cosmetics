@@ -44,8 +44,45 @@ function toggleMobileSearch() {
   if (box) box.classList.toggle('d-none');
 }
 
+// Dem nguoc Flash Sale: doc muc tieu tu data-countdown-target (ISO local),
+// cap nhat tung giay; an o Ngay khi con duoi 24 gio.
+function startFlashCountdown() {
+  var box = document.querySelector('[data-countdown-target]');
+  if (!box) return;
+  var target = new Date(box.getAttribute('data-countdown-target')).getTime();
+  if (isNaN(target)) return;
+  var pad = function (n) { return String(n).padStart(2, '0'); };
+  var setText = function (id, value) {
+    var el = document.getElementById(id);
+    if (el) el.textContent = value;
+  };
+  var started = false;
+  var tick = function () {
+    var diff = Math.max(0, target - Date.now());
+    var days = Math.floor(diff / 86400000);
+    var hours = Math.floor((diff % 86400000) / 3600000);
+    var mins = Math.floor((diff % 3600000) / 60000);
+    var secs = Math.floor((diff % 60000) / 1000);
+    setText('cd-days', pad(days));
+    setText('cd-hours', pad(hours));
+    setText('cd-mins', pad(mins));
+    setText('cd-secs', pad(secs));
+    var daysBox = document.getElementById('cd-days-box');
+    if (daysBox) daysBox.style.display = days > 0 ? '' : 'none';
+    if (diff <= 0) {
+      clearInterval(timer);
+      if (started) setTimeout(function () { location.reload(); }, 1000);
+      return;
+    }
+    started = true;
+  };
+  var timer = setInterval(tick, 1000);
+  tick();
+}
+
 document.addEventListener('DOMContentLoaded', function () {
   showLogoutModal();
+  startFlashCountdown();
   document.querySelectorAll('a.page-transition-link').forEach(function (link) {
     link.addEventListener('click', function (e) {
       const href = link.getAttribute('href');

@@ -148,3 +148,54 @@
 .skin-quiz-cta-text { max-width: 720px; margin: 0 auto 8px; color: #5a6b58; font-size: 16px; line-height: 1.8; margin-bottom: 20px }
 .skin-quiz-cta-btn { display: inline-flex; align-items: center; gap: 8px; background: #3f9e4d; color: #fff; border-radius: 999px; padding: 15px 20px; font-weight: 700; font-size: 15px; text-decoration: none; text-transform: uppercase; letter-spacing: 1px; margin-top: 20px; transition: background .2s ease, transform .2s ease; white-space: nowrap; }
 .skin-quiz-cta-btn:hover { background: var(--lum-green-dark); color: #fff; transform: translateY(-2px); }
+
+/* ---------- Flash Sale / Dai tiec uu dai (cam, giong Shopee) ---------- */
+.flash-sale-section { background: var(--lum-beige) }
+.flash-header { display: flex; align-items: center; gap: 18px; flex-wrap: wrap; background: linear-gradient(90deg, #ff7a18, #f85606 55%, #ee4d2d); border-radius: 18px; padding: 14px 20px; color: #fff; box-shadow: 0 10px 24px rgba(238, 77, 45, .28); margin-bottom: 20px; }
+.flash-header-title { display: flex; align-items: center; gap: 10px; min-width: 0; }
+.flash-header-title > i { font-size: 28px; color: #ffe14d; }
+.flash-header-title h2 { font-size: clamp(20px, 2.6vw, 28px); font-weight: 800; color: #fff; letter-spacing: .2px; white-space: nowrap; }
+.flash-sale-name { font-size: 13px; font-weight: 600; background: rgba(255, 255, 255, .22); border: 1px solid rgba(255, 255, 255, .35); padding: 4px 10px; border-radius: 999px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 220px; }
+.flash-countdown { display: flex; align-items: center; gap: 6px; margin-left: auto; }
+.flash-countdown-label { font-size: 13px; font-weight: 600; opacity: .95; margin-right: 2px; white-space: nowrap; }
+.flash-countdown-box { display: inline-flex; flex-direction: column; align-items: center; justify-content: center; min-width: 46px; padding: 4px 6px 3px; background: rgba(0, 0, 0, .28); border-radius: 8px; line-height: 1; }
+.flash-countdown-box > span { font-size: 20px; font-weight: 800; font-variant-numeric: tabular-nums; }
+.flash-countdown-box > small { font-size: 10px; opacity: .85; margin-top: 2px; }
+.flash-countdown-sep { font-size: 18px; font-weight: 800; opacity: .9; }
+.flash-see-all { color: #fff; font-weight: 700; font-size: 14px; text-decoration: none; white-space: nowrap; display: inline-flex; align-items: center; gap: 4px; }
+.flash-see-all:hover { color: #ffe14d; }
+.flash-banner { width: 100%; max-height: 220px; object-fit: cover; border-radius: 18px; margin-bottom: 20px; box-shadow: 0 8px 20px rgba(0, 0, 0, .10); }
+.flash-description { color: #6c4a2f; font-size: 15px; margin: -6px 0 18px; }
+
+/* The flash sale: tem %, gia flash, thanh tien do. */
+.flash-card { border-color: #ffe1d2; }
+.flash-card:hover { border-color: #f85606; background: #fff7f2; }
+.flash-card-image { position: relative; display: block; }
+.flash-discount-badge { position: absolute; top: 10px; left: 10px; z-index: 2; background: #ee4d2d; color: #fff; font-size: 13px; font-weight: 800; padding: 4px 9px; border-radius: 8px 8px 8px 2px; box-shadow: 0 4px 10px rgba(238, 77, 45, .35); }
+.flash-price { color: #ee4d2d; font-size: 19px; font-weight: 800; line-height: 1.2; }
+.flash-add-cart { background: #f85606; border-color: #f85606; }
+.flash-add-cart:hover { background: #ee4d2d; border-color: #ee4d2d; }
+.flash-progress-label { display: flex; justify-content: space-between; gap: 8px; font-size: 12.5px; font-weight: 700; color: #f85606; margin-bottom: 5px; }
+.flash-progress-label.hot { color: #d92d20; }
+.flash-progress-track { height: 8px; background: #ffe0d3; border-radius: 999px; overflow: hidden; }
+.flash-progress-fill { height: 100%; background: linear-gradient(90deg, #ffb03a, #f85606); border-radius: 999px; transition: width .4s ease; }
+
+/* Trang /flash-sale: luoi the 4 cot. */
+.flash-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; align-items: stretch; }
+.flash-grid .product-card { height: 100%; }
+
+@media (max-width: 992px) {
+  .flash-grid { grid-template-columns: repeat(3, 1fr); }
+}
+@media (max-width: 768px) {
+  .flash-header { gap: 10px; padding: 12px 14px; }
+  .flash-countdown { margin-left: 0; }
+  .flash-sale-name { max-width: 140px; }
+  .flash-countdown-box { min-width: 40px; }
+  .flash-countdown-box > span { font-size: 17px; }
+  .flash-grid { grid-template-columns: repeat(2, 1fr); gap: 12px; }
+}
+@media (max-width: 480px) {
+  .flash-grid { grid-template-columns: 1fr 1fr; gap: 10px; }
+  .flash-price { font-size: 16px; }
+}

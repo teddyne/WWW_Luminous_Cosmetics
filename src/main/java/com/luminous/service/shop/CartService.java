@@ -16,6 +16,7 @@ import com.luminous.repository.product.ProductVariantRepository;
 import com.luminous.repository.voucher.VoucherCategoryRepository;
 import com.luminous.repository.voucher.VoucherProductRepository;
 import com.luminous.repository.voucher.VoucherRepository;
+import com.luminous.service.flashsale.FlashSaleService;
 import com.luminous.service.product.ProductService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -51,6 +52,7 @@ public class CartService {
     private final VoucherRepository vouchers;
     private final VoucherCategoryRepository voucherCategories;
     private final VoucherProductRepository voucherProducts;
+    private final FlashSaleService flashSales;
 
     public CartService(CartRepository carts,
                        CartItemRepository cartItems,
@@ -58,7 +60,8 @@ public class CartService {
                        ProductService productService,
                        VoucherRepository vouchers,
                        VoucherCategoryRepository voucherCategories,
-                       VoucherProductRepository voucherProducts) {
+                       VoucherProductRepository voucherProducts,
+                       FlashSaleService flashSales) {
         this.carts = carts;
         this.cartItems = cartItems;
         this.variants = variants;
@@ -66,6 +69,19 @@ public class CartService {
         this.vouchers = vouchers;
         this.voucherCategories = voucherCategories;
         this.voucherProducts = voucherProducts;
+        this.flashSales = flashSales;
+    }
+
+    private int flashCap(Integer userId, Integer variantId, int stock) {
+        return flashSales.flashPrice(variantId)
+                .filter(flash -> flash.maxPerCustomer() != null)
+                .map(flash -> {
+                    long bought = userId == null ? 0
+                            : flashSales.boughtByUser(userId, variantId,
+                                    flashSales.getOrThrow(flash.saleId()));
+                    return Math.min(stock, Math.max(0, flash.maxPerCustomer() - (int) bought));
+                })
+                .orElse(stock);
     }
 
     /** Tong tien gio hang: tam tinh - giam gia, khong am. */
@@ -131,11 +147,15 @@ public class CartService {
         }
         Cart cart = getOrCreateCart(user);
         int wanted = Math.max(1, quantity);
-        int allowed = Math.min(wanted, variant.getStockQuantity());
+        int cap = flashCap(user.getId(), variantId, variant.getStockQuantity());
+        int allowed = Math.min(wanted, cap);
+        if (allowed <= 0) {
+            return false;
+        }
         cartItems.findByCartIdAndVariantId(cart.getId(), variantId)
                 .ifPresentOrElse(
                         item -> {
-                            int next = Math.min(item.getQuantity() + allowed, variant.getStockQuantity());
+                            int next = Math.min(item.getQuantity() + allowed, cap);
                             item.setQuantity(next);
                             cartItems.save(item);
                         },
@@ -168,7 +188,8 @@ public class CartService {
             cartItems.delete(item);
             return true;
         }
-        int next = Math.min(Math.max(1, quantity), variant.getStockQuantity());
+        int cap = flashCap(user.getId(), variantId, variant.getStockQuantity());
+        int next = Math.min(Math.max(1, quantity), Math.max(1, cap));
         item.setQuantity(next);
         cartItems.save(item);
         return true;
@@ -246,9 +267,13 @@ public class CartService {
             return false;
         }
         java.util.LinkedHashMap<Integer, Integer> map = guestCartMap(session);
-        int allowed = Math.min(Math.max(1, quantity), variant.getStockQuantity());
+        int cap = flashCap(null, variantId, variant.getStockQuantity());
+        int allowed = Math.min(Math.max(1, quantity), cap);
+        if (allowed <= 0) {
+            return false;
+        }
         map.merge(variantId, allowed,
-                (oldQty, add) -> Math.min(oldQty + add, variant.getStockQuantity()));
+                (oldQty, add) -> Math.min(oldQty + add, cap));
         return true;
     }
 
@@ -264,7 +289,8 @@ public class CartService {
             map.remove(variantId);
             return;
         }
-        map.put(variantId, Math.min(Math.max(1, quantity), found.get().getStockQuantity()));
+        map.put(variantId, Math.min(Math.max(1, quantity),
+                Math.max(1, flashCap(null, variantId, found.get().getStockQuantity()))));
     }
 
     public void removeGuestItem(jakarta.servlet.http.HttpSession session, Integer variantId) {

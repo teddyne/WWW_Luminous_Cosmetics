@@ -1,15 +1,21 @@
 package com.luminous.controller.home;
 
+import com.luminous.dto.FlashSaleCard;
 import com.luminous.dto.ProductCard;
+import com.luminous.model.FlashSale;
 import com.luminous.model.enums.CategoryStatus;
 import com.luminous.repository.blog.ArticleRepository;
 import com.luminous.repository.category.CategoryRepository;
+import com.luminous.service.flashsale.FlashSaleCardBuilder;
+import com.luminous.service.flashsale.FlashSaleService;
 import com.luminous.service.product.ProductService;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -18,12 +24,17 @@ public class HomeController {
     private final ProductService productService;
     private final CategoryRepository categories;
     private final ArticleRepository articles;
+    private final FlashSaleService flashSales;
+    private final FlashSaleCardBuilder flashCardBuilder;
 
     public HomeController(ProductService productService, CategoryRepository categories,
-                          ArticleRepository articles) {
+                          ArticleRepository articles, FlashSaleService flashSales,
+                          FlashSaleCardBuilder flashCardBuilder) {
         this.productService = productService;
         this.categories = categories;
         this.articles = articles;
+        this.flashSales = flashSales;
+        this.flashCardBuilder = flashCardBuilder;
     }
 
     @GetMapping("/")
@@ -66,6 +77,16 @@ public class HomeController {
         model.addAttribute("dealProducts", deals);
         model.addAttribute("newProducts", newest);
         model.addAttribute("bestProducts", best);
+        Optional<FlashSale> flashSale = flashSales.showcaseSale();
+        model.addAttribute("flashSale", flashSale.orElse(null));
+        List<FlashSaleCard> flashCards = flashSale.map(flashCardBuilder::build).orElse(List.of());
+        model.addAttribute("flashCards", flashCards);
+        if (flashSale.isPresent()) {
+            LocalDateTime now = LocalDateTime.now();
+            boolean live = flashSale.get().isLive(now);
+            model.addAttribute("countdownTarget", live ? flashSale.get().getEndAt() : flashSale.get().getStartAt());
+            model.addAttribute("countdownLabel", live ? "Kết thúc sau" : "Bắt đầu sau");
+        }
         model.addAttribute("latestArticles", articles.findByIsPublishedTrueOrderByPublishedAtDesc()
                 .stream().limit(4).toList());
         // So lieu that cho khoi "Ve chung toi" tren trang chu.

@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="vi">
+<head th:replace="~{admin/fragments :: head('Flash Sale')}"></head>
+<body>
+<div class="admin-shell">
+  <div th:replace="~{admin/fragments :: sidebar('flash-sales')}"></div>
+  <div class="admin-overlay" onclick="toggleSidebar(false)"></div>
+  <main class="admin-main">
+    <div th:replace="~{admin/fragments :: topbar('Flash Sale')}"></div>
+    <div th:replace="~{admin/fragments :: toast}"></div>
+
+    <form th:action="@{/admin/flash-sales}" method="get" class="admin-toolbar">
+      <div class="admin-search-group">
+        <input type="text" name="q" class="form-control" placeholder="Tìm tên chương trình" th:value="${q}"/>
+        <button type="submit" class="btn btn-soft"><i class="bi bi-search"></i> Tìm kiếm</button>
+      </div>
+      <select name="display" class="form-select" style="width: 210px;" onchange="this.form.submit()">
+        <option value="">Tất cả trạng thái</option>
+        <option value="DRAFT" th:selected="${display == 'DRAFT'}">Nháp</option>
+        <option value="UPCOMING" th:selected="${display == 'UPCOMING'}">Sắp diễn ra</option>
+        <option value="LIVE" th:selected="${display == 'LIVE'}">Đang diễn ra</option>
+        <option value="ENDED" th:selected="${display == 'ENDED'}">Đã kết thúc</option>
+        <option value="PAUSED" th:selected="${display == 'PAUSED'}">Tạm dừng</option>
+      </select>
+      <span class="flex-grow-1"></span>
+      <a th:href="@{/admin/flash-sales}" class="btn btn-light"><i class="bi bi-arrow-counterclockwise"></i> Đặt lại</a>
+      <a th:href="@{/admin/flash-sales/new}" class="btn btn-green"><i class="bi bi-plus-lg"></i> Tạo chương trình mới</a>
+    </form>
+
+    <div class="admin-card">
+      <div class="table-responsive">
+        <table class="table admin-table">
+          <thead>
+            <tr><th>Chương trình</th><th>Thời gian</th><th>Sản phẩm</th><th>Trạng thái</th><th class="text-end">Hành động</th></tr>
+          </thead>
+          <tbody>
+            <tr th:each="sale : ${sales}">
+              <td>
+                <div class="d-flex align-items-center gap-2">
+                  <img th:if="${sale.bannerUrl != null}" th:src="${sale.bannerUrl}" class="flash-list-banner" th:alt="${sale.name}"/>
+                  <div>
+                    <div class="admin-name" th:text="${sale.name}">Flash Sale 11.11</div>
+                    <div class="admin-sub" th:if="${sale.description != null}" th:text="${sale.description}">Mô tả chương trình</div>
+                  </div>
+                </div>
+              </td>
+              <td>
+                <div th:text="${#temporals.format(sale.startAt, 'dd/MM/yyyy HH:mm')}">01/11/2026 00:00</div>
+                <div class="admin-sub" th:text="'→ ' + ${#temporals.format(sale.endAt, 'dd/MM/yyyy HH:mm')}">→ 02/11/2026 00:00</div>
+              </td>
+              <td th:text="${itemCounts[sale.id]} + ' sản phẩm'">3 sản phẩm</td>
+              <td th:with="st=${sale.displayStatus(now)}">
+                <span class="badge-status"
+                      th:classappend="${st == 'Đang diễn ra'} ? ' st-running' : (${st == 'Đã kết thúc'} ? ' st-expired' : (${st == 'Sắp diễn ra'} ? ' st-upcoming' : ' st-paused'))"
+                      th:text="${st}">Nháp</span>
+              </td>
+              <td>
+                <div class="admin-row-actions">
+                  <a th:href="@{|/admin/flash-sales/${sale.id}/edit|}" class="admin-action-btn" title="Chỉnh sửa"><i class="bi bi-pencil"></i></a>
+                  <form th:if="${sale.status.name() == 'PUBLISHED' or sale.status.name() == 'PAUSED'}"
+                        th:action="@{|/admin/flash-sales/${sale.id}/toggle|}" method="post" class="m-0">
+                    <input type="hidden" th:if="${_csrf != null}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                    <button type="submit" class="admin-action-btn" th:title="${sale.status.name() == 'PUBLISHED'} ? 'Tạm dừng' : 'Mở lại'">
+                      <i th:class="${sale.status.name() == 'PUBLISHED'} ? 'bi bi-pause-circle' : 'bi bi-play-circle'"></i>
+                    </button>
+                  </form>
+                  <button type="button" class="admin-action-btn danger" title="Xóa"
+                          th:data-url="|/admin/flash-sales/${sale.id}/delete|"
+                          th:data-message="|Xóa chương trình ${sale.name}? Chỉ xóa được khi chương trình chưa phát sinh đơn hàng.|"
+                          onclick="openConfirm(this.dataset.url, this.dataset.message)">
+                    <i class="bi bi-trash"></i>
+                  </button>
+                </div>
+              </td>
+            </tr>
+            <tr th:if="${#lists.isEmpty(sales)}">
+              <td colspan="5"><div class="empty-state"><i class="bi bi-lightning-charge"></i>Chưa có chương trình Flash Sale nào</div></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div th:replace="~{admin/fragments :: pager(${page}, ${baseUrl}, ${pageQuery})}"></div>
+    </div>
+  </main>
+</div>
+<div th:replace="~{admin/fragments :: confirmModal}"></div>
+<div th:replace="~{admin/fragments :: scripts}"></div>
+</body>
+</html>

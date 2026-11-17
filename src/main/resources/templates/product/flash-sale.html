@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="vi" th:with="pageCss='home.css'">
+<head th:replace="~{layout/header :: head('Flash Sale')}"></head>
+<body>
+<div th:replace="~{layout/header :: header}"></div>
+
+<main class="container py-5">
+  <th:block th:if="${sale != null}">
+    <div class="flash-header mb-4">
+      <div class="flash-header-title">
+        <i class="bi bi-lightning-charge-fill"></i>
+        <h2 class="mb-0">Đại tiệc ưu đãi</h2>
+        <span class="flash-sale-name" th:text="${sale.name}">Flash Sale</span>
+      </div>
+      <div class="flash-countdown" th:if="${countdownTarget != null}"
+           th:attr="data-countdown-target=${#temporals.format(countdownTarget, 'yyyy-MM-dd''T''HH:mm:ss')}">
+        <span class="flash-countdown-label" th:text="${countdownLabel}">Kết thúc sau</span>
+        <span class="flash-countdown-box" id="cd-days-box"><span id="cd-days">00</span><small>Ngày</small></span>
+        <span class="flash-countdown-sep">:</span>
+        <span class="flash-countdown-box"><span id="cd-hours">00</span><small>Giờ</small></span>
+        <span class="flash-countdown-sep">:</span>
+        <span class="flash-countdown-box"><span id="cd-mins">00</span><small>Phút</small></span>
+        <span class="flash-countdown-sep">:</span>
+        <span class="flash-countdown-box"><span id="cd-secs">00</span><small>Giây</small></span>
+      </div>
+    </div>
+    <img th:if="${sale.bannerUrl != null}" th:src="${sale.bannerUrl}" class="flash-banner" th:alt="${sale.name}"/>
+    <p th:if="${sale.description != null}" class="flash-description" th:text="${sale.description}"></p>
+    <div class="flash-grid">
+      <th:block th:each="item : ${flashCards}"><div th:replace="~{layout/header :: flashCard(${item})}"></div></th:block>
+    </div>
+    <p th:if="${#lists.isEmpty(flashCards)}" class="text-muted text-center py-5">Chương trình chưa có sản phẩm nào.</p>
+  </th:block>
+  <th:block th:unless="${sale != null}">
+    <div class="text-center py-5">
+      <div class="mb-3" style="font-size:48px;color:var(--lum-muted)"><i class="bi bi-lightning-charge"></i></div>
+      <h2 class="fw-bold mb-2">Hiện chưa có chương trình Flash Sale nào</h2>
+      <p class="text-muted mb-4">Bạn quay lại sau để săn ưu đãi nhé.</p>
+      <a th:href="@{/products}" class="btn btn-lum">Xem sản phẩm</a>
+    </div>
+  </th:block>
+</main>
+
+<div th:replace="~{layout/footer :: footer}"></div>
+</body>
+</html>

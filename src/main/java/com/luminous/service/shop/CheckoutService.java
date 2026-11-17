@@ -25,6 +25,7 @@ import com.luminous.repository.order.PaymentRepository;
 import com.luminous.repository.order.PointTransactionRepository;
 import com.luminous.repository.product.ProductVariantRepository;
 import com.luminous.repository.voucher.VoucherRepository;
+import com.luminous.service.flashsale.FlashSaleService;
 import com.luminous.service.notification.NotificationService;
 import com.luminous.service.product.ProductCacheService;
 import org.springframework.stereotype.Service;
@@ -66,6 +67,7 @@ public class CheckoutService {
     private final NotificationService notifications;
     private final IdempotencyService idempotency;
     private final ProductCacheService productCache;
+    private final FlashSaleService flashSales;
 
     public CheckoutService(CartService cartService,
                            CartRepository carts,
@@ -81,7 +83,8 @@ public class CheckoutService {
                            UserRepository users,
                            NotificationService notifications,
                            IdempotencyService idempotency,
-                           ProductCacheService productCache) {
+                           ProductCacheService productCache,
+                           FlashSaleService flashSales) {
         this.cartService = cartService;
         this.carts = carts;
         this.cartItems = cartItems;
@@ -97,6 +100,7 @@ public class CheckoutService {
         this.notifications = notifications;
         this.idempotency = idempotency;
         this.productCache = productCache;
+        this.flashSales = flashSales;
     }
 
     /** Ket qua dat hang: don vua tao + cac dong da dat + tong tien phai tra. */
@@ -175,6 +179,21 @@ public class CheckoutService {
                 throw new IllegalArgumentException("Sản phẩm " + line.card().name()
                         + " chỉ còn " + v.getStockQuantity() + " sản phẩm trong kho.");
             }
+        }
+
+        for (CartLine line : selected) {
+            ProductVariant v = line.card().getVariant();
+            flashSales.flashPrice(v.getId()).ifPresent(flash -> {
+                if (flash.maxPerCustomer() != null) {
+                    long bought = flashSales.boughtByUser(user.getId(), v.getId(),
+                            flashSales.getOrThrow(flash.saleId()));
+                    if (bought + line.quantity() > flash.maxPerCustomer()) {
+                        throw new IllegalArgumentException("Sản phẩm " + line.card().name()
+                                + " trong Flash Sale chỉ được mua tối đa " + flash.maxPerCustomer()
+                                + " sản phẩm/khách (bạn đã mua " + bought + " sản phẩm).");
+                    }
+                }
+            });
         }
 
         // Voucher (neu co) phai hop le voi chinh cac dong duoc chon.

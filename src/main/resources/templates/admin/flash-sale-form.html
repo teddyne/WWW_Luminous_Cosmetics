@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="vi">
+<head th:replace="~{admin/fragments :: head('Flash Sale')}"></head>
+<body>
+<div class="admin-shell">
+  <div th:replace="~{admin/fragments :: sidebar('flash-sales')}"></div>
+  <div class="admin-overlay" onclick="toggleSidebar(false)"></div>
+  <main class="admin-main">
+    <div th:replace="~{admin/fragments :: topbar(${formTitle})}"></div>
+    <div th:replace="~{admin/fragments :: toast}"></div>
+
+    <div class="admin-page-actions">
+      <a th:href="@{/admin/flash-sales}" class="admin-back"><i class="bi bi-arrow-left"></i> Quay lại danh sách Flash Sale</a>
+    </div>
+
+    <div th:if="${formError}" class="alert alert-danger rounded-3 d-flex justify-content-between align-items-center gap-3">
+      <span th:text="${formError}"></span>
+      <a th:if="${versionConflict}" th:href="@{/admin/flash-sales}" class="btn btn-sm btn-danger flex-shrink-0">OK</a>
+    </div>
+
+    <form th:action="${formAction}" th:object="${flashSaleForm}" method="post" enctype="multipart/form-data">
+      <input type="hidden" th:if="${_csrf != null}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+      <input type="hidden" th:field="*{id}"/>
+      <input type="hidden" th:field="*{version}"/>
+      <div class="row g-3">
+        <div class="col-lg-7">
+          <div class="form-card mb-3">
+            <h2><span class="step-num">1</span> Thông tin chương trình</h2>
+            <div class="row g-3">
+              <div class="col-12">
+                <label class="form-label" for="saleName">Tên chương trình</label>
+                <input type="text" id="saleName" class="form-control" th:field="*{name}" placeholder="Ví dụ: Flash Sale 11.11, Sale cuối tuần" required maxlength="200"/>
+                <div class="text-danger small mt-1" th:if="${#fields.hasErrors('name')}" th:errors="*{name}"></div>
+              </div>
+              <div class="col-12">
+                <label class="form-label" for="saleDescription">Mô tả</label>
+                <textarea id="saleDescription" class="form-control" rows="2" th:field="*{description}" placeholder="Mô tả ngắn về chương trình"></textarea>
+              </div>
+              <div class="col-12">
+                <label class="form-label" for="saleStatus">Trạng thái</label>
+                <select id="saleStatus" class="form-select" th:field="*{status}">
+                  <option value="DRAFT">Nháp (chưa hiển thị)</option>
+                  <option value="PUBLISHED">Đã đăng</option>
+                  <option value="PAUSED">Tạm dừng</option>
+                </select>
+                <div class="text-danger small mt-1" th:if="${#fields.hasErrors('status')}" th:errors="*{status}"></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-card mb-3">
+            <h2><span class="step-num">2</span> Khung thời gian</h2>
+            <div class="row g-3">
+              <div class="col-md-6">
+                <label class="form-label" for="saleStart">Bắt đầu</label>
+                <input type="datetime-local" id="saleStart" class="form-control" th:field="*{startAt}" required/>
+                <div class="text-danger small mt-1" th:if="${#fields.hasErrors('startAt')}" th:errors="*{startAt}"></div>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label" for="saleEnd">Kết thúc</label>
+                <input type="datetime-local" id="saleEnd" class="form-control" th:field="*{endAt}" required/>
+                <div class="text-danger small mt-1" th:if="${#fields.hasErrors('endAt')}" th:errors="*{endAt}"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-lg-5">
+          <div class="form-card">
+            <h2><span class="step-num">3</span> Banner chương trình</h2>
+            <label class="form-label" for="saleBanner">Ảnh banner</label>
+            <input type="file" id="saleBanner" name="banner" class="form-control" accept="image/*" data-preview="saleBannerPreview"/>
+            <div class="form-text">Ảnh lưu ở thư mục images/promo. Để trống nếu giữ banner cũ.</div>
+            <img id="saleBannerPreview" class="upload-preview mt-3" alt="Banner chương trình"
+                 th:src="${flashSaleForm.bannerUrl}"
+                 th:class="${flashSaleForm.bannerUrl != null and flashSaleForm.bannerUrl != ''} ? 'upload-preview mt-3' : 'upload-preview mt-3 d-none'"/>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-card mt-3">
+        <h2><span class="step-num">4</span> Chọn sản phẩm</h2>
+        <div class="admin-toolbar">
+          <div class="admin-search-group">
+            <input type="text" id="flashPickFilter" class="form-control" placeholder="Tìm theo tên sản phẩm, thương hiệu..."/>
+            <button type="button" class="btn btn-soft" id="flashPickSearchBtn"><i class="bi bi-search"></i> Tìm kiếm</button>
+          </div>
+          <select class="form-select" id="flashPickBrand" style="width: 210px;">
+            <option value="">Tất cả thương hiệu</option>
+            <option th:each="brand : ${flashBrands}" th:value="${brand}" th:text="${brand}"></option>
+          </select>
+          <button type="button" class="btn btn-light" id="flashPickResetBtn"><i class="bi bi-arrow-counterclockwise"></i> Đặt lại</button>
+          <span class="flex-grow-1"></span>
+          <span class="text-muted small">Đã chọn: <strong id="flashPickSelectedCount">0</strong> sản phẩm</span>
+        </div>
+        <div class="bulk-bar" id="flashPickBulkBar" hidden>
+          <label class="flash-bulk-field">Cùng giảm giá:
+            <input type="number" id="flashPickBulkPercent" class="form-control form-control-sm" min="1" max="99" step="1" placeholder="%" style="width: 76px;"/> %
+          </label>
+          <label class="flash-bulk-field">Số lượng mỗi sản phẩm:
+            <input type="number" id="flashPickBulkQty" class="form-control form-control-sm" min="1" step="1" style="width: 90px;"/>
+          </label>
+          <label class="flash-bulk-field">Giới hạn/khách:
+            <input type="number" id="flashPickBulkLimit" class="form-control form-control-sm" min="1" step="1" placeholder="Không giới hạn" style="width: 150px;"/>
+          </label>
+          <button type="button" class="btn btn-sm btn-green rounded-pill" id="flashPickBulkApply">Áp dụng</button>
+          <button type="button" class="btn btn-sm btn-light rounded-pill" id="flashPickBulkReset">Đặt lại</button>
+        </div>
+        <div class="table-responsive">
+          <table class="table admin-table align-middle" id="flashPickTable">
+            <thead>
+              <tr>
+                <th style="width: 40px;"><input type="checkbox" id="flashPickAll" class="form-check-input" title="Chọn tất cả"/></th>
+                <th style="width: 64px;">Ảnh</th>
+                <th>Sản phẩm</th><th>Biến thể</th><th>Giá gốc</th><th style="width: 110px;">Giảm %</th>
+                <th>Giá sau giảm</th><th style="width: 120px;">SL khuyến mãi</th><th style="width: 120px;">Giới hạn/khách</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr th:each="variant, rowStat : ${flatVariants}"
+                  th:attr="data-search=${variant.productName + ' ' + variant.brand}, data-brand=${variant.brand}"
+                  th:classappend="${flashSaleForm.items[rowStat.index].selected} ? ' is-selected' : ''">
+                <td>
+                  <input type="checkbox" class="form-check-input flash-pick-check"
+                         th:field="*{items[__${rowStat.index}__].selected}"/>
+                  <input type="hidden" th:field="*{items[__${rowStat.index}__].variantId}"/>
+                </td>
+                <td><img class="flash-pick-img" th:src="${variant.imageUrl}" th:alt="${variant.productName}" loading="lazy"/></td>
+                <td>
+                  <div class="admin-name" th:text="${variant.productName}">Tên sản phẩm</div>
+                  <div class="admin-sub" th:text="${variant.brand}">Thương hiệu</div>
+                </td>
+                <td th:text="${variant.size}">50ml</td>
+                <td th:text="${#numbers.formatDecimal(variant.price, 0, 'POINT', 0, 'COMMA')} + 'đ'">250.000đ</td>
+                <td>
+                  <input type="number" class="form-control flash-pick-input flash-pick-percent" min="1" max="99" step="1"
+                         th:field="*{items[__${rowStat.index}__].discountPercent}"
+                         th:disabled="${!flashSaleForm.items[rowStat.index].selected}"/>
+                </td>
+                <td><span class="flash-pick-sale fw-bold" th:data-price="${variant.price}">—</span></td>
+                <td>
+                  <input type="number" class="form-control flash-pick-input flash-pick-qty" min="1" step="1"
+                         th:field="*{items[__${rowStat.index}__].promoQuantity}"
+                         th:disabled="${!flashSaleForm.items[rowStat.index].selected}"/>
+                </td>
+                <td>
+                  <input type="number" class="form-control flash-pick-input flash-pick-limit" min="1" step="1" placeholder="Không giới hạn"
+                         th:field="*{items[__${rowStat.index}__].maxPerCustomer}"
+                         th:disabled="${!flashSaleForm.items[rowStat.index].selected}"/>
+                </td>
+              </tr>
+              <tr th:if="${#lists.isEmpty(flatVariants)}">
+                <td colspan="9"><div class="empty-state"><i class="bi bi-bag"></i>Chưa có sản phẩm nào còn hàng để chọn</div></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <nav class="admin-pager" id="flashPickPager" aria-label="Phân trang sản phẩm"
+             th:if="${!#lists.isEmpty(flatVariants)}">
+          <span id="flashPickPagerBtns" class="d-inline-flex align-items-center" style="gap: 6px;"></span>
+          <span class="admin-pager-info" id="flashPickPagerInfo"></span>
+          <label class="admin-pagesize">Hiển thị:
+            <select class="form-select form-select-sm" id="flashPickPageSize">
+              <option value="10" selected>10</option>
+              <option value="20">20</option>
+              <option value="100">100</option>
+            </select>
+          </label>
+        </nav>
+      </div>
+
+      <div class="admin-actions-bar">
+        <a th:href="@{/admin/flash-sales}" class="btn btn-light rounded-pill px-4">Hủy</a>
+        <button type="submit" class="btn btn-green">Lưu chương trình</button>
+      </div>
+    </form>
+  </main>
+</div>
+<div th:replace="~{admin/fragments :: scripts}"></div>
+</body>
+</html>

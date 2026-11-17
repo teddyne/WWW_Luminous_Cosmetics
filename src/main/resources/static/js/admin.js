@@ -357,6 +357,191 @@ function bindMoneyInputs() {
   });
 }
 
+function normalizeVi(s) {
+  return (s || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/\u0111/g, "d");
+}
+
+function flashSalePrice(price, percent) {
+  if (!percent || percent < 1 || percent > 99) return "—";
+  var sale = Math.round(price * (100 - percent) / 100);
+  return sale.toLocaleString("vi-VN") + "đ";
+}
+
+function bindFlashPickRows() {
+  var table = document.getElementById("flashPickTable");
+  if (!table) return;
+  var rows = table.querySelectorAll("tbody tr[data-search]");
+  var filter = document.getElementById("flashPickFilter");
+  var brandSel = document.getElementById("flashPickBrand");
+  var searchBtn = document.getElementById("flashPickSearchBtn");
+  var countEl = document.getElementById("flashPickSelectedCount");
+  var pager = document.getElementById("flashPickPager");
+  var pagerBtns = document.getElementById("flashPickPagerBtns");
+  var pagerInfo = document.getElementById("flashPickPagerInfo");
+  var pageSizeSel = document.getElementById("flashPickPageSize");
+  var page = 1;
+  var pageSize = pageSizeSel ? parseInt(pageSizeSel.value || "10", 10) : 10;
+  var refreshSelectedCount = function () {
+    var n = 0;
+    rows.forEach(function (row) {
+      var check = row.querySelector(".flash-pick-check");
+      if (check && check.checked) n++;
+    });
+    if (countEl) countEl.textContent = String(n);
+    var bulkBar = document.getElementById("flashPickBulkBar");
+    if (bulkBar) bulkBar.hidden = n === 0;
+  };
+  var updateRow = function (row) {
+    var check = row.querySelector(".flash-pick-check");
+    var selected = check && check.checked;
+    row.classList.toggle("is-selected", !!selected);
+    row.querySelectorAll(".flash-pick-input").forEach(function (input) {
+      input.disabled = !selected;
+    });
+    var saleEl = row.querySelector(".flash-pick-sale");
+    var percentInput = row.querySelector(".flash-pick-percent");
+    if (saleEl) {
+      var price = parseFloat(saleEl.getAttribute("data-price") || "0");
+      var percent = percentInput ? parseInt(percentInput.value || "0", 10) : 0;
+      saleEl.textContent = selected ? flashSalePrice(price, percent) : "—";
+    }
+    refreshSelectedCount();
+  };
+  rows.forEach(function (row) {
+    updateRow(row);
+    row.querySelectorAll(".flash-pick-check, .flash-pick-percent").forEach(function (el) {
+      el.addEventListener("change", function () { updateRow(row); });
+      el.addEventListener("input", function () { updateRow(row); });
+    });
+  });
+  var selectAll = document.getElementById("flashPickAll");
+  if (selectAll) {
+    selectAll.addEventListener("change", function () {
+      rows.forEach(function (row) {
+        if (row.style.display === "none") return;
+        var check = row.querySelector(".flash-pick-check");
+        if (check) { check.checked = selectAll.checked; updateRow(row); }
+      });
+    });
+  }
+  var filteredRows = function () {
+    var q = normalizeVi(filter ? filter.value : "");
+    var brand = brandSel ? brandSel.value : "";
+    var pool = [];
+    rows.forEach(function (row) {
+      var name = normalizeVi(row.getAttribute("data-search") || "");
+      var rowBrand = row.getAttribute("data-brand") || "";
+      if ((!q || name.indexOf(q) !== -1) && (!brand || rowBrand === brand)) pool.push(row);
+    });
+    return pool;
+  };
+  var renderPager = function () {
+    if (!pager) return;
+    var pool = filteredRows();
+    var totalPages = Math.max(1, Math.ceil(pool.length / pageSize));
+    if (page > totalPages) page = totalPages;
+    rows.forEach(function (row) { row.style.display = "none"; });
+    var start = (page - 1) * pageSize;
+    pool.slice(start, start + pageSize).forEach(function (row) { row.style.display = ""; });
+    if (pagerInfo) {
+      pagerInfo.textContent = "Trang " + page + " / " + totalPages + " • " + pool.length + " mục";
+    }
+    if (pagerBtns) {
+      pagerBtns.innerHTML = "";
+      if (totalPages > 1) {
+        var addBtn = function (label, targetPage, cls, isHtml) {
+          var btn = document.createElement("button");
+          btn.type = "button";
+          btn.className = "admin-pager-btn" + (cls ? " " + cls : "");
+          if (isHtml) btn.innerHTML = label; else btn.textContent = label;
+          if (targetPage == null) btn.classList.add("disabled");
+          else btn.addEventListener("click", function () { page = targetPage; renderPager(); });
+          pagerBtns.appendChild(btn);
+        };
+        var addDots = function () {
+          var dots = document.createElement("span");
+          dots.className = "admin-pager-dots";
+          dots.textContent = "…";
+          pagerBtns.appendChild(dots);
+        };
+        addBtn('<i class="bi bi-chevron-left"></i>', page > 1 ? page - 1 : null, "", true);
+        for (var i = 1; i <= totalPages; i++) {
+          if (totalPages > 7 && i === 2 && page > 3) addDots();
+          if (totalPages <= 7 || i === 1 || i === totalPages || (i >= page - 1 && i <= page + 1)) {
+            addBtn(String(i), i, i === page ? "current" : "");
+          }
+          if (totalPages > 7 && i === totalPages - 1 && page < totalPages - 2) addDots();
+        }
+        addBtn('<i class="bi bi-chevron-right"></i>', page < totalPages ? page + 1 : null, "", true);
+      }
+    }
+  };
+  if (filter) {
+    filter.addEventListener("input", function () { page = 1; renderPager(); });
+  }
+  if (searchBtn) {
+    searchBtn.addEventListener("click", function () { page = 1; renderPager(); });
+  }
+  var resetBtn = document.getElementById("flashPickResetBtn");
+  if (resetBtn) {
+    resetBtn.addEventListener("click", function () {
+      if (filter) filter.value = "";
+      if (brandSel) brandSel.value = "";
+      page = 1;
+      renderPager();
+    });
+  }
+  if (brandSel) {
+    brandSel.addEventListener("change", function () { page = 1; renderPager(); });
+  }
+  if (pageSizeSel) {
+    pageSizeSel.addEventListener("change", function () {
+      pageSize = parseInt(pageSizeSel.value || "10", 10) || 10;
+      page = 1;
+      renderPager();
+    });
+  }
+  var bulkApply = document.getElementById("flashPickBulkApply");
+  var bulkReset = document.getElementById("flashPickBulkReset");
+  if (bulkReset) {
+    bulkReset.addEventListener("click", function () {
+      ["flashPickBulkPercent", "flashPickBulkQty", "flashPickBulkLimit"].forEach(function (id) {
+        var input = document.getElementById(id);
+        if (input) input.value = "";
+      });
+    });
+  }
+  if (bulkApply) {
+    bulkApply.addEventListener("click", function () {
+      var clamp = function (value, min, max) {
+        var n = parseInt(value || "", 10);
+        if (isNaN(n)) return "";
+        if (n < min) n = min;
+        if (max != null && n > max) n = max;
+        return String(n);
+      };
+      var percent = clamp(document.getElementById("flashPickBulkPercent").value, 1, 99);
+      var qty = clamp(document.getElementById("flashPickBulkQty").value, 1, null);
+      var limit = clamp(document.getElementById("flashPickBulkLimit").value, 1, null);
+      var setVal = function (row, cls, value) {
+        if (value === "") return;
+        var input = row.querySelector(cls);
+        if (input) input.value = value;
+      };
+      rows.forEach(function (row) {
+        var check = row.querySelector(".flash-pick-check");
+        if (!check || !check.checked) return;
+        setVal(row, ".flash-pick-percent", percent);
+        setVal(row, ".flash-pick-qty", qty);
+        setVal(row, ".flash-pick-limit", limit);
+        updateRow(row);
+      });
+    });
+  }
+  renderPager();
+  refreshSelectedCount();
+}
+
 document.addEventListener("DOMContentLoaded", function () {
   bindVoucherScope();
   bindDiscountType();
@@ -366,6 +551,7 @@ document.addEventListener("DOMContentLoaded", function () {
   toggleCancelReason();
   bindCountUp();
   bindMoneyInputs();
+  bindFlashPickRows();
 });
 
 document.addEventListener("change", function (event) {

@@ -6,6 +6,8 @@ import com.luminous.model.Product;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+import java.time.LocalDateTime;
+import java.time.LocalDateTime;
 import java.util.List;
 
 public interface OrderDetailRepository extends JpaRepository<OrderDetail, Integer> {
@@ -15,6 +17,23 @@ public interface OrderDetailRepository extends JpaRepository<OrderDetail, Intege
 
     @Query("SELECT COALESCE(SUM(od.quantity), 0) FROM OrderDetail od WHERE od.variant.product.id = :productId")
     long soldCount(@Param("productId") Integer productId);
+
+    @Query("SELECT COALESCE(SUM(od.quantity), 0) FROM OrderDetail od JOIN Orders o ON o.id = od.orderId"
+            + " WHERE od.variant.id = :variantId AND o.orderDate >= :start AND o.orderDate <= :end"
+            + " AND o.status NOT IN :excluded")
+    long soldInPeriod(@Param("variantId") Integer variantId,
+                      @Param("start") LocalDateTime start,
+                      @Param("end") LocalDateTime end,
+                      @Param("excluded") List<OrderStatus> excluded);
+
+    @Query("SELECT COALESCE(SUM(od.quantity), 0) FROM OrderDetail od JOIN Orders o ON o.id = od.orderId"
+            + " WHERE od.variant.id = :variantId AND o.user.id = :userId"
+            + " AND o.orderDate >= :start AND o.orderDate <= :end AND o.status NOT IN :excluded")
+    long boughtByUserInPeriod(@Param("variantId") Integer variantId,
+                              @Param("userId") Integer userId,
+                              @Param("start") LocalDateTime start,
+                              @Param("end") LocalDateTime end,
+                              @Param("excluded") List<OrderStatus> excluded);
 
     List<OrderDetail> findByOrderIdOrderByIdAsc(Integer orderId);
 

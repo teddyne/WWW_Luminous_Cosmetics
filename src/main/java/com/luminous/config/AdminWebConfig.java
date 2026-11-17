@@ -29,6 +29,10 @@ public class AdminWebConfig implements WebMvcConfigurer {
         String productLocation = Paths.get(productImageDir).toAbsolutePath().toUri().toString();
         registry.addResourceHandler("/images/products/**")
                 .addResourceLocations(productLocation);
+        String promoLocation = Paths.get(productImageDir).getParent().resolve("promo")
+                .toAbsolutePath().toUri().toString();
+        registry.addResourceHandler("/images/promo/**")
+                .addResourceLocations(promoLocation);
         // Anh/video san pham theo cau truc moi: /products/{loai}/{id}/images|videos/...
         // (khong trung voi route /products cua shop vi controller duoc uu tien truoc,
         // resource handler chi phuc vu khi khong co controller nao khop duong dan file).

@@ -3,6 +3,7 @@ package com.luminous.dto;
 import com.luminous.model.Product;
 import com.luminous.model.ProductVariant;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.text.NumberFormat;
 import java.util.List;
 import java.util.Locale;
@@ -15,15 +16,26 @@ public class ProductCard {
     private final double rating;      // 0 neu chua co review
     private final long reviewCount;
     private final long soldCount;
+    private final BigDecimal effectivePrice;
 
     public ProductCard(Product product, ProductVariant variant, String imageUrl,
                        double rating, long reviewCount, long soldCount) {
+        this(product, variant, imageUrl, rating, reviewCount, soldCount, null);
+    }
+
+    public ProductCard(Product product, ProductVariant variant, String imageUrl,
+                       double rating, long reviewCount, long soldCount, BigDecimal effectivePrice) {
         this.product = product;
         this.variant = variant;
         this.imageUrl = imageUrl;
         this.rating = rating;
         this.reviewCount = reviewCount;
         this.soldCount = soldCount;
+        this.effectivePrice = effectivePrice;
+    }
+
+    public ProductCard withEffectivePrice(BigDecimal effectivePrice) {
+        return new ProductCard(product, variant, imageUrl, rating, reviewCount, soldCount, effectivePrice);
     }
 
     public Product getProduct() {
@@ -71,11 +83,30 @@ public class ProductCard {
     }
 
     public BigDecimal displayPrice() {
+        if (effectivePrice != null) {
+            return effectivePrice;
+        }
         return variant != null ? variant.displayPrice() : null;
     }
 
     public boolean onSale() {
-        return variant != null && variant.onSale();
+        BigDecimal display = displayPrice();
+        BigDecimal original = price();
+        return display != null && original != null && display.compareTo(original) < 0;
+    }
+
+    public int discountPercent() {
+        return discountPercentOf(price(), displayPrice());
+    }
+
+    public static int discountPercentOf(BigDecimal original, BigDecimal effective) {
+        if (original == null || effective == null || original.compareTo(BigDecimal.ZERO) <= 0
+                || effective.compareTo(original) >= 0) {
+            return 0;
+        }
+        return BigDecimal.ONE.subtract(effective.divide(original, 4, RoundingMode.HALF_UP))
+                .multiply(BigDecimal.valueOf(100))
+                .setScale(0, RoundingMode.HALF_UP).intValue();
     }
 
     public int ratingStars() {

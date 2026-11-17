@@ -46,7 +46,6 @@
             <li><span class="dropdown-item-text fw-bold" th:text="${currentUser.fullName()}">Tên người dùng</span></li>
             <li><span class="dropdown-item-text text-muted small">
               <span th:text="${currentUser.roleName() == 'ROLE_ADMIN' ? 'Quản trị viên' : 'Khách hàng'}">Khách hàng</span>
-              <br>
               <span th:if="${currentUser.user.pointBalance != null}" th:text="' • ' + ${currentUser.user.pointBalance} + ' điểm'"></span>
             </span></li>
             <li><hr class="dropdown-divider"/></li>
@@ -138,6 +137,51 @@
         <input type="hidden" name="quantity" value="1"/>
         <button type="submit" class="btn-add-cart" title="Thêm vào giỏ hàng" aria-label="Thêm vào giỏ hàng"><i class="bi bi-cart-plus"></i></button>
       </form>
+    </div>
+  </div>
+</article>
+
+<!-- ================= THE FLASH SALE (dai tiec uu dai) ================= -->
+<!-- Gia flash: gia goc gach ngang + gia flash mau cam do; tem % goc tren trai anh;
+     thanh tien do: nhan trang thai + % da ban; het luot hoac chua toi gio thi an nut them gio. -->
+<article th:fragment="flashCard(item)" class="product-card flash-card">
+  <a class="product-card-link product-card-image-link flash-card-image" th:href="@{/products/{id}(id=${item.card.product.id})}">
+    <img th:src="${item.card.getImageUrl()}" th:alt="${item.card.name()}" loading="lazy"/>
+    <span class="flash-discount-badge" th:text="'-' + ${item.discountPercent} + '%'">-30%</span>
+  </a>
+  <div class="p-3 d-flex flex-column flex-grow-1">
+    <div class="product-brand" th:text="${item.card.brand()}">THƯƠNG HIỆU</div>
+    <a class="product-card-link product-name" th:href="@{/products/{id}(id=${item.card.product.id})}" th:text="${item.card.name()}">Tên sản phẩm</a>
+    <div class="mt-1">
+      <span th:if="${item.card.getReviewCount() > 0}">
+        <span class="rating-number" th:text="${#numbers.formatDecimal(item.card.getRating(), 1, 1)}">4.7</span>
+        <span class="stars">★</span>
+        <span class="text-muted small" th:text="'(' + ${item.card.getReviewCount()} + ' đánh giá)'"></span>
+      </span>
+      <span th:if="${item.card.getReviewCount() == 0}" class="text-muted small">Chưa có đánh giá</span>
+    </div>
+    <div class="mt-auto pt-2">
+      <div class="d-flex align-items-end justify-content-between gap-2">
+        <div class="price-block">
+          <div class="price-old" th:text="${item.card.priceText()}">298.000đ</div>
+          <div class="flash-price" th:text="${item.flashPriceText()}">245.000đ</div>
+        </div>
+        <form th:if="${item.live and !item.soldOut}" th:action="@{/cart/add}" method="post">
+          <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+          <input type="hidden" name="variantId" th:value="${item.card.variant.id}"/>
+          <input type="hidden" name="quantity" value="1"/>
+          <button type="submit" class="btn-add-cart flash-add-cart" title="Thêm vào giỏ hàng" aria-label="Thêm vào giỏ hàng"><i class="bi bi-cart-plus"></i></button>
+        </form>
+      </div>
+      <div class="flash-progress mt-2">
+        <div class="flash-progress-label" th:classappend="${item.hot} ? ' hot' : ''">
+          <span th:text="${item.statusLabel()}">Đang diễn ra</span>
+          <span th:text="'Đã bán ' + ${item.soldPercent()} + '%'">Đã bán 40%</span>
+        </div>
+        <div class="flash-progress-track">
+          <div class="flash-progress-fill" th:style="'width:' + ${item.soldPercent()} + '%'"></div>
+        </div>
+      </div>
     </div>
   </div>
 </article>

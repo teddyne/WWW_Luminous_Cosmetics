@@ -13,6 +13,7 @@ import com.luminous.repository.product.ProductRepository;
 import com.luminous.repository.product.ProductVariantRepository;
 import com.luminous.repository.review.ReviewMediaRepository;
 import com.luminous.repository.review.ReviewRepository;
+import com.luminous.service.flashsale.FlashSaleService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
@@ -33,6 +34,7 @@ public class ProductService {
     private final ProductAttributeRepository productAttributes;
     private final UserRepository users;
     private final ProductCacheService productCache;
+    private final FlashSaleService flashSales;
 
     /** Anh cho san chung khi san pham chua co anh nao (khong do ve anh san pham khac). */
     private static final String NO_IMAGE = "/images/no-image.svg";
@@ -65,7 +67,8 @@ public class ProductService {
                           ProductVariantRepository variants,
                           ProductAttributeRepository productAttributes,
                           UserRepository users,
-                          ProductCacheService productCache) {
+                          ProductCacheService productCache,
+                          FlashSaleService flashSales) {
         this.products = products;
         this.orderDetails = orderDetails;
         this.reviews = reviews;
@@ -74,6 +77,16 @@ public class ProductService {
         this.productAttributes = productAttributes;
         this.users = users;
         this.productCache = productCache;
+        this.flashSales = flashSales;
+    }
+
+    private ProductCard applyFlashPrice(ProductCard card) {
+        if (card == null || card.getVariant() == null || card.getVariant().getId() == null) {
+            return card;
+        }
+        return flashSales.flashPrice(card.getVariant().getId())
+                .map(flash -> card.withEffectivePrice(flash.price()))
+                .orElse(card);
     }
 
     /** Trang danh gia cua 1 san pham, loc theo sao (rating null = tat ca). */
@@ -276,11 +289,11 @@ public class ProductService {
     public ProductCard cardForVariant(ProductVariant v) {
         Product p = v.getProduct();
         Double avg = reviews.averageRating(p.getId());
-        return new ProductCard(
+        return applyFlashPrice(new ProductCard(
                 p, v, imageForVariant(v),
                 avg != null ? avg : 0,
                 reviews.reviewCount(p.getId()),
-                orderDetails.soldCount(p.getId()));
+                orderDetails.soldCount(p.getId())));
     }
 
     /** Moi variant con hang cua 1 danh muc thanh 1 the (de doi san pham). */
@@ -347,11 +360,11 @@ public class ProductService {
                 .map(p -> {
                     ProductVariant v = firstVariant(p);
                     Double avg = reviews.averageRating(p.getId());
-                    return new ProductCard(
+                    return applyFlashPrice(new ProductCard(
                             p, v, imageFor(p, v),
                             avg != null ? avg : 0,
                             reviews.reviewCount(p.getId()),
-                            orderDetails.soldCount(p.getId()));
+                            orderDetails.soldCount(p.getId())));
                 })
                 .collect(Collectors.toList());
     }

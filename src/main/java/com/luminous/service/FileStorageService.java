@@ -98,6 +98,23 @@ public class FileStorageService {
         }
     }
 
+    public String storePromoImage(MultipartFile file, String baseName) {
+        if (file == null || file.isEmpty()) {
+            return null;
+        }
+        String extension = checkedExtension(file);
+        String fileName = "flash-sale-" + slug(baseName) + "-" + System.currentTimeMillis() + "." + extension;
+        try {
+            Path dir = Paths.get(productImageDir).getParent().resolve("promo");
+            Files.createDirectories(dir);
+            Path target = dir.resolve(fileName);
+            file.transferTo(target);
+            return "/images/promo/" + fileName;
+        } catch (IOException e) {
+            throw new IllegalStateException("Không lưu được ảnh banner", e);
+        }
+    }
+
     public String storeProductImage(MultipartFile file, String categoryName, String baseName) {
         if (file == null || file.isEmpty()) {
             return null;
