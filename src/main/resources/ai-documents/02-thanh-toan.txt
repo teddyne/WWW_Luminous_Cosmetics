@@ -1,0 +1,5 @@
+Chính sách thanh toán — Luminous
+Luminous nhận thanh toán khi nhận hàng (COD) và chuyển khoản ngân hàng.
+Với đơn đặt online, khách chọn phương thức thanh toán ở trang thanh toán rồi xác nhận đặt hàng.
+Với đơn mua tại cửa hàng, khách thanh toán trực tiếp tại quầy và nhận hóa đơn in ngay.
+Đơn hàng chỉ được tính là đã xác nhận sau khi khách bấm xác nhận đặt hàng ở trang thanh toán, việc thêm sản phẩm vào giỏ hay nhờ trợ lý AI soạn đơn nháp chưa tạo đơn hàng.

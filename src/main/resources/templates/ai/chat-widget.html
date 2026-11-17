@@ -1,0 +1,59 @@
+<div th:fragment="chatWidget" id="luminousAiChat" class="ai-chat" xmlns:th="http://www.thymeleaf.org">
+  <button type="button" id="aiChatFab" class="ai-chat-fab" aria-label="Mở trò chuyện với Luminous AI">
+    <i class="bi bi-chat-dots-fill"></i>
+  </button>
+
+  <section id="aiChatWindow" class="ai-chat-window" aria-label="Luminous AI Chat Box" hidden>
+    <header class="ai-chat-header">
+      <img th:src="@{/images/logo.png}" src="/images/logo.png" alt="Luminous" class="ai-chat-avatar"/>
+      <div class="ai-chat-title">
+        <strong>Luminous AI Chat Box</strong>
+        <span id="aiChatStatus">Trực tuyến</span>
+      </div>
+      <div class="ai-chat-header-actions">
+        <button type="button" id="aiChatReload" class="ai-chat-icon-btn" aria-label="Làm mới đoạn chat" title="Làm mới đoạn chat">
+          <i class="bi bi-arrow-clockwise"></i>
+        </button>
+        <button type="button" id="aiChatMinimize" class="ai-chat-icon-btn" aria-label="Thu nhỏ cửa sổ chat">
+          <i class="bi bi-chevron-down"></i>
+        </button>
+        <button type="button" id="aiChatClose" class="ai-chat-icon-btn" aria-label="Đóng cửa sổ chat">
+          <i class="bi bi-x-lg"></i>
+        </button>
+      </div>
+    </header>
+
+    <div id="aiChatMessages" class="ai-chat-messages">
+      <div class="ai-chat-msg ai-chat-msg-ai">
+        <img th:src="@{/images/logo.png}" src="/images/logo.png" alt="Luminous" class="ai-chat-msg-avatar"/>
+        <div class="ai-chat-bubble">Xin chào! Mình là trợ lý AI của Luminous. Mình có thể tư vấn sản phẩm, so sánh giá, thêm vào giỏ hàng, tra cứu đơn hàng và giải đáp chính sách của shop. Bạn cần tìm gì hôm nay?</div>
+      </div>
+    </div>
+
+    <div id="aiChatPreview" class="ai-chat-preview" hidden>
+      <img id="aiChatPreviewImg" alt="Ảnh đính kèm"/>
+      <span id="aiChatPreviewName"></span>
+      <button type="button" id="aiChatPreviewRemove" class="ai-chat-icon-btn" aria-label="Gỡ ảnh đính kèm">
+        <i class="bi bi-x"></i>
+      </button>
+    </div>
+
+    <form id="aiChatForm" class="ai-chat-form" autocomplete="off">
+      <div class="ai-chat-attach">
+        <button type="button" id="aiChatAttachBtn" class="ai-chat-icon-btn" aria-label="Đính kèm ảnh">
+          <i class="bi bi-plus-lg"></i>
+        </button>
+        <div id="aiChatAttachMenu" class="ai-chat-attach-menu" hidden>
+          <button type="button" id="aiChatUploadBtn">Tải ảnh lên</button>
+          <button type="button" id="aiChatLinkBtn">Dán link ảnh</button>
+        </div>
+        <input type="file" id="aiChatFileInput" accept="image/jpeg,image/png,image/gif,image/webp" hidden/>
+      </div>
+      <input type="text" id="aiChatInput" placeholder="Nhập tin nhắn..." maxlength="1000" aria-label="Nhập tin nhắn"/>
+      <button type="submit" id="aiChatSend" class="ai-chat-send" aria-label="Gửi tin nhắn">
+        <i class="bi bi-arrow-up"></i>
+      </button>
+    </form>
+    <div class="ai-chat-footer">Powered by Luminous AI</div>
+  </section>
+</div>

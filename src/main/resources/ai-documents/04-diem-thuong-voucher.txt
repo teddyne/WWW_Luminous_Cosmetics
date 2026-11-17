@@ -1,0 +1,6 @@
+Điểm thưởng và voucher — Luminous
+Khách đăng nhập được tích điểm thưởng khi mua hàng và khi đánh giá sản phẩm.
+Mỗi sản phẩm được đánh giá một lần, khách nhận 200 điểm cho mỗi sản phẩm đã đánh giá trong đơn.
+Hạn đánh giá là 3 ngày kể từ ngày giao hàng, quá hạn sẽ không đánh giá được nữa.
+Điểm thưởng dùng để giảm trừ khi thanh toán, số dư điểm xem được trong Hồ sơ.
+Mã voucher công khai xem được ở Kho Voucher, mỗi mã có điều kiện đơn tối thiểu và thời hạn riêng, áp dụng khi thanh toán.

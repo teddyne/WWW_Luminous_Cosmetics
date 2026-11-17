@@ -1,0 +1,7 @@
+Chính sách vận chuyển — Luminous
+Luminous giao hàng tận nơi cho đơn đặt online.
+Phí vận chuyển là 30.000 đồng cho mỗi đơn online.
+Thời gian giao dự kiến hiển thị ở trang thanh toán sau khi khách nhập địa chỉ nhận hàng.
+Trạng thái giao hàng của đơn xem được ở mục Đơn mua trong Hồ sơ.
+Đơn giao thành công sẽ tự chuyển sang trạng thái hoàn thành sau 3 ngày kể từ ngày giao.
+Khách nên kiểm tra sản phẩm ngay khi nhận hàng và giữ lại hộp, hóa đơn để đối chiếu khi cần đổi trả.

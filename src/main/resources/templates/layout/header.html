@@ -10,6 +10,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
   <!-- CSS CHUNG cho toan he thong (header/footer/nut/bien mau). -->
   <link rel="stylesheet" th:href="@{/css/style.css}"/>
+  <link rel="stylesheet" th:href="@{/css/ai-chat.css}"/>
 
   <link th:if="${pageCss != null}" rel="stylesheet" th:href="@{/css/{f}(f=${pageCss})}"/>
 </head>
@@ -45,6 +46,7 @@
             <li><span class="dropdown-item-text fw-bold" th:text="${currentUser.fullName()}">Tên người dùng</span></li>
             <li><span class="dropdown-item-text text-muted small">
               <span th:text="${currentUser.roleName() == 'ROLE_ADMIN' ? 'Quản trị viên' : 'Khách hàng'}">Khách hàng</span>
+              <br>
               <span th:if="${currentUser.user.pointBalance != null}" th:text="' • ' + ${currentUser.user.pointBalance} + ' điểm'"></span>
             </span></li>
             <li><hr class="dropdown-divider"/></li>
@@ -95,6 +97,9 @@
       setTimeout(close, 1000);
     })();
   </script>
+
+  <div th:replace="~{ai/chat-widget :: chatWidget}"></div>
+  <script th:src="@{/js/ai-chat.js}"></script>
 
 </header>
 

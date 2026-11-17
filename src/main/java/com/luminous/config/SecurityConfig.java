@@ -51,8 +51,10 @@ public class SecurityConfig {
                         "/css/**", "/js/**", "/images/**", "/products/**",
                         "/skin-quiz", "/skin-quiz/submit", "/my-routine", "/my-routine/building",
                         "/my-routine/buy-all",
-                        "/cart", "/cart/**"
+                        "/cart", "/cart/**",
+                        "/api/ai/chat", "/api/ai/chat/stream", "/api/ai/history", "/api/ai/status", "/api/ai/cart/add", "/api/ai/draft/**"
                 ).permitAll()
+                .requestMatchers("/api/ai/reindex").hasRole("ADMIN")
                 .requestMatchers("/admin/**").hasRole("ADMIN")
                 .requestMatchers("/orders", "/orders/**",
                         "/account", "/account/**", "/checkout", "/checkout/**",
@@ -60,6 +62,7 @@ public class SecurityConfig {
                     .hasAnyRole("CUSTOMER", "ADMIN")
                 .anyRequest().authenticated()
             )
+            .csrf(csrf -> csrf.ignoringRequestMatchers("/api/ai/**"))
             .formLogin(form -> form
                 .loginPage("/login")
                 .loginProcessingUrl("/login")
