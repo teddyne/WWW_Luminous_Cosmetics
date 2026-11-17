@@ -69,22 +69,6 @@ public class AdminCategoryService {
         return new int[]{deleted, skipped};
     }
 
-    public List<Category> allActive() {
-        return categories.findByStatusOrderByIdAsc(CategoryStatus.ACTIVE);
-    }
-
-    public CategoryForm formFor(Integer id) {
-        Category category = categories.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy loại sản phẩm"));
-        CategoryForm form = new CategoryForm();
-        form.setId(category.getId());
-        form.setName(category.getName());
-        form.setDescription(category.getDescription());
-        form.setStatus(category.getStatus().name());
-        form.setVersion(category.getVersion());
-        return form;
-    }
-
     @Transactional
     public void create(CategoryForm form) {
         String name = form.getName().trim();

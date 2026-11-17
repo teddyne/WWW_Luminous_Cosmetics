@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="vi">
+<head th:replace="~{admin/fragments :: head('Lịch sử đăng nhập')}"></head>
+<body>
+<div class="admin-shell">
+  <div th:replace="~{admin/fragments :: sidebar('admins')}"></div>
+  <div class="admin-overlay" onclick="toggleSidebar(false)"></div>
+  <main class="admin-main">
+    <div th:replace="~{admin/fragments :: topbar('Quản trị viên')}"></div>
+    <div th:replace="~{admin/fragments :: toast}"></div>
+
+    <ul class="nav nav-tabs mb-3">
+      <li class="nav-item"><a class="nav-link" th:href="@{/admin/customers(role='ROLE_ADMIN')}">Quản trị viên</a></li>
+      <li class="nav-item"><a class="nav-link active" th:href="@{/admin/login-history}">Lịch sử đăng nhập</a></li>
+    </ul>
+
+    <form th:action="@{/admin/login-history}" method="get" class="admin-toolbar">
+      <div class="admin-search-group">
+        <input type="text" name="username" class="form-control" placeholder="Tìm theo email đăng nhập" th:value="${username}"/>
+        <button type="submit" class="btn btn-soft"><i class="bi bi-search"></i> Tìm kiếm</button>
+      </div>
+      <select name="success" class="form-select" style="width: 170px;" onchange="this.form.submit()">
+        <option value="">Tất cả kết quả</option>
+        <option value="true" th:selected="${success == true}">Thành công</option>
+        <option value="false" th:selected="${success == false}">Thất bại</option>
+      </select>
+      <input type="date" name="from" class="form-control" style="width: 160px;" th:value="${from}" title="Từ ngày"/>
+      <input type="date" name="to" class="form-control" style="width: 160px;" th:value="${to}" title="Đến ngày"/>
+      <span class="flex-grow-1"></span>
+      <a th:href="@{/admin/login-history}" class="btn btn-light"><i class="bi bi-arrow-counterclockwise"></i> Đặt lại</a>
+    </form>
+
+    <div class="admin-card">
+      <div class="table-responsive">
+        <table class="table admin-table">
+          <thead>
+            <tr><th>Thời gian</th><th>Tài khoản</th><th>Cách đăng nhập</th><th>Kết quả</th><th>Thiết bị</th></tr>
+          </thead>
+          <tbody>
+            <tr th:each="item : ${items}">
+              <td th:text="${#temporals.format(item.loginAt, 'dd/MM/yyyy HH:mm:ss')}">17/11/2026 23:00:00</td>
+              <td><span class="admin-name" th:text="${item.username}">admin@luminous.vn</span></td>
+              <td><span class="badge bg-secondary" th:text="${item.methodLabel}">Mật khẩu</span></td>
+              <td>
+                <span class="badge bg-success" th:if="${item.success}">Thành công</span>
+                <span class="badge bg-danger" th:if="${!item.success}">Thất bại</span>
+              </td>
+              <td th:text="${item.deviceName}">Macbook</td>
+            </tr>
+            <tr th:if="${items == null or items.isEmpty()}">
+              <td colspan="5" class="text-center text-muted py-4">Chưa có lượt đăng nhập nào khớp điều kiện lọc.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div th:replace="~{admin/fragments :: pager(${page}, ${baseUrl}, ${pageQuery})}"></div>
+    </div>
+  </main>
+</div>
+<div th:replace="~{admin/fragments :: scripts}"></div>
+</body>
+</html>

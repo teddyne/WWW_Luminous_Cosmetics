@@ -2,6 +2,10 @@
   var root = document.getElementById('luminousAiChat');
   if (!root) return;
 
+  var greetingText = (root.dataset.greeting && root.dataset.greeting.trim())
+    || 'Xin chào! Mình là trợ lý AI của Luminous. Mình có thể tư vấn sản phẩm, so sánh giá, thêm vào giỏ hàng, tra cứu đơn hàng và giải đáp chính sách của shop. Bạn cần tìm gì hôm nay?';
+  var logoUrl = (root.dataset.logo && root.dataset.logo.trim()) || '/images/logo.png';
+
   var fab = document.getElementById('aiChatFab');
   var win = document.getElementById('aiChatWindow');
   var messages = document.getElementById('aiChatMessages');
@@ -106,7 +110,7 @@
       var card = document.createElement('div');
       card.className = 'ai-chat-product';
       var img = document.createElement('img');
-      img.src = p.imageUrl || '/images/no-image.svg';
+      img.src = p.imageUrl || '/images/placeholder.svg';
       img.alt = p.name;
       card.appendChild(img);
       var info = document.createElement('div');
@@ -239,13 +243,13 @@
     var row = document.createElement('div');
     row.className = 'ai-chat-msg ai-chat-msg-ai';
     var avatar = document.createElement('img');
-    avatar.src = '/images/logo.png';
+    avatar.src = logoUrl;
     avatar.alt = 'Luminous';
     avatar.className = 'ai-chat-msg-avatar';
     row.appendChild(avatar);
     var bubble = document.createElement('div');
     bubble.className = 'ai-chat-bubble';
-    bubble.textContent = 'Xin chào! Mình là trợ lý AI của Luminous. Mình có thể tư vấn sản phẩm, so sánh giá, thêm vào giỏ hàng, tra cứu đơn hàng và giải đáp chính sách của shop. Bạn cần tìm gì hôm nay?';
+    bubble.textContent = greetingText;
     row.appendChild(bubble);
     messages.appendChild(row);
   }

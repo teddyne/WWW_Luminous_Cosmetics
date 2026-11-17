@@ -25,6 +25,7 @@ import com.luminous.repository.order.PaymentRepository;
 import com.luminous.repository.order.PointTransactionRepository;
 import com.luminous.repository.product.ProductVariantRepository;
 import com.luminous.repository.voucher.VoucherRepository;
+import com.luminous.service.admin.ShopSettingsService;
 import com.luminous.service.flashsale.FlashSaleService;
 import com.luminous.service.notification.NotificationService;
 import com.luminous.service.product.ProductCacheService;
@@ -39,12 +40,7 @@ import java.util.Optional;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.Collectors;
 
-/**
- * Dat hang: tao don + chi tiet + thanh toan + voucher/diem trong 1 giao dich.
- * Phi ship co dinh 30.000đ; 1 diem = 1đ; gio giao ghi vao dau Orders.note
- * (bang Orders khong co cot gio giao rieng). Loi nghiep vu nem
- * IllegalArgumentException voi thong bao tieng Viet de controller hien lai.
- */
+
 @Service
 @Transactional
 public class CheckoutService {
@@ -68,6 +64,7 @@ public class CheckoutService {
     private final IdempotencyService idempotency;
     private final ProductCacheService productCache;
     private final FlashSaleService flashSales;
+    private final ShopSettingsService settings;
 
     public CheckoutService(CartService cartService,
                            CartRepository carts,
@@ -84,7 +81,8 @@ public class CheckoutService {
                            NotificationService notifications,
                            IdempotencyService idempotency,
                            ProductCacheService productCache,
-                           FlashSaleService flashSales) {
+                           FlashSaleService flashSales,
+                           ShopSettingsService settings) {
         this.cartService = cartService;
         this.carts = carts;
         this.cartItems = cartItems;
@@ -101,6 +99,12 @@ public class CheckoutService {
         this.idempotency = idempotency;
         this.productCache = productCache;
         this.flashSales = flashSales;
+        this.settings = settings;
+    }
+
+    /** Phi van chuyen lay tu Cai dat > Van chuyen (mac dinh 30.000đ). */
+    public BigDecimal shippingFee() {
+        return settings.shippingFee();
     }
 
     /** Ket qua dat hang: don vua tao + cac dong da dat + tong tien phai tra. */
@@ -211,7 +215,7 @@ public class CheckoutService {
 
         // Tong tien: tam tinh - giam gia + phi ship - diem (1 diem = 1đ).
         CartService.Totals totals = cartService.totals(selected, applied);
-        BigDecimal afterDiscount = totals.total().add(SHIPPING_FEE);
+        BigDecimal afterDiscount = totals.total().add(shippingFee());
         int balance = user.getPointBalance() == null ? 0 : user.getPointBalance();
         int maxPoints = Math.min(balance, afterDiscount.intValue());
         int pointsUsed = Math.max(0, Math.min(usePoints, maxPoints));
@@ -281,7 +285,7 @@ public class CheckoutService {
         order.setRecipientPhone(address.getPhone());
         order.setShippingAddress(address.fullAddress());
         order.setSubtotal(totals.subtotal());
-        order.setShippingFee(SHIPPING_FEE);
+        order.setShippingFee(shippingFee());
         order.setDiscountAmount(totals.discount());
         order.setUsedPoints(pointsUsed);
         order.setTotalAmount(total);

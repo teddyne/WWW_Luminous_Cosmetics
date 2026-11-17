@@ -8,34 +8,34 @@
   <div class="container position-relative">
     <div class="row g-4">
       <div class="col-md-4">
-        <img th:src="@{/images/logo.png}" alt="LUMINOUS" class="logo-img mb-2"/>
-        <p class="text-muted">Shop mỹ phẩm Comestic</p>
-        <p class="mb-1"><i class="bi bi-geo-alt"></i> 12 Nguyễn Văn Bảo, Gò Vấp, TP.HCM</p>
-        <p class="mb-1"><i class="bi bi-telephone"></i> 0972606925</p>
-        <p class="mb-1"><i class="bi bi-envelope"></i> admin@luminous.vn</p>
+        <img th:src="${shop.logoUrl}" alt="LUMINOUS" class="logo-img mb-2"/>
+        <p class="text-muted" th:text="#{footer.tagline}">Shop mỹ phẩm Comestic</p>
+        <p class="mb-1"><i class="bi bi-geo-alt"></i> <span th:text="${shop.address}">12 Nguyễn Văn Bảo, Gò Vấp, TP.HCM</span></p>
+        <p class="mb-1"><i class="bi bi-telephone"></i> <span th:text="${shop.hotline}">0972606925</span></p>
+        <p class="mb-1"><i class="bi bi-envelope"></i> <span th:text="${shop.email}">admin@luminous.vn</span></p>
       </div>
       <div class="col-md-2">
-        <h6 class="fw-bold">Danh mục</h6>
+        <h6 class="fw-bold" th:text="#{footer.categories}">Danh mục</h6>
         <ul class="list-unstyled">
-          <li><a th:href="@{/products}">Sản phẩm</a></li>
-          <li><a th:href="@{/about}">Giới thiệu</a></li>
-          <li><a th:href="@{/#brands}">Thương hiệu</a></li>
-          <li><a th:href="@{/blog}">Bài viết</a></li>
+          <li><a th:href="@{/products}" th:text="#{footer.products}">Sản phẩm</a></li>
+          <li><a th:href="@{/about}" th:text="#{footer.aboutLink}">Giới thiệu</a></li>
+          <li><a th:href="@{/#brands}" th:text="#{footer.brands}">Thương hiệu</a></li>
+          <li><a th:href="@{/blog}" th:text="#{footer.blog}">Bài viết</a></li>
         </ul>
       </div>
       <div class="col-md-3">
-        <h6 class="fw-bold">Về chúng tôi</h6>
+        <h6 class="fw-bold" th:text="#{footer.about}">Về chúng tôi</h6>
         <!-- Chua co trang chinh sach rieng: tam ve trang chu de khong 404,
              khi co trang that thi doi tung link, khong doi khung footer. -->
         <ul class="list-unstyled">
-          <li><a th:href="@{/}">Chính sách giao hàng</a></li>
-          <li><a th:href="@{/}">Chính sách đổi trả</a></li>
-          <li><a th:href="@{/}">Hướng dẫn mua hàng</a></li>
-          <li><a th:href="@{/register}">Điều kiện chung</a></li>
+          <li><a th:href="@{/}" th:text="#{footer.shippingPolicy}">Chính sách giao hàng</a></li>
+          <li><a th:href="@{/}" th:text="#{footer.returnPolicy}">Chính sách đổi trả</a></li>
+          <li><a th:href="@{/}" th:text="#{footer.buyGuide}">Hướng dẫn mua hàng</a></li>
+          <li><a th:href="@{/register}" th:text="#{footer.terms}">Điều kiện chung</a></li>
         </ul>
       </div>
       <div class="col-md-3">
-        <h6 class="fw-bold">Kết nối với chúng tôi</h6>
+        <h6 class="fw-bold" th:text="#{footer.connect}">Kết nối với chúng tôi</h6>
         <div>
           <a href="https://www.tiktok.com" target="_blank" rel="noopener" class="social-icon" title="TikTok"><i class="bi bi-music-note-beamed"></i></a>
           <a href="https://www.instagram.com" target="_blank" rel="noopener" class="social-icon" title="Instagram"><i class="bi bi-instagram"></i></a>
@@ -45,7 +45,7 @@
       </div>
     </div>
     <hr/>
-    <p class="text-center text-muted small mb-0">© 2026 LUMINOUS - Nhóm 6 WWW - Đại học Công Nghiệp TP.HCM.</p>
+    <p class="text-center text-muted small mb-1"><span th:text="'© 2026 ' + ${shop.shopName} + ' — '"></span><span th:text="#{footer.copyright}">Nhóm 6 WWW - Đại học Công Nghiệp TP.HCM.</span></p>
   </div>
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
   <script th:src="@{/js/main.js}"></script>

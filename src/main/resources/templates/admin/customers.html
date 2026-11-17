@@ -9,6 +9,11 @@
     <div th:replace="~{admin/fragments :: topbar(${role == 'ROLE_ADMIN'} ? 'Quản trị viên' : 'Danh sách khách hàng')}"></div>
     <div th:replace="~{admin/fragments :: toast}"></div>
 
+    <ul class="nav nav-tabs mb-3" th:if="${role == 'ROLE_ADMIN'}">
+      <li class="nav-item"><a class="nav-link active" th:href="@{/admin/customers(role='ROLE_ADMIN')}">Quản trị viên</a></li>
+      <li class="nav-item"><a class="nav-link" th:href="@{/admin/login-history}">Lịch sử đăng nhập</a></li>
+    </ul>
+
     <form th:action="@{/admin/customers}" method="get" class="admin-toolbar">
 <div class="admin-search-group">
         <input type="text" name="q" class="form-control" placeholder="Tìm tên, email, số điện thoại" th:value="${q}"/>
@@ -54,7 +59,7 @@
         <table class="table admin-table">
           <thead>
             <tr><th style="width: 40px;"><input type="checkbox" class="form-check-input select-all" title="Chọn tất cả trên trang"/></th>
-            <th>Khách hàng</th><th>Email</th><th>Số điện thoại</th><th class="text-end">Điểm</th><th class="text-end">Đơn hàng</th><th class="text-end">Đã chi tiêu</th><th>Vai trò</th><th>Trạng thái</th><th class="text-end">Hành động</th></tr>
+            <th>Người dùng</th><th>Email</th><th>Số điện thoại</th><th class="text-end">Điểm</th><th class="text-end">Đơn hàng</th><th class="text-end">Đã chi tiêu</th><th>Vai trò</th><th>Trạng thái</th><th class="text-end">Hành động</th></tr>
           </thead>
           <tbody>
             <tr th:each="item : ${customers}">

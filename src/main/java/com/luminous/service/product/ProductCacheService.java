@@ -154,15 +154,6 @@ public class ProductCacheService {
         evictPattern(HOME_PREFIX + "*");
     }
 
-    public void evictProduct(Integer productId) {
-        if (productId == null) {
-            return;
-        }
-        delete(productKey(productId));
-        evictPattern(SEARCH_PREFIX + "*");
-        evictPattern(HOME_PREFIX + "*");
-    }
-
     // ---------- Chuyen doi Card <-> CachedProduct ----------
 
     public CachedProduct fromCard(ProductCard card) {
@@ -293,17 +284,6 @@ public class ProductCacheService {
             warned.set(false);
         } catch (Exception e) {
             warnOnce("Khong ghi duoc Redis (bo qua cache)", e);
-        }
-    }
-
-    private void delete(String key) {
-        if (!enabled) {
-            return;
-        }
-        try {
-            redis.delete(key);
-        } catch (Exception e) {
-            warnOnce("Khong xoa duoc key Redis", e);
         }
     }
 

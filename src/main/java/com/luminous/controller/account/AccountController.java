@@ -64,12 +64,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
-/**
- * Trang ca nhan cua khach (sidebar giong hinh mau, KHONG co muc sale):
- * Ho so, Ket qua trac nghiem, Don mua (7 tab loc), Doi mat khau.
- * Thong bao / Kho Voucher / Shopee Xu chua co chuc nang that nen tam
- * dung trang coming-soon co san, khong lam nut gia.
- */
 @Controller
 @RequestMapping("/account")
 public class AccountController {

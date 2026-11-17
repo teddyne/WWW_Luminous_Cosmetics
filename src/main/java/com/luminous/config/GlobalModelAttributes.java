@@ -3,6 +3,7 @@ package com.luminous.config;
 import com.luminous.repository.UserRepository;
 import com.luminous.repository.notification.NotificationRepository;
 import com.luminous.security.CustomUserDetails;
+import com.luminous.service.admin.ShopSettingsService;
 import com.luminous.service.shop.CartService;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.ObjectProvider;
@@ -18,15 +19,18 @@ public class GlobalModelAttributes {
     private final ObjectProvider<ClientRegistrationRepository> clientRegistrations;
     private final NotificationRepository notifications;
     private final UserRepository users;
+    private final ShopSettingsService settings;
 
     public GlobalModelAttributes(CartService cartService,
                                  ObjectProvider<ClientRegistrationRepository> clientRegistrations,
                                  NotificationRepository notifications,
-                                 UserRepository users) {
+                                 UserRepository users,
+                                 ShopSettingsService settings) {
         this.cartService = cartService;
         this.clientRegistrations = clientRegistrations;
         this.notifications = notifications;
         this.users = users;
+        this.settings = settings;
     }
 
     @ModelAttribute("currentUser")
@@ -59,6 +63,12 @@ public class GlobalModelAttributes {
     @ModelAttribute("oauthEnabled")
     public boolean oauthEnabled() {
         return clientRegistrations.getIfAvailable() != null;
+    }
+
+    /** Cai dat cua hang (ten, logo, giao dien, thanh toan, AI...): dung o header/footer/checkout. */
+    @ModelAttribute("shop")
+    public ShopSettingsService.ShopSettingsView shopSettings() {
+        return settings.view();
     }
 
     /** So thong bao chua doc (hien huy hieu o sidebar). Chua dang nhap = 0. */

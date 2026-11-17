@@ -10,6 +10,7 @@ import com.luminous.model.enums.PaymentMethod;
 import com.luminous.model.enums.PaymentStatus;
 import com.luminous.repository.address.AddressRepository;
 import com.luminous.security.CustomUserDetails;
+import com.luminous.service.admin.ShopSettingsService;
 import com.luminous.service.shop.CartService;
 import com.luminous.service.shop.CheckoutService;
 import jakarta.servlet.http.HttpSession;
@@ -46,13 +47,16 @@ public class CheckoutController {
     private final CheckoutService checkoutService;
     private final CartService cartService;
     private final AddressRepository addresses;
+    private final ShopSettingsService settings;
 
     public CheckoutController(CheckoutService checkoutService,
                               CartService cartService,
-                              AddressRepository addresses) {
+                              AddressRepository addresses,
+                              ShopSettingsService settings) {
         this.checkoutService = checkoutService;
         this.cartService = cartService;
         this.addresses = addresses;
+        this.settings = settings;
     }
 
     /** Lay User dang dang nhap (giong CartController). */
@@ -94,7 +98,7 @@ public class CheckoutController {
         }
 
         CartService.Totals totals = cartService.totals(lines, applied);
-        BigDecimal afterDiscount = totals.total().add(CheckoutService.SHIPPING_FEE);
+        BigDecimal afterDiscount = totals.total().add(checkoutService.shippingFee());
         int balance = user.getPointBalance() == null ? 0 : user.getPointBalance();
         int pointsMax = Math.min(balance, afterDiscount.intValue());
 
@@ -113,7 +117,7 @@ public class CheckoutController {
         model.addAttribute("voucherError", voucherError);
         model.addAttribute("subtotalText", CartLine.formatVnd(totals.subtotal()));
         model.addAttribute("discountText", CartLine.formatVnd(totals.discount()));
-        model.addAttribute("shippingText", CartLine.formatVnd(CheckoutService.SHIPPING_FEE));
+        model.addAttribute("shippingText", CartLine.formatVnd(checkoutService.shippingFee()));
         model.addAttribute("totalText", CartLine.formatVnd(afterDiscount));
         model.addAttribute("totalValue", afterDiscount);
         // Khoa chong trung: sinh moi moi lan mo trang; bam Dat hang 2 lan
@@ -263,9 +267,11 @@ public class CheckoutController {
         }
 
         PaymentMethod method = PaymentMethod.from(paymentMethod);
-        if (method != PaymentMethod.COD) {
+        boolean allowed = (method == PaymentMethod.COD && settings.paymentCodEnabled())
+                || (method == PaymentMethod.BANK_TRANSFER && settings.paymentBankingEnabled());
+        if (!allowed) {
             redirect.addFlashAttribute("checkoutError",
-                    "Đợt này mới có thanh toán tiền mặt (COD).");
+                    "Phương thức thanh toán này hiện không được cửa hàng hỗ trợ.");
             return "redirect:/checkout" + back;
         }
 

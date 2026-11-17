@@ -185,7 +185,7 @@ public class FlashSaleService {
                 }
             }
         }
-        return "/images/no-image.svg";
+        return "/images/placeholder.svg";
     }
 
     public FlashSaleForm formFor(Integer id) {

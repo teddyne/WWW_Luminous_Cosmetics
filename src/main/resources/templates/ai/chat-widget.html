@@ -1,11 +1,12 @@
-<div th:fragment="chatWidget" id="luminousAiChat" class="ai-chat" xmlns:th="http://www.thymeleaf.org">
+<div th:fragment="chatWidget" id="luminousAiChat" class="ai-chat" xmlns:th="http://www.thymeleaf.org"
+     th:attr="data-greeting=${shop.aiGreeting},data-logo=${shop.logoUrl}">
   <button type="button" id="aiChatFab" class="ai-chat-fab" aria-label="Mở trò chuyện với Luminous AI">
     <i class="bi bi-chat-dots-fill"></i>
   </button>
 
   <section id="aiChatWindow" class="ai-chat-window" aria-label="Luminous AI Chat Box" hidden>
     <header class="ai-chat-header">
-      <img th:src="@{/images/logo.png}" src="/images/logo.png" alt="Luminous" class="ai-chat-avatar"/>
+      <img th:src="${shop.logoUrl}" src="/images/logo.png" alt="Luminous" class="ai-chat-avatar"/>
       <div class="ai-chat-title">
         <strong>Luminous AI Chat Box</strong>
         <span id="aiChatStatus">Trực tuyến</span>
@@ -25,8 +26,8 @@
 
     <div id="aiChatMessages" class="ai-chat-messages">
       <div class="ai-chat-msg ai-chat-msg-ai">
-        <img th:src="@{/images/logo.png}" src="/images/logo.png" alt="Luminous" class="ai-chat-msg-avatar"/>
-        <div class="ai-chat-bubble">Xin chào! Mình là trợ lý AI của Luminous. Mình có thể tư vấn sản phẩm, so sánh giá, thêm vào giỏ hàng, tra cứu đơn hàng và giải đáp chính sách của shop. Bạn cần tìm gì hôm nay?</div>
+        <img th:src="${shop.logoUrl}" src="/images/logo.png" alt="Luminous" class="ai-chat-msg-avatar"/>
+        <div class="ai-chat-bubble" th:text="${shop.aiGreeting}">Xin chào! Mình là trợ lý AI của Luminous. Mình có thể tư vấn sản phẩm, so sánh giá, thêm vào giỏ hàng, tra cứu đơn hàng và giải đáp chính sách của shop. Bạn cần tìm gì hôm nay?</div>
       </div>
     </div>
 

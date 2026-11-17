@@ -192,32 +192,6 @@ public class AdminDashboardService {
         return result;
     }
 
-    public String exportCsv(String range, LocalDate day, String month, Integer year) {
-        StringBuilder out = new StringBuilder();
-        out.append("Bao cao thong ke Luminous - ").append(periodLabel(range, day, month, year))
-                .append(" - ngay xuat ").append(LocalDate.now()).append("\n\n");
-        out.append("Doanh thu theo ky\n");
-        out.append("Ky,Doanh thu (VND)\n");
-        for (RevenuePoint point : revenueSeries(range, day, month, year)) {
-            out.append(csv(point.label())).append(",").append(point.value()).append("\n");
-        }
-        out.append("\nTop 10 san pham ban chay\n");
-        out.append("Hang,Ten san pham,Da ban,Doanh thu (VND)\n");
-        int rank = 1;
-        for (TopProductRow row : topSellers(10)) {
-            out.append(rank++).append(",").append(csv(row.name())).append(",")
-                    .append(row.soldCount()).append(",").append(row.revenue()).append("\n");
-        }
-        out.append("\nTop 10 san pham ban cham\n");
-        out.append("Hang,Ten san pham,Da ban,Doanh thu (VND)\n");
-        rank = 1;
-        for (TopProductRow row : slowestSellers(10)) {
-            out.append(rank++).append(",").append(csv(row.name())).append(",")
-                    .append(row.soldCount()).append(",").append(row.revenue()).append("\n");
-        }
-        return out.toString();
-    }
-
     public byte[] exportExcel(String range, LocalDate day, String month, Integer year) throws IOException {
         try (XSSFWorkbook workbook = new XSSFWorkbook();
              ByteArrayOutputStream out = new ByteArrayOutputStream()) {

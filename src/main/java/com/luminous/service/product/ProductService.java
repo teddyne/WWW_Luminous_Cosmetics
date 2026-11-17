@@ -37,7 +37,7 @@ public class ProductService {
     private final FlashSaleService flashSales;
 
     /** Anh cho san chung khi san pham chua co anh nao (khong do ve anh san pham khac). */
-    private static final String NO_IMAGE = "/images/no-image.svg";
+    private static final String NO_IMAGE = "/images/placeholder.svg";
 
     /** Tom tat danh gia: diem trung binh, tong so, so luong theo tung muc sao. */
     public record ReviewSummary(double average, long total, Map<Integer, Long> byStar) {

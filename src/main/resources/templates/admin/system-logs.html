@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="vi">
+<head th:replace="~{admin/fragments :: head('Nhật ký hệ thống')}"></head>
+<body>
+<div class="admin-shell">
+  <div th:replace="~{admin/fragments :: sidebar('system-logs')}"></div>
+  <div class="admin-overlay" onclick="toggleSidebar(false)"></div>
+  <main class="admin-main">
+    <div th:replace="~{admin/fragments :: topbar('Nhật ký hệ thống')}"></div>
+    <div th:replace="~{admin/fragments :: toast}"></div>
+
+    <form th:action="@{/admin/system-logs}" method="get" class="admin-toolbar">
+      <div class="admin-search-group">
+        <input type="text" name="username" class="form-control" placeholder="Tìm theo tài khoản" th:value="${username}"/>
+        <button type="submit" class="btn btn-soft"><i class="bi bi-search"></i> Tìm kiếm</button>
+      </div>
+      <select name="action" class="form-select" style="width: 170px;" onchange="this.form.submit()">
+        <option value="">Mọi việc làm</option>
+        <option value="CREATE" th:selected="${action == 'CREATE'}">Thêm mới</option>
+        <option value="UPDATE" th:selected="${action == 'UPDATE'}">Cập nhật</option>
+        <option value="DELETE" th:selected="${action == 'DELETE'}">Xóa</option>
+      </select>
+      <input type="date" name="from" class="form-control" style="width: 160px;" th:value="${from}" title="Từ ngày"/>
+      <input type="date" name="to" class="form-control" style="width: 160px;" th:value="${to}" title="Đến ngày"/>
+      <span class="flex-grow-1"></span>
+      <a th:href="@{/admin/system-logs}" class="btn btn-light"><i class="bi bi-arrow-counterclockwise"></i> Đặt lại</a>
+    </form>
+
+    <div class="admin-card">
+      <div class="table-responsive">
+        <table class="table admin-table">
+          <thead>
+            <tr><th>Thời gian</th><th>Người làm</th><th>Việc đã làm</th><th>Kết quả</th></tr>
+          </thead>
+          <tbody>
+            <tr th:each="item : ${items}">
+              <td th:text="${#temporals.format(item.createdAt, 'dd/MM/yyyy HH:mm:ss')}">17/11/2026 23:00:00</td>
+              <td><span class="admin-name" th:text="${item.username}">admin@luminous.vn</span></td>
+              <td th:text="${item.description}">Thêm sản phẩm mới</td>
+              <td>
+                <span class="badge bg-success" th:if="${item.status == null or item.status < 400}">Thành công</span>
+                <span class="badge bg-danger" th:if="${item.status != null and item.status >= 400}">Không thành công</span>
+              </td>
+            </tr>
+            <tr th:if="${items == null or items.isEmpty()}">
+              <td colspan="4" class="text-center text-muted py-4">Chưa có thao tác nào khớp điều kiện lọc. Nhật ký chỉ ghi các thao tác thay đổi dữ liệu, không ghi lượt xem trang.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div th:replace="~{admin/fragments :: pager(${page}, ${baseUrl}, ${pageQuery})}"></div>
+    </div>
+  </main>
+</div>
+<div th:replace="~{admin/fragments :: scripts}"></div>
+</body>
+</html>

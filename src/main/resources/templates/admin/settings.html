@@ -6,58 +6,163 @@
   <div th:replace="~{admin/fragments :: sidebar('settings')}"></div>
   <div class="admin-overlay" onclick="toggleSidebar(false)"></div>
   <main class="admin-main">
-    <div th:replace="~{admin/fragments :: topbar('Cài đặt tài khoản')}"></div>
+    <div th:replace="~{admin/fragments :: topbar('Cài đặt')}"></div>
     <div th:replace="~{admin/fragments :: toast}"></div>
 
     <div th:if="${formError}" class="alert alert-danger rounded-3" th:text="${formError}"></div>
 
     <div class="row g-3">
       <div class="col-lg-6">
-        <div class="form-card">
-          <h2><span class="step-num">1</span> Thông tin tài khoản</h2>
-          <form th:action="@{/admin/settings/profile}" th:object="${profileForm}" method="post">
-            <input type="hidden" th:if="${_csrf != null}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
-            <div class="mb-3">
-              <label class="form-label" for="profileName">Họ tên</label>
-              <input type="text" id="profileName" class="form-control" th:field="*{fullName}" required maxlength="100"/>
-              <div class="text-danger small mt-1" th:if="${#fields.hasErrors('fullName')}" th:errors="*{fullName}"></div>
+      <div class="form-card mb-3">
+        <h2><span class="step-num">1</span> Thông tin tài khoản</h2>
+        <form th:action="@{/admin/settings/profile}" th:object="${profileForm}" method="post">
+          <input type="hidden" th:if="${_csrf != null}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+          <div class="mb-3">
+            <label class="form-label" for="profileName">Họ tên</label>
+            <input type="text" id="profileName" class="form-control" th:field="*{fullName}" required maxlength="100"/>
+            <div class="text-danger small mt-1" th:if="${#fields.hasErrors('fullName')}" th:errors="*{fullName}"></div>
+          </div>
+          <div class="mb-3">
+            <label class="form-label" for="profilePhone">Số điện thoại</label>
+            <input type="text" id="profilePhone" class="form-control" th:field="*{phone}" maxlength="15"/>
+            <div class="text-danger small mt-1" th:if="${#fields.hasErrors('phone')}" th:errors="*{phone}"></div>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Email đăng nhập</label>
+            <input type="text" class="form-control" th:value="${currentUser.user.email}" disabled/>
+          </div>
+          <button type="submit" class="btn btn-green">Lưu thay đổi</button>
+        </form>
+      </div>
+
+      <div class="form-card mb-3">
+        <h2><span class="step-num">2</span> Đổi mật khẩu</h2>
+        <form th:action="@{/admin/settings/password}" th:object="${passwordForm}" method="post">
+          <input type="hidden" th:if="${_csrf != null}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+          <div class="mb-3">
+            <label class="form-label" for="currentPassword">Mật khẩu hiện tại</label>
+            <input type="password" id="currentPassword" class="form-control" th:field="*{currentPassword}" required autocomplete="current-password"/>
+            <div class="text-danger small mt-1" th:if="${#fields.hasErrors('currentPassword')}" th:errors="*{currentPassword}"></div>
+          </div>
+          <div class="mb-3">
+            <label class="form-label" for="newPassword">Mật khẩu mới</label>
+            <input type="password" id="newPassword" class="form-control" th:field="*{newPassword}" required autocomplete="new-password"/>
+            <div class="text-danger small mt-1" th:if="${#fields.hasErrors('newPassword')}" th:errors="*{newPassword}"></div>
+          </div>
+          <div class="mb-3">
+            <label class="form-label" for="confirmPassword">Nhập lại mật khẩu mới</label>
+            <input type="password" id="confirmPassword" class="form-control" th:field="*{confirmPassword}" required autocomplete="new-password"/>
+            <div class="text-danger small mt-1" th:if="${#fields.hasErrors('confirmPassword')}" th:errors="*{confirmPassword}"></div>
+          </div>
+          <button type="submit" class="btn btn-green">Đổi mật khẩu</button>
+        </form>
+      </div>
+
+      <div class="form-card mb-3">
+        <h2><span class="step-num">3</span> Thông tin cửa hàng</h2>
+        <form th:action="@{/admin/settings/store}" method="post" enctype="multipart/form-data">
+          <input type="hidden" th:if="${_csrf != null}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+          <div class="mb-3">
+            <label class="form-label" for="shopName">Tên shop</label>
+            <input type="text" id="shopName" name="shopName" class="form-control" th:value="${settings['shop.name']}" required maxlength="100"/>
+          </div>
+          <div class="mb-3">
+            <label class="form-label" for="shopAddress">Địa chỉ</label>
+            <input type="text" id="shopAddress" name="shopAddress" class="form-control" th:value="${settings['shop.address']}" maxlength="255"/>
+          </div>
+          <div class="row">
+            <div class="col-6 mb-3">
+              <label class="form-label" for="shopHotline">Hotline</label>
+              <input type="text" id="shopHotline" name="shopHotline" class="form-control" th:value="${settings['shop.hotline']}" maxlength="20"/>
             </div>
-            <div class="mb-3">
-              <label class="form-label" for="profilePhone">Số điện thoại</label>
-              <input type="text" id="profilePhone" class="form-control" th:field="*{phone}" maxlength="15"/>
-              <div class="text-danger small mt-1" th:if="${#fields.hasErrors('phone')}" th:errors="*{phone}"></div>
+            <div class="col-6 mb-3">
+              <label class="form-label" for="shopEmail">Email</label>
+              <input type="email" id="shopEmail" name="shopEmail" class="form-control" th:value="${settings['shop.email']}" maxlength="100"/>
             </div>
-            <div class="mb-3">
-              <label class="form-label">Email đăng nhập</label>
-              <input type="text" class="form-control" th:value="${currentUser.user.email}" disabled/>
+          </div>
+          <div class="mb-3">
+            <label class="form-label" for="logoFile">Logo</label>
+            <div class="d-flex align-items-center gap-2">
+              <img th:src="${settings['shop.logo']}" alt="Logo hiện tại" style="height: 40px;"/>
+              <input type="file" id="logoFile" name="logo" class="form-control" accept="image/*"/>
             </div>
-            <button type="submit" class="btn btn-green">Lưu thay đổi</button>
-          </form>
-        </div>
+            <small class="text-muted">Để trống nếu giữ logo hiện tại.</small>
+          </div>
+          <button type="submit" class="btn btn-green">Lưu thông tin cửa hàng</button>
+        </form>
+      </div>
       </div>
       <div class="col-lg-6">
-        <div class="form-card">
-          <h2><span class="step-num">2</span> Đổi mật khẩu</h2>
-          <form th:action="@{/admin/settings/password}" th:object="${passwordForm}" method="post">
-            <input type="hidden" th:if="${_csrf != null}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
-            <div class="mb-3">
-              <label class="form-label" for="currentPassword">Mật khẩu hiện tại</label>
-              <input type="password" id="currentPassword" class="form-control" th:field="*{currentPassword}" required autocomplete="current-password"/>
-              <div class="text-danger small mt-1" th:if="${#fields.hasErrors('currentPassword')}" th:errors="*{currentPassword}"></div>
+      <div class="form-card mb-3">
+        <h2><span class="step-num">4</span> Vận chuyển</h2>
+        <form th:action="@{/admin/settings/shipping}" method="post">
+          <input type="hidden" th:if="${_csrf != null}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+          <div class="mb-3">
+            <label class="form-label" for="shippingFee">Phí vận chuyển mặc định (đ)</label>
+            <input type="number" id="shippingFee" name="shippingFee" class="form-control" th:value="${settings['shipping.fee']}" min="0" max="10000000" step="1000"/>
+            <small class="text-muted">Phí này áp dụng cho mọi đơn hàng khi thanh toán.</small>
+          </div>
+          <div class="mb-3">
+            <label class="form-label" for="shippingProviders">Đơn vị vận chuyển (mỗi dòng một đơn vị)</label>
+            <textarea id="shippingProviders" name="shippingProviders" class="form-control" rows="3" th:text="${settings['shipping.providers']}"></textarea>
+          </div>
+          <button type="submit" class="btn btn-green">Lưu vận chuyển</button>
+        </form>
+      </div>
+
+      <div class="form-card mb-3">
+        <h2><span class="step-num">5</span> Thanh toán</h2>
+        <form th:action="@{/admin/settings/payment}" method="post">
+          <input type="hidden" th:if="${_csrf != null}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+          <div class="form-check mb-2">
+            <input class="form-check-input" type="checkbox" name="paymentCod" id="payCod" value="true" th:checked="${settings['payment.cod'] == 'true'}"/>
+            <input type="hidden" name="paymentCod" value="false"/>
+            <label class="form-check-label" for="payCod">Thanh toán khi nhận hàng (COD)</label>
+          </div>
+          <div class="form-check mb-3">
+            <input class="form-check-input" type="checkbox" name="paymentBanking" id="payBanking" value="true" th:checked="${settings['payment.banking'] == 'true'}"/>
+            <input type="hidden" name="paymentBanking" value="false"/>
+            <label class="form-check-label" for="payBanking">Chuyển khoản ngân hàng</label>
+          </div>
+          <div class="mb-3">
+            <label class="form-label" for="bankName">Ngân hàng</label>
+            <input type="text" id="bankName" name="bankName" class="form-control" th:value="${settings['payment.bankName']}" maxlength="100" placeholder="Ví dụ: Vietcombank"/>
+          </div>
+          <div class="row">
+            <div class="col-6 mb-3">
+              <label class="form-label" for="bankAccount">Số tài khoản</label>
+              <input type="text" id="bankAccount" name="bankAccount" class="form-control" th:value="${settings['payment.bankAccount']}" maxlength="50"/>
             </div>
-            <div class="mb-3">
-              <label class="form-label" for="newPassword">Mật khẩu mới</label>
-              <input type="password" id="newPassword" class="form-control" th:field="*{newPassword}" required autocomplete="new-password"/>
-              <div class="text-danger small mt-1" th:if="${#fields.hasErrors('newPassword')}" th:errors="*{newPassword}"></div>
+            <div class="col-6 mb-3">
+              <label class="form-label" for="bankHolder">Chủ tài khoản</label>
+              <input type="text" id="bankHolder" name="bankHolder" class="form-control" th:value="${settings['payment.bankHolder']}" maxlength="100"/>
             </div>
-            <div class="mb-3">
-              <label class="form-label" for="confirmPassword">Nhập lại mật khẩu mới</label>
-              <input type="password" id="confirmPassword" class="form-control" th:field="*{confirmPassword}" required autocomplete="new-password"/>
-              <div class="text-danger small mt-1" th:if="${#fields.hasErrors('confirmPassword')}" th:errors="*{confirmPassword}"></div>
-            </div>
-            <button type="submit" class="btn btn-green">Đổi mật khẩu</button>
-          </form>
-        </div>
+          </div>
+          <button type="submit" class="btn btn-green">Lưu thanh toán</button>
+        </form>
+      </div>
+
+      <div class="form-card mb-3">
+        <h2><span class="step-num">6</span> AI Settings</h2>
+        <form th:action="@{/admin/settings/ai}" method="post">
+          <input type="hidden" th:if="${_csrf != null}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+          <div class="form-check mb-3">
+            <input class="form-check-input" type="checkbox" name="aiEnabled" id="aiEnabled" value="true" th:checked="${settings['ai.enabled'] == 'true'}"/>
+            <input type="hidden" name="aiEnabled" value="false"/>
+            <label class="form-check-label" for="aiEnabled">Bật Luminous AI</label>
+          </div>
+          <small class="text-muted d-block mb-3">Tắt AI sẽ ẩn hộp chat trên cửa hàng và trợ lý sẽ báo đang tạm tắt.</small>
+          <div class="mb-3">
+            <label class="form-label" for="aiDailyLimit">Giới hạn lượt chat mỗi người mỗi ngày (0 = không giới hạn)</label>
+            <input type="number" id="aiDailyLimit" name="aiDailyLimit" class="form-control" th:value="${settings['ai.dailyLimit']}" min="0" max="500"/>
+          </div>
+          <div class="mb-3">
+            <label class="form-label" for="aiGreeting">Lời chào khi mở hộp chat</label>
+            <textarea id="aiGreeting" name="aiGreeting" class="form-control" rows="3" th:text="${settings['ai.greeting']}"></textarea>
+          </div>
+          <button type="submit" class="btn btn-green">Lưu cài đặt AI</button>
+        </form>
+      </div>
       </div>
     </div>
   </main>

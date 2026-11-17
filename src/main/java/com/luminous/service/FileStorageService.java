@@ -31,13 +31,6 @@ public class FileStorageService {
         this.productMediaDir = productMediaDir;
     }
 
-    /**
-     * Luu 1 file media cua san pham theo cau truc moi:
-     * static/products/{categoryId}-{slug-ten-loai}/{productId}/images/image_{n}.jpg
-     * static/products/{categoryId}-{slug-ten-loai}/{productId}/videos/video_{n}.mp4
-     * Tra ve duong dan URL (vi du /products/1-skincare/101/images/image_1.jpg).
-     * kind = "images" hoac "videos".
-     */
     public String storeProductMedia(MultipartFile file, Category category, Integer productId,
                                     String kind, int index) {
         if (file == null || file.isEmpty()) {
@@ -112,24 +105,6 @@ public class FileStorageService {
             return "/images/promo/" + fileName;
         } catch (IOException e) {
             throw new IllegalStateException("Không lưu được ảnh banner", e);
-        }
-    }
-
-    public String storeProductImage(MultipartFile file, String categoryName, String baseName) {
-        if (file == null || file.isEmpty()) {
-            return null;
-        }
-        String extension = checkedExtension(file);
-        String fileName = slug(baseName) + "-" + System.currentTimeMillis() + "." + extension;
-        String folder = categoryFolderName(categoryName);
-        try {
-            Path dir = Paths.get(productImageDir, folder);
-            Files.createDirectories(dir);
-            Path target = dir.resolve(fileName);
-            file.transferTo(target);
-            return "/images/products/" + folder + "/" + fileName;
-        } catch (IOException e) {
-            throw new IllegalStateException("Không lưu được ảnh", e);
         }
     }
 

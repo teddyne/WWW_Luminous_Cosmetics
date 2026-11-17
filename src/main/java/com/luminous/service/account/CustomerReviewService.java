@@ -19,12 +19,6 @@ import org.springframework.web.multipart.MultipartFile;
 import java.time.LocalDateTime;
 import java.util.List;
 
-/**
- * Khach tu danh gia san pham da mua (moi dong OrderDetail chi danh gia 1 lan).
- * Danh gia xong cong 200 diem / 1 san pham (hien "Danh gia ngay va nhan 200 Xu"
- * o trang Don mua). Kem duoc toi da 5 anh + 1 video / 1 san pham, luu vao
- * ReviewMedia, hien o trang chi tiet san pham.
- */
 @Service
 public class CustomerReviewService {
 
@@ -53,12 +47,6 @@ public class CustomerReviewService {
         this.pointTransactions = pointTransactions;
         this.fileStorage = fileStorage;
         this.notifications = notifications;
-    }
-
-    @Transactional
-    public Review submitReview(Integer userId, Integer orderDetailId,
-                               Byte rating, String comment, boolean anonymous) {
-        return submitReviewWithMedia(userId, orderDetailId, rating, comment, anonymous, null, null);
     }
 
     @Transactional

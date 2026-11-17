@@ -47,6 +47,9 @@
     <a th:href="@{/admin/settings}" th:classappend="${activeMenu == 'settings'} ? ' active'" class="admin-nav-link">
       <i class="bi bi-gear"></i><span>Cài đặt</span>
     </a>
+    <a th:href="@{/admin/system-logs}" th:classappend="${activeMenu == 'system-logs'} ? ' active'" class="admin-nav-link">
+      <i class="bi bi-journal-text"></i><span>Nhật ký hệ thống</span>
+    </a>
     <a th:href="@{/admin/customers(role='ROLE_ADMIN')}" th:classappend="${activeMenu == 'admins'} ? ' active'" class="admin-nav-link">
       <i class="bi bi-shield-check"></i><span>Quản trị viên</span>
     </a>

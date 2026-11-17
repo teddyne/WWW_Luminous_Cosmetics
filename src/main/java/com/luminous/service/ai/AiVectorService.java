@@ -213,10 +213,6 @@ public class AiVectorService {
         return !cache.isEmpty();
     }
 
-    public int indexedCount() {
-        return cache.size();
-    }
-
     public String productText(Product product) {
         StringBuilder text = new StringBuilder();
         text.append(product.getName() == null ? "" : product.getName()).append(" ");

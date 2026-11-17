@@ -2,6 +2,7 @@ package com.luminous.config;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import java.nio.file.Paths;
@@ -12,13 +13,21 @@ public class AdminWebConfig implements WebMvcConfigurer {
     private final String uploadDir;
     private final String productImageDir;
     private final String productMediaDir;
+    private final AdminAuditInterceptor auditInterceptor;
 
     public AdminWebConfig(@Value("${app.upload-dir:uploads}") String uploadDir,
                           @Value("${app.product-image-dir:src/main/resources/static/images/products}") String productImageDir,
-                          @Value("${app.product-media-dir:src/main/resources/static/products}") String productMediaDir) {
+                          @Value("${app.product-media-dir:src/main/resources/static/products}") String productMediaDir,
+                          AdminAuditInterceptor auditInterceptor) {
         this.uploadDir = uploadDir;
         this.productImageDir = productImageDir;
         this.productMediaDir = productMediaDir;
+        this.auditInterceptor = auditInterceptor;
+    }
+
+    @Override
+    public void addInterceptors(InterceptorRegistry registry) {
+        registry.addInterceptor(auditInterceptor).addPathPatterns("/admin/**");
     }
 
     @Override

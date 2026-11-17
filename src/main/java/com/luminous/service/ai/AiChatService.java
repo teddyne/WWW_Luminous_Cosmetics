@@ -4,6 +4,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.luminous.dto.CartLine;
 import com.luminous.dto.ai.AiProductView;
 import com.luminous.model.User;
+import com.luminous.repository.ai.AiChatMessageRepository;
+import com.luminous.service.admin.ShopSettingsService;
 import com.luminous.service.ai.AiChatHistoryService.ChatTurn;
 import com.luminous.service.ai.AiOrderDraftService.DraftView;
 import com.luminous.service.ai.AiVectorService.PolicyHit;
@@ -21,6 +23,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.MimeTypeUtils;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
@@ -58,6 +62,8 @@ public class AiChatService {
     private final AiChatHistoryService historyService;
     private final AiRequestContext context;
     private final ObjectMapper objectMapper;
+    private final ShopSettingsService settings;
+    private final AiChatMessageRepository chatMessages;
 
     @Value("${app.ai.enabled:true}")
     private boolean aiEnabled;
@@ -66,9 +72,13 @@ public class AiChatService {
                                     AiImageService.ImageData image) {
         String sessionId = session.getId();
         Integer userId = user != null ? user.getId() : null;
+        ChatReply blocked = blockedReply(userId, sessionId);
+        if (blocked != null) {
+            return blocked;
+        }
         List<ChatTurn> recentTurns = historyService.history(userId, sessionId, 6);
         historyService.save(userId, sessionId, "USER", message);
-        ChatClient chatClient = aiEnabled ? chatClientProvider.getIfAvailable() : null;
+        ChatClient chatClient = effectiveAiEnabled() ? chatClientProvider.getIfAvailable() : null;
         if (chatClient == null) {
             AiFallbackService.FallbackAnswer fallback = fallbackService.answer(message, user, session);
             historyService.save(userId, sessionId, "AI", fallback.text());
@@ -135,9 +145,16 @@ public class AiChatService {
                            AiImageService.ImageData image, SseEmitter emitter) {
         String sessionId = session.getId();
         Integer userId = user != null ? user.getId() : null;
+        ChatReply blocked = blockedReply(userId, sessionId);
+        if (blocked != null) {
+            sendChunk(emitter, blocked.reply());
+            sendDone(emitter, blocked, null);
+            emitter.complete();
+            return;
+        }
         List<ChatTurn> recentTurns = historyService.history(userId, sessionId, 6);
         historyService.save(userId, sessionId, "USER", message);
-        ChatClient chatClient = aiEnabled ? chatClientProvider.getIfAvailable() : null;
+        ChatClient chatClient = effectiveAiEnabled() ? chatClientProvider.getIfAvailable() : null;
         if (chatClient == null) {
             AiFallbackService.FallbackAnswer fallback = fallbackService.answer(message, user, session);
             historyService.save(userId, sessionId, "AI", fallback.text());
@@ -309,12 +326,42 @@ public class AiChatService {
         return true;
     }
 
+    /** AI bat khi ca co dinh trong properties lan cai dat trong DB deu bat. */
+    private boolean effectiveAiEnabled() {
+        return aiEnabled && settings.isAiEnabled();
+    }
+
+    /**
+     * Tra ve cau tra loi chan khi AI bi tat trong cai dat hoac het luot chat
+     * trong ngay; tra ve null neu duoc phep chat tiep. Cau bi chan khong luu
+     * vao lich su chat.
+     */
+    private ChatReply blockedReply(Integer userId, String sessionId) {
+        if (!effectiveAiEnabled()) {
+            return new ChatReply("Trợ lý AI đang tạm tắt. Bạn dùng ô tìm kiếm trên thanh menu "
+                    + "của shop để tìm sản phẩm nhé!", List.of(), null, true);
+        }
+        int limit = settings.aiDailyLimit();
+        if (limit > 0) {
+            LocalDateTime startOfDay = LocalDate.now(ZoneId.of("Asia/Ho_Chi_Minh")).atStartOfDay();
+            long used = userId != null
+                    ? chatMessages.countByUserIdAndRoleAndCreatedAtAfter(userId, "USER", startOfDay)
+                    : chatMessages.countBySessionIdAndRoleAndCreatedAtAfter(sessionId, "USER", startOfDay);
+            if (used >= limit) {
+                return new ChatReply("Hôm nay bạn đã dùng hết " + limit + " lượt chat với Luminous AI. "
+                        + "Bạn quay lại vào ngày mai nhé, hoặc dùng ô tìm kiếm trên thanh menu của shop!",
+                        List.of(), null, true);
+            }
+        }
+        return null;
+    }
+
     public boolean isAiEnabled() {
-        return aiEnabled;
+        return effectiveAiEnabled();
     }
 
     public boolean isAiAvailable() {
-        return aiEnabled && chatClientProvider.getIfAvailable() != null;
+        return effectiveAiEnabled() && chatClientProvider.getIfAvailable() != null;
     }
 
     public String getLastGeminiError() {
