@@ -117,22 +117,15 @@
             <input type="radio" name="paymentMethod" value="COD" checked/>
             <span><strong>Thanh toán khi nhận hàng (COD)</strong><small>Trả tiền mặt khi nhận hàng.</small></span>
           </label>
-          <label class="pay-option" th:if="${shop.paymentBanking}">
-            <input type="radio" name="paymentMethod" value="BANK_TRANSFER" th:checked="${!shop.paymentCod}"/>
-            <span><strong>Chuyển khoản ngân hàng</strong>
-              <small th:if="${shop.bankName != null and !shop.bankName.isEmpty()}"><span th:text="${shop.bankName} + ' • ' + ${shop.bankAccount}"></span><span th:if="${shop.bankHolder != null and !shop.bankHolder.isEmpty()}" th:text="' • ' + ${shop.bankHolder}"></span></small>
-              <small th:if="${shop.bankName == null or shop.bankName.isEmpty()}">Chuyển khoản trước khi giao hàng.</small>
-            </span>
-          </label>
           <label class="pay-option" th:if="${vnpayEnabled}">
-            <input type="radio" name="paymentMethod" value="VNPAY" th:checked="${!shop.paymentCod and !shop.paymentBanking}"/>
-            <span><strong>Thanh toán bằng mã QR (VNPay)</strong><small>Quét mã QR trên cổng VNPay bằng app ngân hàng.</small></span>
+            <input type="radio" name="paymentMethod" value="VNPAY" th:checked="${!shop.paymentCod}"/>
+            <span><strong>Thanh toán qua cổng VNPay</strong><small>Thẻ ATM nội địa (thẻ test NCB), thẻ quốc tế hoặc quét mã QR bằng app ngân hàng.</small></span>
           </label>
           <label class="pay-option pay-disabled">
             <input type="radio" name="paymentMethod" value="MOMO" disabled/>
             <span><strong>Ví MoMo</strong><small>Sắp ra mắt.</small></span>
           </label>
-          <p class="checkout-note" th:if="${!shop.paymentCod and !shop.paymentBanking}">Hiện cửa hàng chưa bật phương thức thanh toán nào, vui lòng liên hệ shop.</p>
+          <p class="checkout-note" th:if="${!shop.paymentCod and !vnpayEnabled}">Hiện cửa hàng chưa bật phương thức thanh toán nào, vui lòng liên hệ shop.</p>
         </section>
       </div>
 
@@ -393,6 +386,7 @@
         if (deleteForm) deleteForm.submit();
       });
     });
+  })();
   // Chong bam Dat hang 2 lan: khoa nut ngay khi gui form (server van chan
   // bang idempotencyKey neu request lap lai lot qua).
   (function () {
