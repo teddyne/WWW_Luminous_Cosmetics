@@ -51,6 +51,7 @@
     </div>
 
     <div class="success-actions">
+      <a th:if="${canRetryVnpay}" th:href="@{/payment/vnpay/retry(orderCode=${order.orderCode})}" class="btn-place">Thanh toán lại bằng VNPay</a>
       <a th:href="@{/products}" class="btn-place">Tiếp tục mua hàng</a>
       <a th:href="@{/}" class="btn-checkout-secondary">Về trang chủ</a>
     </div>

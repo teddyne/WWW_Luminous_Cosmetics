@@ -138,6 +138,43 @@ public class CheckoutService {
         return payments.findTopByOrderIdOrderByIdDesc(orderId);
     }
 
+    /** Ket qua xac nhan thanh toan VNPay (Return URL + IPN dung chung). */
+    public enum VnpayConfirm {
+        SUCCESS, ALREADY_CONFIRMED, NOT_FOUND, INVALID_AMOUNT
+    }
+
+    /**
+     * Xac nhan 1 don da tra qua VNPay: chi doi Payment PENDING -> PAID
+     * (ghi paidAt + ma giao dich VNPay), trang thai don PENDING giu nguyen
+     * cho shop xac nhan giao hang. Goi lap lai (IPN goi 2 lan, Return goi
+     * sau IPN) chi tra ve ALREADY_CONFIRMED, khong doi DB lan 2.
+     */
+    public VnpayConfirm confirmVnpayPayment(String orderCode, BigDecimal amount,
+                                            String transactionNo) {
+        if (orderCode == null || orderCode.isBlank()) {
+            return VnpayConfirm.NOT_FOUND;
+        }
+        Orders order = orders.findByOrderCode(orderCode).orElse(null);
+        if (order == null) {
+            return VnpayConfirm.NOT_FOUND;
+        }
+        Payment payment = payments.findTopByOrderIdOrderByIdDesc(order.getId()).orElse(null);
+        if (payment == null) {
+            return VnpayConfirm.NOT_FOUND;
+        }
+        if (payment.getPaymentStatus() == PaymentStatus.PAID) {
+            return VnpayConfirm.ALREADY_CONFIRMED;
+        }
+        if (amount == null || amount.compareTo(payment.getAmount()) != 0) {
+            return VnpayConfirm.INVALID_AMOUNT;
+        }
+        payment.setPaymentStatus(PaymentStatus.PAID);
+        payment.setPaidAt(LocalDateTime.now());
+        payment.setTransactionCode(transactionNo);
+        payments.save(payment);
+        return VnpayConfirm.SUCCESS;
+    }
+
     /**
      * Dat hang cho cac dong duoc chon. Tao don o trang thai PENDING + ban ghi
      * thanh toan PENDING; tru kho, tru diem, ghi voucher, xoa khoi gio.

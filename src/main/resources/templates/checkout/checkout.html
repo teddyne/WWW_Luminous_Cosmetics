@@ -124,6 +124,10 @@
               <small th:if="${shop.bankName == null or shop.bankName.isEmpty()}">Chuyển khoản trước khi giao hàng.</small>
             </span>
           </label>
+          <label class="pay-option" th:if="${vnpayEnabled}">
+            <input type="radio" name="paymentMethod" value="VNPAY" th:checked="${!shop.paymentCod and !shop.paymentBanking}"/>
+            <span><strong>Thanh toán bằng mã QR (VNPay)</strong><small>Quét mã QR trên cổng VNPay bằng app ngân hàng.</small></span>
+          </label>
           <label class="pay-option pay-disabled">
             <input type="radio" name="paymentMethod" value="MOMO" disabled/>
             <span><strong>Ví MoMo</strong><small>Sắp ra mắt.</small></span>

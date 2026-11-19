@@ -52,6 +52,10 @@ public class SecurityConfig {
                         "/skin-quiz", "/skin-quiz/submit", "/my-routine", "/my-routine/building",
                         "/my-routine/buy-all",
                         "/cart", "/cart/**",
+                        // VNPay goi ve khong co phien dang nhap: Return URL
+                        // (trinh duyet) + IPN (server VNPay). Retry thi van
+                        // can dang nhap (roi vao anyRequest().authenticated()).
+                        "/payment/vnpay/return", "/payment/vnpay/ipn",
                         "/api/ai/chat", "/api/ai/chat/stream", "/api/ai/history", "/api/ai/status", "/api/ai/cart/add", "/api/ai/draft/**"
                 ).permitAll()
                 .requestMatchers("/api/ai/reindex").hasRole("ADMIN")
