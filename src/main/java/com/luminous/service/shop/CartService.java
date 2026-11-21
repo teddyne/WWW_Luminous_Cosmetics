@@ -169,6 +169,44 @@ public class CartService {
         return true;
     }
 
+    /** Mua ngay: dong gio hang lay dung so luong chon o trang chi tiet (set,
+     *  khong cong don nhu addItem) de trang dat hang chi hien dung mon do. */
+    public boolean buyNowItem(User user, Integer variantId, int quantity) {
+        if (user == null) {
+            return false;
+        }
+        Optional<ProductVariant> found = variants.findById(variantId);
+        if (found.isEmpty()) {
+            return false;
+        }
+        ProductVariant variant = found.get();
+        if (!Boolean.TRUE.equals(variant.getIsActive())
+                || variant.getStockQuantity() == null || variant.getStockQuantity() <= 0) {
+            return false;
+        }
+        Cart cart = getOrCreateCart(user);
+        int wanted = Math.max(1, quantity);
+        int cap = flashCap(user.getId(), variantId, variant.getStockQuantity());
+        int allowed = Math.min(wanted, cap);
+        if (allowed <= 0) {
+            return false;
+        }
+        cartItems.findByCartIdAndVariantId(cart.getId(), variantId)
+                .ifPresentOrElse(
+                        item -> {
+                            item.setQuantity(allowed);
+                            cartItems.save(item);
+                        },
+                        () -> {
+                            CartItem item = new CartItem();
+                            item.setCart(cart);
+                            item.setVariant(variant);
+                            item.setQuantity(allowed);
+                            cartItems.save(item);
+                        });
+        return true;
+    }
+
     /** Doi so luong 1 dong (kep trong [1, ton kho]); het hang thi xoa dong do. */
     public boolean updateQuantity(User user, Integer variantId, int quantity) {
         if (user == null) {

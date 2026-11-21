@@ -16,6 +16,8 @@
 /* Bo cuc 2 cot: bang gio hang + hoa don */
 .cart-layout { display: grid; grid-template-columns: minmax(0, 1fr) 360px; gap: 24px; align-items: start; }
 .cart-main { background: #fff; border: 1px solid #e5e9e5; border-radius: var(--lum-radius); overflow: hidden; }
+.cart-table-scroll { overflow-x: auto; }
+.cart-table-head, .cart-row { min-width: 760px; }
 .cart-table-head, .cart-row { display: grid; grid-template-columns: 28px minmax(0, 1fr) minmax(0, 428px); gap: 16px; align-items: center; padding: 14px 20px; }
 .cart-head-side, .cart-row-side { display: grid; grid-template-columns: 110px 120px 110px 40px; gap: 16px; align-items: center; }
 .cart-table-head { font-size: 13px; font-weight: 600; color: var(--lum-muted); border-bottom: 1px solid #e5e9e5; background: #fafafa; }
@@ -93,6 +95,7 @@
 }
 @media (max-width: 576px) {
   .cart-table-head { display: none; }
+  .cart-table-head, .cart-row { min-width: 0; }
   .cart-row { grid-template-columns: 24px minmax(0, 1fr); }
   .cart-row-side { grid-column: 1 / -1; grid-template-columns: repeat(2, 1fr); row-gap: 8px; }
   .cart-bottom { flex-direction: column; align-items: flex-start; }

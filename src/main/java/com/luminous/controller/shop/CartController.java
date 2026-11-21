@@ -101,11 +101,22 @@ public class CartController {
                       @RequestParam(defaultValue = "false") boolean buyNow,
                       RedirectAttributes redirect) {
         User user = currentUser(auth);
+        // Mua ngay: chi dat hang dung san pham vua chon (dung so luong o trang
+        // chi tiet, khong cong don vao gio), roi sang thang trang dat hang.
+        // Trang checkout chi hien cac bien the trong selectedVariantIds.
+        if (buyNow && user != null) {
+            boolean bought = cartService.buyNowItem(user, variantId, quantity);
+            if (!bought) {
+                redirect.addFlashAttribute("cartAddError", "Không mua được sản phẩm (đã hết hàng hoặc ngừng bán).");
+                return "redirect:" + backUrl(request);
+            }
+            return "redirect:/checkout?selectedVariantIds=" + variantId;
+        }
         boolean ok = user != null
                 ? cartService.addItem(user, variantId, quantity)
                 : cartService.addGuestItem(session, variantId, quantity);
-        // Mua ngay thi ve gio hang nhu cu; them thuong thi o lai trang hien
-        // tai, chi hien thong bao (toast o header) la da them thanh cong.
+        // Khach chua dang nhap bam Mua ngay thi ve gio hang (dat hang can dang nhap).
+        // Them thuong thi o lai trang hien tai, chi hien thong bao (toast o header).
         if (buyNow) {
             return "redirect:/cart";
         }

@@ -20,6 +20,7 @@
 
   <div class="cart-layout" th:unless="${lines.isEmpty()}">
     <section class="cart-main">
+      <div class="cart-table-scroll">
       <div class="cart-table-head">
         <input type="checkbox" id="select-all-top" class="cart-select-all" checked aria-label="Chọn tất cả"/>
         <span>Sản phẩm</span>
@@ -82,6 +83,7 @@
           </div>
         </div>
       </article>
+      </div>
 
       <div class="cart-bottom">
         <a class="cart-continue" th:href="@{/products}"><i class="bi bi-arrow-left"></i> Tiếp tục mua hàng</a>

@@ -11,8 +11,10 @@ import com.luminous.model.enums.PaymentStatus;
 import com.luminous.repository.address.AddressRepository;
 import com.luminous.security.CustomUserDetails;
 import com.luminous.service.admin.ShopSettingsService;
+import com.luminous.service.payment.VnpayService;
 import com.luminous.service.shop.CartService;
 import com.luminous.service.shop.CheckoutService;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
@@ -28,10 +30,11 @@ import java.util.List;
 import java.util.UUID;
 
 /**
- * Dat hang (chi tien mat COD trong dot nay): chon dia chi + gio giao +
- * voucher + diem, roi tao don xong luon. Trang checkout chi co 1 form
- * duy nhat, nut bam nao cung gui ve POST /checkout/submit kem theo
- * action: place / apply-voucher / remove-voucher / add-address
+ * Dat hang: chon dia chi + gio giao + voucher + diem, roi tao don xong luon.
+ * COD / chuyen khoan thi ve trang success ngay; VNPay thi chuyen sang cong
+ * VNPay (quet ma QR) roi VNPay tra ve /payment/vnpay/return. Trang checkout
+ * chi co 1 form duy nhat, nut bam nao cung gui ve POST /checkout/submit kem
+ * theo action: place / apply-voucher / remove-voucher / add-address
  * (tranh form long form khong hop le trong HTML).
  */
 @Controller
@@ -48,15 +51,18 @@ public class CheckoutController {
     private final CartService cartService;
     private final AddressRepository addresses;
     private final ShopSettingsService settings;
+    private final VnpayService vnpayService;
 
     public CheckoutController(CheckoutService checkoutService,
                               CartService cartService,
                               AddressRepository addresses,
-                              ShopSettingsService settings) {
+                              ShopSettingsService settings,
+                              VnpayService vnpayService) {
         this.checkoutService = checkoutService;
         this.cartService = cartService;
         this.addresses = addresses;
         this.settings = settings;
+        this.vnpayService = vnpayService;
     }
 
     /** Lay User dang dang nhap (giong CartController). */
@@ -125,11 +131,14 @@ public class CheckoutController {
         model.addAttribute("idempotencyKey", UUID.randomUUID().toString());
         model.addAttribute("pointBalance", balance);
         model.addAttribute("pointsMax", pointsMax);
+        // Lua chon VNPay chi hien khi da nhap khoa sandbox (vnpay.tmn-code
+        // + vnpay.hash-secret trong application.properties cua may chay).
+        model.addAttribute("vnpayEnabled", vnpayService.isConfigured());
         return "checkout/checkout";
     }
 
     @PostMapping("/checkout/submit")
-    public String submit(Authentication auth, HttpSession session,
+    public String submit(Authentication auth, HttpSession session, HttpServletRequest request,
                          @RequestParam(defaultValue = "place") String action,
                          @RequestParam(required = false) List<Integer> selectedVariantIds,
                          @RequestParam(required = false) Integer addressId,
@@ -268,7 +277,8 @@ public class CheckoutController {
 
         PaymentMethod method = PaymentMethod.from(paymentMethod);
         boolean allowed = (method == PaymentMethod.COD && settings.paymentCodEnabled())
-                || (method == PaymentMethod.BANK_TRANSFER && settings.paymentBankingEnabled());
+                || (method == PaymentMethod.BANK_TRANSFER && settings.paymentBankingEnabled())
+                || (method == PaymentMethod.VNPAY && vnpayService.isConfigured());
         if (!allowed) {
             redirect.addFlashAttribute("checkoutError",
                     "Phương thức thanh toán này hiện không được cửa hàng hỗ trợ.");
@@ -285,18 +295,47 @@ public class CheckoutController {
             return "redirect:/checkout" + back;
         }
         session.removeAttribute(CartService.SESSION_VOUCHER_CODE);
+
+        if (method == PaymentMethod.VNPAY) {
+            // Don 0đ (diem tru het) thi khong can qua cong: ve success luon.
+            if (placed.total() == null || placed.total().compareTo(BigDecimal.ZERO) <= 0) {
+                return "redirect:/checkout/success?orderCode=" + placed.order().getOrderCode();
+            }
+            // Khong ep bankCode: de VNPay hien trang chon phuong thuc voi
+            // cac phuong thuc da bat cho merchant nay (QR / the ATM / quoc
+            // te). Ep VNPAYQR se loi code 76 "Ngan hang thanh toan khong
+            // duoc ho tro" neu tai khoan sandbox chua bat dich vu QR.
+            try {
+                String payUrl = vnpayService.createPaymentUrl(placed.order(),
+                        VnpayService.clientIp(request), null);
+                return "redirect:" + payUrl;
+            } catch (IllegalStateException e) {
+                // Khoa chua cau hinh: don da tao (PENDING), khach bam
+                // "Thanh toan lai" o trang success khi nao co khoa.
+                return "redirect:/checkout/success?orderCode=" + placed.order().getOrderCode();
+            }
+        }
         return "redirect:/checkout/success?orderCode=" + placed.order().getOrderCode();
     }
 
-    /** Trang xac nhan sau khi dat hang. */
+    /** Trang xac nhan sau khi dat hang. Tham so vnpay do VNPay Return gui kem. */
     @GetMapping("/checkout/success")
-    public String success(Authentication auth, @RequestParam String orderCode, Model model) {
+    public String success(Authentication auth, @RequestParam String orderCode,
+                          @RequestParam(required = false) String vnpay, Model model) {
         User user = currentUser(auth);
         Orders order = checkoutService.findByCode(orderCode).orElse(null);
         if (order == null || user == null || !order.getUser().getId().equals(user.getId())) {
             return "redirect:/cart";
         }
-        fillSuccessModel(order, null, model);
+        String message = switch (vnpay == null ? "" : vnpay) {
+            case "success" -> "Thanh toán thành công. Cảm ơn bạn đã mua hàng tại LUMINOUS!";
+            case "failed" -> "Thanh toán chưa thành công. Đơn vẫn ở trạng thái chờ thanh toán,"
+                    + " bạn có thể thử lại bằng nút bên dưới.";
+            case "invalid" -> "Không xác minh được kết quả trả về từ VNPay."
+                    + " Đơn vẫn ở trạng thái chờ thanh toán.";
+            default -> null;
+        };
+        fillSuccessModel(order, message, model);
         return "checkout/success";
     }
 
@@ -309,6 +348,11 @@ public class CheckoutController {
         model.addAttribute("paid", payment != null && payment.getPaymentStatus() == PaymentStatus.PAID);
         model.addAttribute("message", message);
         model.addAttribute("orderCode", order.getOrderCode());
+        // Don VNPay chua tra thi cho bam "Thanh toan lai" (het han 15 phut,
+        // dong tab giua chung, hoac tra that bai).
+        model.addAttribute("canRetryVnpay", payment != null
+                && payment.getPaymentMethod() == PaymentMethod.VNPAY
+                && payment.getPaymentStatus() == PaymentStatus.PENDING);
     }
 
     private String backToCheckout(List<Integer> selectedVariantIds, Integer addressId) {

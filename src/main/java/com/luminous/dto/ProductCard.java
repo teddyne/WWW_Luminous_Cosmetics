@@ -71,7 +71,9 @@ public class ProductCard {
     }
 
     public String sizeLabel() {
-        return variant != null && variant.getSize() != null ? variant.getSize() : "";
+        if (variant == null) return "";
+        if (variant.getShadeName() != null && !variant.getShadeName().isBlank()) return variant.getShadeName();
+        return variant.getSize() != null ? variant.getSize() : "";
     }
 
     public BigDecimal price() {
